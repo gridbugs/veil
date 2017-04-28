@@ -102,7 +102,7 @@ pub struct EntityComponentSet {
 }
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EntityComponentCombination(u64);
+struct EntityComponentCombination(u64);
 impl EntityComponentCombination {
     fn new(entity: EntityId, component: ComponentType) -> Self {
         EntityComponentCombination(component.shifted_index() | entity.0)
