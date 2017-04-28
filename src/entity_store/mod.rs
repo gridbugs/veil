@@ -86,10 +86,9 @@ impl EntityId {
     pub fn new(value: u64) -> Self {
         EntityId(value)
     }
-}
-
-pub fn is_valid_entity_id(entity: EntityId) -> bool {
-    entity.0 & !ENTITY_ID_MASK == 0
+    pub fn is_valid(self) -> bool {
+        self.0 & !ENTITY_ID_MASK == 0
+    }
 }
 
 impl ComponentType {
