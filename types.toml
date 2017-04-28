@@ -1,0 +1,7 @@
+imports = [
+    'cgmath::Vector2',
+]
+
+[components]
+position = { name = 'Position', type = 'Vector2<i32>' }
+solid = { name = 'Solid' }

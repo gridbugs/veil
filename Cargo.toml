@@ -1,0 +1,17 @@
+[package]
+name = "veil"
+version = "0.1.0"
+authors = ["Stephen Sherratt <stephen@sherra.tt>"]
+build = "build.rs"
+
+[dependencies]
+cgmath = { version = "0.14", features = ["eders"] }
+enum_primitive = "0.1"
+serde = "1.0"
+serde_derive = "1.0"
+
+[build-dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.4"
+handlebars = "0.26"

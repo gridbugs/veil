@@ -1,0 +1,101 @@
+// Generated file. Do not edit!
+
+macro_rules! component_list_imports {
+    () => {
+{{#each imports}}
+        use {{this}};
+{{/each}}
+    }
+}
+
+macro_rules! component_list_num_components {
+    () => { {{num_components}} }
+}
+
+macro_rules! component_list_component_bits {
+    () => { {{component_bits}} }
+}
+
+macro_rules! component_list_component_type_decl {
+    ($ComponentType:ident) => {
+        enum_from_primitive! {
+        #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
+        pub enum $ComponentType {
+{{#each components}}
+    {{name}},
+{{/each}}
+        }
+        }
+    }
+}
+
+macro_rules! component_list_entity_store_decl {
+    ($EntityStore:ident) => {
+        #[derive(Serialize, Deserialize, Debug)]
+        pub struct $EntityStore {
+{{#each components}}
+    {{#if type}}
+            pub {{@key}}: HashMap<EntityId, {{type}}>,
+    {{else}}
+            pub {{@key}}: HashSet<EntityId>,
+    {{/if}}
+{{/each}}
+        }
+    }
+}
+
+macro_rules! component_list_entity_store_cons {
+    ($EntityStore:ident) => {
+        $EntityStore {
+{{#each components}}
+    {{#if type}}
+            {{@key}}: HashMap::new(),
+    {{else}}
+            {{@key}}: HashSet::new(),
+    {{/if}}
+{{/each}}
+        }
+    }
+}
+
+macro_rules! component_list_commit_insertions {
+    ($self:ident, $source:ident) => {
+        {
+{{#each components}}
+    {{#if type}}
+            merge_hash_maps(&mut $self.{{@key}}, &mut $source.{{@key}});
+    {{else}}
+            merge_hash_sets(&mut $self.{{@key}}, &mut $source.{{@key}});
+    {{/if}}
+{{/each}}
+        }
+    }
+}
+
+macro_rules! component_list_remove_component {
+    ($self:ident, $entity:ident, $component_type:ident, $ComponentType:ident) => {
+        {
+            match $component_type {
+{{#each components}}
+                $ComponentType::{{name}} => { $self.{{@key}}.remove(&$entity); },
+{{/each}}
+            }
+        }
+    }
+}
+
+macro_rules! component_list_swap_component {
+    ($self:ident, $a:ident, $b:ident, $component_type:ident, $ComponentType:ident) => {
+        {
+            match $component_type {
+{{#each components}}
+    {{#if type}}
+                $ComponentType::{{name}} => swap_hash_map(&mut $self.{{@key}}, $a, $b),
+    {{else}}
+                $ComponentType::{{name}} => swap_hash_set(&mut $self.{{@key}}, $a, $b),
+    {{/if}}
+{{/each}}
+            }
+        }
+    }
+}
