@@ -90,7 +90,7 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
 
 fn main() {
     let out_path = "src/entity_store/generated_component_list_macros.rs";
-    let in_path = "types.toml";
+    let in_path = "components.toml";
     let template_path = "src/entity_store/template.rs.hbs";
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
