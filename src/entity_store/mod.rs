@@ -3,6 +3,8 @@ use std::hash::Hash;
 
 use enum_primitive::FromPrimitive;
 
+#[macro_use] mod generated_component_list_macros;
+
 component_list_imports!{}
 
 const NUM_COMPONENTS: usize = component_list_num_components!();

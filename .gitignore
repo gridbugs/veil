@@ -1,5 +1,5 @@
 target/
 **/*.rs.bk
-src/component_list_macros/mod.rs
+src/entity_store/generated_component_list_macros.rs
 *.swp
 Cargo.lock
