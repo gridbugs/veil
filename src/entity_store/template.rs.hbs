@@ -99,3 +99,17 @@ macro_rules! component_list_swap_component {
         }
     }
 }
+
+macro_rules! component_list_insert_all {
+    ($self:ident, $entity:ident, $store:ident) => {
+        {
+{{#each components}}
+    {{#if type}}
+            if $store.{{@key}}.contains_key(&$entity) { $self.insert($entity, ComponentType::{{name}}); }
+    {{else}}
+            if $store.{{@key}}.contains(&$entity) { $self.insert($entity, ComponentType::{{name}}); }
+    {{/if}}
+{{/each}}
+        }
+    }
+}

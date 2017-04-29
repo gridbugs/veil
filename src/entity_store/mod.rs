@@ -132,6 +132,9 @@ impl EntityComponentSet {
     pub fn contains(&mut self, entity: EntityId, component: ComponentType) -> bool {
         self.set.contains(&EntityComponentCombination::new(entity, component))
     }
+    pub fn insert_all(&mut self, entity: EntityId, store: &EntityStore) {
+        component_list_insert_all!(self, entity, store)
+    }
 }
 
 pub struct EntityStoreSwaps {
