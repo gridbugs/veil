@@ -22,6 +22,7 @@ fn main() {
 
     change.insertions.position.insert(e0, cgmath::Vector2::new(1, 2));
     change.insertions.position.insert(e1, cgmath::Vector2::new(3, 4));
+    change.insertions.solid.insert(e1);
 
     entity_store.commit(&mut change);
 
@@ -33,6 +34,11 @@ fn main() {
     println!("{:?}", entity_store);
 
     change.removals.insert(e0, ComponentType::Position);
+    entity_store.commit(&mut change);
+
+    println!("{:?}", entity_store);
+
+    change.removals.insert_all(e1, &entity_store);
     entity_store.commit(&mut change);
 
     println!("{:?}", entity_store);
