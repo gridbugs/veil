@@ -1,6 +1,6 @@
 // Generated file. Do not edit!
 
-macro_rules! component_list_imports {
+macro_rules! imports {
     () => {
 {{#each imports}}
         use {{this}};
@@ -8,15 +8,15 @@ macro_rules! component_list_imports {
     }
 }
 
-macro_rules! component_list_num_components {
+macro_rules! num_components {
     () => { {{num_components}} }
 }
 
-macro_rules! component_list_component_bits {
+macro_rules! component_bits {
     () => { {{component_bits}} }
 }
 
-macro_rules! component_list_component_type_decl {
+macro_rules! component_type_decl {
     ($ComponentType:ident) => {
         enum_from_primitive! {
         #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -29,7 +29,7 @@ macro_rules! component_list_component_type_decl {
     }
 }
 
-macro_rules! component_list_entity_store_decl {
+macro_rules! entity_store_decl {
     ($EntityStore:ident) => {
         #[derive(Serialize, Deserialize, Debug)]
         pub struct $EntityStore {
@@ -44,7 +44,7 @@ macro_rules! component_list_entity_store_decl {
     }
 }
 
-macro_rules! component_list_entity_store_cons {
+macro_rules! entity_store_cons {
     ($EntityStore:ident) => {
         $EntityStore {
 {{#each components}}
@@ -58,7 +58,7 @@ macro_rules! component_list_entity_store_cons {
     }
 }
 
-macro_rules! component_list_commit_insertions {
+macro_rules! commit_insertions {
     ($self:ident, $source:ident) => {
         {
 {{#each components}}
@@ -72,7 +72,7 @@ macro_rules! component_list_commit_insertions {
     }
 }
 
-macro_rules! component_list_remove_component {
+macro_rules! remove_component {
     ($self:ident, $entity:ident, $component_type:ident, $ComponentType:ident) => {
         {
             match $component_type {
@@ -84,23 +84,7 @@ macro_rules! component_list_remove_component {
     }
 }
 
-macro_rules! component_list_swap_component {
-    ($self:ident, $a:ident, $b:ident, $component_type:ident, $ComponentType:ident) => {
-        {
-            match $component_type {
-{{#each components}}
-    {{#if type}}
-                $ComponentType::{{name}} => swap_hash_map(&mut $self.{{@key}}, $a, $b),
-    {{else}}
-                $ComponentType::{{name}} => swap_hash_set(&mut $self.{{@key}}, $a, $b),
-    {{/if}}
-{{/each}}
-            }
-        }
-    }
-}
-
-macro_rules! component_list_insert_all {
+macro_rules! insert_all {
     ($self:ident, $entity:ident, $store:ident) => {
         {
 {{#each components}}
@@ -111,5 +95,13 @@ macro_rules! component_list_insert_all {
     {{/if}}
 {{/each}}
         }
+    }
+}
+
+macro_rules! component_type_cons_methods {
+    () => {
+{{#each components}}
+        pub fn {{@key}}() -> Self { ComponentType::{{name}} }
+{{/each}}
     }
 }

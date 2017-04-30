@@ -5,26 +5,26 @@ use enum_primitive::FromPrimitive;
 
 #[macro_use] mod generated_component_list_macros;
 
-component_list_imports!{}
+imports!{}
 
-const NUM_COMPONENTS: usize = component_list_num_components!();
-const COMPONENT_BITS: usize = component_list_component_bits!();
+const NUM_COMPONENTS: usize = num_components!();
+const COMPONENT_BITS: usize = component_bits!();
 
-component_list_component_type_decl!{ComponentType}
+component_type_decl!{ComponentType}
 
-component_list_entity_store_decl!{EntityStore}
+entity_store_decl!{EntityStore}
 
 impl EntityStore {
     pub fn new() -> Self {
-        component_list_entity_store_cons!(EntityStore)
+        entity_store_cons!(EntityStore)
     }
 
     fn commit_insertions(&mut self, insertions: &mut EntityStore) {
-        component_list_commit_insertions!(self, insertions)
+        commit_insertions!(self, insertions)
     }
 
     fn remove_component(&mut self, entity: EntityId, component_type: ComponentType) {
-        component_list_remove_component!(self, entity, component_type, ComponentType);
+        remove_component!(self, entity, component_type, ComponentType);
     }
 
     pub fn commit(&mut self, change: &mut EntityStoreChange) {
@@ -107,7 +107,7 @@ impl EntityComponentSet {
         self.set.contains(&EntityComponentCombination::new(entity, component))
     }
     pub fn insert_all(&mut self, entity: EntityId, store: &EntityStore) {
-        component_list_insert_all!(self, entity, store)
+        insert_all!(self, entity, store)
     }
     pub fn iter(&self) -> EntityComponentSetIter {
         EntityComponentSetIter(self.set.iter())
