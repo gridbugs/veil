@@ -1,0 +1,174 @@
+// Generated file. Do not edit!
+
+macro_rules! imports {
+    () => {
+{{#each imports}}
+        use {{this}};
+{{/each}}
+    }
+}
+
+macro_rules! position_type {
+    () => {
+        {{position_type}}
+    }
+}
+
+macro_rules! position {
+    ($store:expr) => {
+        $store.{{position_component}}
+    }
+}
+
+macro_rules! spatial_hash_cell_decl {
+    ($SpatialHashCell:ident) => {
+        pub struct $SpatialHashCell {
+{{#each fields}}
+            pub {{@key}}: {{aggregate_type}},
+{{/each}}
+            pub entities: HashSet<EntityId>,
+            pub last_updated: u64,
+
+        }
+    }
+}
+
+macro_rules! spatial_hash_cell_cons {
+    ($SpatialHashCell:ident) => {
+        $SpatialHashCell {
+{{#each fields}}
+            {{@key}}: {{aggregate_cons}},
+{{/each}}
+            entities: HashSet::new(),
+            last_updated: 0,
+        }
+    }
+}
+
+macro_rules! remove_implicit {
+    ($self:expr, $entity_id:expr, $store:expr, $change:expr) => {
+
+{{#each fields}}
+        if !$change.removals.contains($entity_id, ComponentType::{{name}}) {
+    {{#if f64_total}}
+            if let Some(v) = $store.{{component}}.get(&$entity_id) {
+                $self.{{@key}} -= *v;
+            }
+    {{/if}}
+    {{#if count}}
+            if $store.{{component}}.contains(&$entity_id) {
+                $self.{{@key}} -= 1;
+            }
+    {{/if}}
+    {{#if set}}
+            if $store.{{component}}.contains(&$entity_id) {
+                $self.{{@key}}.remove(&$entity_id);
+            }
+    {{/if}}
+        }
+{{/each}}
+    }
+}
+
+macro_rules! insert_implicit {
+    ($self:expr, $entity_id:expr, $store:expr, $change:expr) => {
+
+{{#each fields}}
+        if !$change.removals.contains($entity_id, ComponentType::{{name}}) {
+    {{#if f64_total}}
+            if let Some(v) = $store.{{component}}.get(&$entity_id) {
+                $self.{{@key}} += *v;
+            }
+    {{/if}}
+    {{#if count}}
+            if $store.{{component}}.contains(&$entity_id) {
+                $self.{{@key}} += 1;
+            }
+    {{/if}}
+    {{#if set}}
+            if $store.{{component}}.contains(&$entity_id) {
+                $self.{{@key}}.insert($entity_id);
+            }
+    {{/if}}
+        }
+{{/each}}
+    }
+}
+
+macro_rules! update_match_stmt {
+    ($component_type:expr, $cell:expr, $entity_id:expr, $store:expr, $change:expr) => {
+        match $component_type {
+            ComponentType::Position => {
+                $cell.remove_implicit($entity_id, $store, $change);
+            }
+{{#each fields}}
+            ComponentType::{{name}} => {
+    {{#if f64_total}}
+                if let Some(v) = $store.{{component}}.get(&$entity_id) {
+                    $cell.{{@key}} -= *v;
+                }
+    {{/if}}
+    {{#if count}}
+                if $store.{{component}}.contains(&$entity_id) {
+                    $cell.{{@key}} -= 1;
+                }
+    {{/if}}
+    {{#if set}}
+                if $store.{{component}}.contains(&$entity_id) {
+                    $cell.{{@key}}.remove(&$entity_id);
+                }
+    {{/if}}
+            }
+{{/each}}
+            _ => {
+                // prevent the last_updated field from being changed
+                continue;
+            }
+        }
+    }
+}
+
+macro_rules! update_component_loops {
+    ($self:expr, $store:expr, $change:expr, $time:expr) => {
+{{#each fields}}
+    {{#if type}}
+        for (entity_id, new) in $change.insertions.{{component}}.iter() {
+    {{else}}
+        for entity_id in $change.insertions.{{component}}.iter() {
+    {{/if}}
+
+            if let Some(position) = post_change_get!($store, $change, *entity_id, position) {
+
+    {{#if f64_total}}
+                let old = if $change.removals.contains(*entity_id, ComponentType::{{name}}) {
+                    0.0
+                } else {
+                    $store.{{component}}.get(entity_id).map(Clone::clone).unwrap_or(0.0)
+                };
+                let increase = new - old;
+                if let Some(mut cell) = $self.grid.get_mut(*position) {
+                    cell.{{@key}} += increase;
+                    cell.last_updated = $time;
+                }
+    {{/if}}
+    {{#if count}}
+                if !$store.{{component}}.contains(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
+                    if let Some(mut cell) = $self.grid.get_mut(*position) {
+                        cell.{{@key}} += 1;
+                        cell.last_updated = $time;
+                    }
+                }
+    {{/if}}
+    {{#if set}}
+                if !$store.{{component}}.contains(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
+                    if let Some(mut cell) = $self.grid.get_mut(*position) {
+                        cell.{{@key}}.insert(*entity_id);
+                        cell.last_updated = $time;
+                    }
+                }
+    {{/if}}
+            }
+        }
+{{/each}}
+    }
+}

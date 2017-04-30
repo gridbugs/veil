@@ -7,11 +7,47 @@ use std::io::Read;
 use std::io::Write;
 use std::fs::{self, File};
 use std::path::Path;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
 
+const COMPONENT_PATH: &'static str = "components.toml";
+
 fn ret_none() -> Option<String> { None }
+
+#[derive(Debug, Deserialize)]
+struct SpatialHashDesc {
+    imports: HashSet<String>,
+    position_component: String,
+    fields: HashMap<String, SpatialHashFieldDesc>,
+}
+
+#[derive(Debug, Deserialize)]
+struct SpatialHashFieldDesc {
+    component: String,
+    aggregate: String,
+}
+
+#[derive(Debug, Serialize)]
+struct SpatialHashDescOut {
+    imports: HashSet<String>,
+    position_component: String,
+    position_type: String,
+    fields: HashMap<String, SpatialHashFieldDescOut>,
+}
+#[derive(Debug, Serialize)]
+struct SpatialHashFieldDescOut {
+    component: String,
+    aggregate: String,
+    aggregate_type: String,
+    aggregate_cons: String,
+    name: String,
+    #[serde(rename = "type", default = "ret_none")]
+    type_name: Option<String>,
+    count: bool,
+    f64_total: bool,
+    set: bool,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ComponentDesc {
@@ -50,14 +86,21 @@ fn read_entity_store_desc<P: AsRef<Path>>(path: P) -> EntityStoreDesc {
     toml::from_str(&read_file(path)).expect("Failed to parse entity store desc")
 }
 
-fn render_template<P: AsRef<Path>>(desc: EntityStoreDesc,
-                                   template_path: P) -> String {
+fn read_spatial_hash_desc<P: AsRef<Path>>(path: P) -> SpatialHashDesc {
+    toml::from_str(&read_file(path)).expect("Failed to parse spatial hash desc")
+}
 
-    let template = read_file(template_path);
-
+fn make_handlebars() -> Handlebars {
     let mut handlebars = Handlebars::new();
     // prevent xml escaping
     handlebars.register_escape_fn(|input| input.to_string());
+    handlebars
+}
+
+fn render_entity_system_template_internal<P: AsRef<Path>>(desc: EntityStoreDesc,
+                                   template_path: P) -> String {
+
+    let template = read_file(template_path);
 
     let EntityStoreDesc { imports, components } = desc;
 
@@ -71,11 +114,63 @@ fn render_template<P: AsRef<Path>>(desc: EntityStoreDesc,
         components: components,
     };
 
-    handlebars.template_render(template.as_ref(), &entity_store_desc_out)
+    make_handlebars().template_render(template.as_ref(), &entity_store_desc_out)
         .expect("Failed to render template")
 }
 
+fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
+                                                         type_desc: EntityStoreDesc,
+                                                         template_path: P) -> String {
+
+    let template = read_file(template_path);
+
+    let SpatialHashDesc { imports, position_component, fields } = desc;
+    let EntityStoreDesc { components, .. } = type_desc;
+
+    let mut fields_out = HashMap::new();
+
+    for (field_name, field) in fields.iter() {
+        let component_desc = components.get(&field.component).expect(&format!("No such component: {}", field_name));
+
+        let (aggregate_type, aggregate_cons) = match field.aggregate.as_ref() {
+            "count" => ("usize", "0"),
+            "f64_total" => ("f64", "0.0"),
+            "set" => ("HashSet<EntityId>", "HashSet::new()"),
+            other => panic!("No such aggregate: {}", other),
+        };
+
+        let field_out = SpatialHashFieldDescOut {
+            component: field.component.clone(),
+            aggregate: field.aggregate.clone(),
+            aggregate_type: aggregate_type.to_string(),
+            aggregate_cons: aggregate_cons.to_string(),
+            name: component_desc.name.clone(),
+            type_name: component_desc.type_name.clone(),
+            count: field.aggregate == "count",
+            f64_total: field.aggregate == "f64_total",
+            set: field.aggregate == "set",
+        };
+        fields_out.insert(field_name.clone(), field_out);
+    }
+
+    let desc_out = SpatialHashDescOut {
+        imports: imports,
+        position_component: position_component.clone(),
+        position_type: components.get(&position_component)
+            .expect(&format!("No such component: {}", &position_component))
+            .type_name.clone().expect("Position component must have associated data"),
+        fields: fields_out,
+    };
+
+    make_handlebars().template_render(template.as_ref(), &desc_out)
+        .expect("Failed to render template")
+}
+
+
 fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -> bool {
+    if !out_path.as_ref().exists() {
+        return true;
+    }
     let out_time = if let Ok(md) = fs::metadata(out_path) {
         md.modified().expect("Failed to get output file modified time")
     } else {
@@ -88,14 +183,31 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
     in_time > out_time
 }
 
-fn main() {
+fn render_entity_system_template() {
     let out_path = "src/entity_store/generated_component_list_macros.rs";
-    let in_path = "components.toml";
     let template_path = "src/entity_store/template.rs.hbs";
 
-    if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
-        let type_desc = read_entity_store_desc(in_path);
-        let output = render_template(type_desc, template_path);
+    if source_changed_rel(COMPONENT_PATH, out_path) || source_changed_rel(template_path, out_path) {
+        let type_desc = read_entity_store_desc(COMPONENT_PATH);
+        let output = render_entity_system_template_internal(type_desc, template_path);
         write_file(out_path, output);
     }
+}
+
+fn render_spatial_hash_template() {
+    let out_path = "src/spatial_hash/generated_component_list_macros.rs";
+    let in_path = "spatial_hash.toml";
+    let template_path = "src/spatial_hash/template.rs.hbs";
+
+    if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
+        let desc = read_spatial_hash_desc(in_path);
+        let type_desc = read_entity_store_desc(COMPONENT_PATH);
+        let output = render_spatial_hash_template_internal(desc, type_desc, template_path);
+        write_file(out_path, output);
+    }
+}
+
+fn main() {
+    render_entity_system_template();
+    render_spatial_hash_template();
 }
