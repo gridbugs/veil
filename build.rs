@@ -33,20 +33,22 @@ struct SpatialHashDescOut {
     imports: HashSet<String>,
     position_component: String,
     position_type: String,
-    fields: HashMap<String, SpatialHashFieldDescOut>,
+    components: HashMap<String, SpatialHashComponentDescOut>,
 }
+
 #[derive(Debug, Serialize)]
-struct SpatialHashFieldDescOut {
-    component: String,
-    aggregate: String,
-    aggregate_type: String,
-    aggregate_cons: String,
+struct SpatialHashComponentDescOut {
     name: String,
     #[serde(rename = "type", default = "ret_none")]
     type_name: Option<String>,
-    count: bool,
-    f64_total: bool,
-    set: bool,
+    fields: HashMap<String, SpatialHashFieldDescOut>,
+}
+
+#[derive(Debug, Serialize)]
+struct SpatialHashFieldDescOut {
+    aggregate_name: String,
+    aggregate_type: String,
+    aggregate_cons: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -127,7 +129,7 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
     let SpatialHashDesc { imports, position_component, fields } = desc;
     let EntityStoreDesc { components, .. } = type_desc;
 
-    let mut fields_out = HashMap::new();
+    let mut components_out = HashMap::new();
 
     for (field_name, field) in fields.iter() {
         let component_desc = components.get(&field.component).expect(&format!("No such component: {}", field_name));
@@ -139,18 +141,19 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
             other => panic!("No such aggregate: {}", other),
         };
 
-        let field_out = SpatialHashFieldDescOut {
-            component: field.component.clone(),
-            aggregate: field.aggregate.clone(),
-            aggregate_type: aggregate_type.to_string(),
-            aggregate_cons: aggregate_cons.to_string(),
+        let mut component = components_out.entry(field.component.clone()).or_insert_with(|| SpatialHashComponentDescOut {
             name: component_desc.name.clone(),
             type_name: component_desc.type_name.clone(),
-            count: field.aggregate == "count",
-            f64_total: field.aggregate == "f64_total",
-            set: field.aggregate == "set",
+            fields: HashMap::new(),
+        });
+
+        let field_out = SpatialHashFieldDescOut {
+            aggregate_name: field_name.clone(),
+            aggregate_type: aggregate_type.to_string(),
+            aggregate_cons: aggregate_cons.to_string(),
         };
-        fields_out.insert(field_name.clone(), field_out);
+
+        component.fields.insert(field.aggregate.clone(), field_out);
     }
 
     let desc_out = SpatialHashDescOut {
@@ -159,7 +162,7 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
         position_type: components.get(&position_component)
             .expect(&format!("No such component: {}", &position_component))
             .type_name.clone().expect("Position component must have associated data"),
-        fields: fields_out,
+        components: components_out,
     };
 
     make_handlebars().template_render(template.as_ref(), &desc_out)

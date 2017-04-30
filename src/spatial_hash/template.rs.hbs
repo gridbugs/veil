@@ -23,8 +23,10 @@ macro_rules! position {
 macro_rules! spatial_hash_cell_decl {
     ($SpatialHashCell:ident) => {
         pub struct $SpatialHashCell {
-{{#each fields}}
-            pub {{@key}}: {{aggregate_type}},
+{{#each components}}
+    {{#each fields}}
+            pub {{aggregate_name}}: {{aggregate_type}},
+    {{/each}}
 {{/each}}
             pub entities: HashSet<EntityId>,
             pub last_updated: u64,
@@ -36,8 +38,10 @@ macro_rules! spatial_hash_cell_decl {
 macro_rules! spatial_hash_cell_cons {
     ($SpatialHashCell:ident) => {
         $SpatialHashCell {
-{{#each fields}}
-            {{@key}}: {{aggregate_cons}},
+{{#each components}}
+    {{#each fields}}
+            {{aggregate_name}}: {{aggregate_cons}},
+    {{/each}}
 {{/each}}
             entities: HashSet::new(),
             last_updated: 0,
@@ -48,21 +52,21 @@ macro_rules! spatial_hash_cell_cons {
 macro_rules! remove_implicit {
     ($self:expr, $entity_id:expr, $store:expr, $change:expr) => {
 
-{{#each fields}}
+{{#each components}}
         if !$change.removals.contains($entity_id, ComponentType::{{name}}) {
-    {{#if f64_total}}
-            if let Some(v) = $store.{{component}}.get(&$entity_id) {
-                $self.{{@key}} -= *v;
+    {{#if fields.f64_total}}
+            if let Some(v) = $store.{{@key}}.get(&$entity_id) {
+                $self.{{fields.f64_total.aggregate_name}} -= *v;
             }
     {{/if}}
-    {{#if count}}
-            if $store.{{component}}.contains(&$entity_id) {
-                $self.{{@key}} -= 1;
+    {{#if fields.count}}
+            if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                $self.{{fields.count.aggregate_name}} -= 1;
             }
     {{/if}}
-    {{#if set}}
-            if $store.{{component}}.contains(&$entity_id) {
-                $self.{{@key}}.remove(&$entity_id);
+    {{#if fields.set}}
+            if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                $self.{{fields.set.aggregate_name}}.remove(&$entity_id);
             }
     {{/if}}
         }
@@ -72,22 +76,21 @@ macro_rules! remove_implicit {
 
 macro_rules! insert_implicit {
     ($self:expr, $entity_id:expr, $store:expr, $change:expr) => {
-
-{{#each fields}}
+{{#each components}}
         if !$change.removals.contains($entity_id, ComponentType::{{name}}) {
-    {{#if f64_total}}
-            if let Some(v) = $store.{{component}}.get(&$entity_id) {
-                $self.{{@key}} += *v;
+    {{#if fields.f64_total}}
+            if let Some(v) = $store.{{@key}}.get(&$entity_id) {
+                $self.{{fields.f64_total.aggregate_name}} += *v;
             }
     {{/if}}
-    {{#if count}}
-            if $store.{{component}}.contains(&$entity_id) {
-                $self.{{@key}} += 1;
+    {{#if fields.count}}
+            if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                $self.{{fields.count.aggregate_name}} += 1;
             }
     {{/if}}
-    {{#if set}}
-            if $store.{{component}}.contains(&$entity_id) {
-                $self.{{@key}}.insert($entity_id);
+    {{#if fields.set}}
+            if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                $self.{{fields.set.aggregate_name}}.insert($entity_id);
             }
     {{/if}}
         }
@@ -101,21 +104,21 @@ macro_rules! update_match_stmt {
             ComponentType::Position => {
                 $cell.remove_implicit($entity_id, $store, $change);
             }
-{{#each fields}}
+{{#each components}}
             ComponentType::{{name}} => {
-    {{#if f64_total}}
-                if let Some(v) = $store.{{component}}.get(&$entity_id) {
-                    $cell.{{@key}} -= *v;
+    {{#if fields.f64_total}}
+                if let Some(v) = $store.{{@key}}.get(&$entity_id) {
+                    $cell.{{fields.f64_total.aggregate_name}} -= *v;
                 }
     {{/if}}
-    {{#if count}}
-                if $store.{{component}}.contains(&$entity_id) {
-                    $cell.{{@key}} -= 1;
+    {{#if fields.count}}
+                if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                    $cell.{{fields.count.aggregate_name}} -= 1;
                 }
     {{/if}}
-    {{#if set}}
-                if $store.{{component}}.contains(&$entity_id) {
-                    $cell.{{@key}}.remove(&$entity_id);
+    {{#if fields.set}}
+                if $store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&$entity_id) {
+                    $cell.{{fields.set.aggregate_name}}.remove(&$entity_id);
                 }
     {{/if}}
             }
@@ -130,39 +133,39 @@ macro_rules! update_match_stmt {
 
 macro_rules! update_component_loops {
     ($self:expr, $store:expr, $change:expr, $time:expr) => {
-{{#each fields}}
+{{#each components}}
     {{#if type}}
-        for (entity_id, new) in $change.insertions.{{component}}.iter() {
+        for (entity_id, new) in $change.insertions.{{@key}}.iter() {
     {{else}}
-        for entity_id in $change.insertions.{{component}}.iter() {
+        for entity_id in $change.insertions.{{@key}}.iter() {
     {{/if}}
 
             if let Some(position) = post_change_get!($store, $change, *entity_id, position) {
 
-    {{#if f64_total}}
+    {{#if fields.f64_total}}
                 let old = if $change.removals.contains(*entity_id, ComponentType::{{name}}) {
                     0.0
                 } else {
-                    $store.{{component}}.get(entity_id).map(Clone::clone).unwrap_or(0.0)
+                    $store.{{@key}}.get(entity_id).map(Clone::clone).unwrap_or(0.0)
                 };
                 let increase = new - old;
                 if let Some(mut cell) = $self.grid.get_mut(*position) {
-                    cell.{{@key}} += increase;
+                    cell.{{fields.f64_total.aggregate_name}} += increase;
                     cell.last_updated = $time;
                 }
     {{/if}}
-    {{#if count}}
-                if !$store.{{component}}.contains(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
+    {{#if fields.count}}
+                if !$store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
                     if let Some(mut cell) = $self.grid.get_mut(*position) {
-                        cell.{{@key}} += 1;
+                        cell.{{fields.count.aggregate_name}} += 1;
                         cell.last_updated = $time;
                     }
                 }
     {{/if}}
-    {{#if set}}
-                if !$store.{{component}}.contains(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
+    {{#if fields.set}}
+                if !$store.{{@key}}.{{#if type}}contains_key{{else}}contains{{/if}}(&entity_id) || $change.removals.contains(*entity_id, ComponentType::{{name}}) {
                     if let Some(mut cell) = $self.grid.get_mut(*position) {
-                        cell.{{@key}}.insert(*entity_id);
+                        cell.{{fields.set.aggregate_name}}.insert(*entity_id);
                         cell.last_updated = $time;
                     }
                 }

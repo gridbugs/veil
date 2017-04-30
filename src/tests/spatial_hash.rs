@@ -97,6 +97,7 @@ fn insert_and_remove() {
     env.change.insertions.opacity.insert(e0, 0.5);
     env.change.insertions.solid.insert(e0);
     env.commit();
+    assert_eq!((env.spatial_hash.get(Vector2::new(0, 0)).unwrap().opacity_total * 10.0).round(), 5.0);
 
     env.change.insertions.opacity.insert(e0, 0.3);
     env.change.removals.insert(e0, ComponentType::Opacity);

@@ -8,3 +8,5 @@ position_component = 'position'
 opacity_total = { component = 'opacity', aggregate = 'f64_total' }
 solid_count = { component = 'solid', aggregate = 'count' }
 enemy_set = { component = 'enemy', aggregate = 'set' }
+opacity_count = { component = 'opacity', aggregate = 'count' }
+opacity_set = { component = 'opacity', aggregate = 'set' }
