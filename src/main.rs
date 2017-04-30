@@ -5,7 +5,11 @@ extern crate cgmath;
 extern crate serde;
 #[macro_use] extern crate enum_primitive;
 
+mod grid;
 #[macro_use] mod entity_store;
+mod spatial_hash;
+
+mod tests;
 
 use entity_store::{EntityStore, EntityStoreChange, ComponentType, EntityId};
 
