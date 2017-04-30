@@ -105,7 +105,7 @@ impl EntityComponentSet {
     pub fn remove(&mut self, entity: EntityId, component: ComponentType) -> bool {
         self.set.remove(&EntityComponentCombination::new(entity, component))
     }
-    pub fn contains(&mut self, entity: EntityId, component: ComponentType) -> bool {
+    pub fn contains(&self, entity: EntityId, component: ComponentType) -> bool {
         self.set.contains(&EntityComponentCombination::new(entity, component))
     }
     pub fn insert_all(&mut self, entity: EntityId, store: &EntityStore) {
