@@ -1,0 +1,25 @@
+tile_width = 16
+tile_height = 16
+
+[overlays]
+Blank = [0, 4]
+Death = [1, 4]
+PostEldrich = [1, 4]
+Eldrich = [2, 4]
+PreEldrich = [3, 4]
+
+[tiles.StoneFloor]
+0 = [0, 0]
+1 = [1, 0]
+
+[tiles.WallFront]
+1 = [0, 1]
+
+[tiles.WallTop]
+1 = [1, 1]
+
+[tiles.Player]
+1 = [0, 2]
+
+[tiles.Rain]
+2 = [0, 3]
