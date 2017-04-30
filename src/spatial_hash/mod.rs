@@ -4,10 +4,11 @@ use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, ComponentType};
 use grid::{StaticGridIdx, StaticGrid};
 
-imports!{}
+#[macro_use] mod generated_component_list_macros;
+
+spatial_hash_imports!{}
 
 mod coord;
-#[macro_use] mod generated_component_list_macros;
 
 type Position = position_type!();
 

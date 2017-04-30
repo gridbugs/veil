@@ -6,7 +6,7 @@ use enum_primitive::FromPrimitive;
 #[macro_use] mod generated_component_list_macros;
 #[macro_use] pub mod post_change;
 
-imports!{}
+entity_store_imports!{}
 
 const NUM_COMPONENTS: usize = num_components!();
 const COMPONENT_BITS: usize = component_bits!();
