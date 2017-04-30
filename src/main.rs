@@ -28,7 +28,6 @@ fn main() {
 
     println!("{:?}", entity_store);
 
-    change.swaps.swap(e0, e1, ComponentType::Position);
     entity_store.commit(&mut change);
 
     println!("{:?}", entity_store);
