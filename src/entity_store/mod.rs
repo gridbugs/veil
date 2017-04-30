@@ -116,6 +116,11 @@ impl EntityComponentSet {
     }
 }
 
+pub struct EntityComponentSetIter<'a>(hash_set::Iter<'a, EntityComponentCombination>);
+impl<'a> Iterator for EntityComponentSetIter<'a> {
+    type Item = (EntityId, ComponentType);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next().map(|combo| (combo.entity(), combo.component()))
     }
 }
 
