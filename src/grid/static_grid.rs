@@ -10,6 +10,24 @@ pub trait StaticGridIdx: Copy {
     fn is_valid(self, width: usize) -> bool;
 }
 
+impl StaticGridIdx for (usize, usize) {
+    fn wrap_to_index(self, width: usize) -> usize {
+        self.1 * width + self.0
+    }
+    fn is_valid(self, width: usize) -> bool {
+        self.0 < width
+    }
+}
+
+impl StaticGridIdx for (isize, isize) {
+    fn wrap_to_index(self, width: usize) -> usize {
+        (self.1 as usize) * width + (self.0 as usize)
+    }
+    fn is_valid(self, width: usize) -> bool {
+        self.0 >= 0 && self.1 >= 0 && (self.0 as usize) < width
+    }
+}
+
 impl<T> StaticGrid<T> {
     fn new_with_capacity(width: usize, height: usize) -> Self {
         let size = width * height;
