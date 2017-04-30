@@ -84,6 +84,28 @@ macro_rules! remove_component {
     }
 }
 
+macro_rules! remove_component_into {
+    ($self:ident, $entity:ident, $component_type:ident, $dest:expr) => {
+        {
+            match $component_type {
+{{#each components}}
+                ComponentType::{{name}} => {
+    {{#if type}}
+                    if let Some(v) = $self.{{@key}}.remove(&$entity) {
+                        $dest.{{@key}}.insert($entity, v);
+                    }
+    {{else}}
+                    if $self.{{@key}}.remove(&$entity) {
+                        $dest.{{@key}}.insert($entity);
+                    }
+    {{/if}}
+                }
+{{/each}}
+            }
+        }
+    }
+}
+
 macro_rules! insert_all {
     ($self:ident, $entity:ident, $store:ident) => {
         {

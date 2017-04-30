@@ -38,6 +38,21 @@ impl EntityStore {
 
         self.commit_insertions(&mut change.insertions);
     }
+
+    fn remove_component_into(&mut self, entity: EntityId, component_type: ComponentType, dest: &mut EntityStore) {
+        remove_component_into!(self, entity, component_type, dest);
+    }
+
+    pub fn commit_into(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStore) {
+        for (entity, component_type) in
+            change.removals.set.drain()
+                .map(|x| (x.entity(), x.component()))
+        {
+            self.remove_component_into(entity, component_type, dest);
+        }
+
+        self.commit_insertions(&mut change.insertions);
+    }
 }
 
 fn merge_hash_maps<K: Hash + Eq, V>(a: &mut HashMap<K, V>, b: &mut HashMap<K, V>) {
