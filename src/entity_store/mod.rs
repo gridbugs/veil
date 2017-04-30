@@ -25,7 +25,7 @@ impl EntityStore {
     }
 
     fn remove_component(&mut self, entity: EntityId, component_type: ComponentType) {
-        remove_component!(self, entity, component_type, ComponentType);
+        remove_component!(self, entity, component_type);
     }
 
     pub fn commit(&mut self, change: &mut EntityStoreChange) {

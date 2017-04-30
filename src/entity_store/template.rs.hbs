@@ -73,11 +73,11 @@ macro_rules! commit_insertions {
 }
 
 macro_rules! remove_component {
-    ($self:ident, $entity:ident, $component_type:ident, $ComponentType:ident) => {
+    ($self:ident, $entity:ident, $component_type:ident) => {
         {
             match $component_type {
 {{#each components}}
-                $ComponentType::{{name}} => { $self.{{@key}}.remove(&$entity); },
+                ComponentType::{{name}} => { $self.{{@key}}.remove(&$entity); }
 {{/each}}
             }
         }
