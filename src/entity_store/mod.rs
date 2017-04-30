@@ -4,6 +4,7 @@ use std::hash::Hash;
 use enum_primitive::FromPrimitive;
 
 #[macro_use] mod generated_component_list_macros;
+#[macro_use] pub mod post_change;
 
 imports!{}
 
@@ -70,6 +71,7 @@ impl EntityId {
 impl ComponentType {
     fn index(self) -> u64 { self as u64 }
     fn shifted_index(self) -> u64 { self.index() << ENTITY_ID_BITS }
+    component_type_cons_methods!{}
 }
 
 #[derive(Serialize, Deserialize)]

@@ -5,7 +5,7 @@ extern crate cgmath;
 extern crate serde;
 #[macro_use] extern crate enum_primitive;
 
-mod entity_store;
+#[macro_use] mod entity_store;
 
 use entity_store::{EntityStore, EntityStoreChange, ComponentType, EntityId};
 
