@@ -129,6 +129,9 @@ impl EntityComponentSet {
     pub fn iter(&self) -> EntityComponentSetIter {
         EntityComponentSetIter(self.set.iter())
     }
+    pub fn clear(&mut self) {
+        self.set.clear();
+    }
 }
 
 pub struct EntityComponentSetIter<'a>(hash_set::Iter<'a, EntityComponentCombination>);
