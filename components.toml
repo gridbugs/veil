@@ -5,3 +5,5 @@ imports = [
 [components]
 position = { name = 'Position', type = 'Vector2<i32>' }
 solid = { name = 'Solid' }
+opacity = { name = 'Opacity', type = 'f64' }
+enemy = { name = 'Enemy' }
