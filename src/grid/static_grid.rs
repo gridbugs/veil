@@ -94,11 +94,11 @@ impl<T> StaticGrid<T> {
         self.items.get_mut(wrapped_idx)
     }
 
-    unsafe fn get_unchecked<I: StaticGridIdx>(&self, idx: I) -> &T {
+    pub unsafe fn get_unchecked<I: StaticGridIdx>(&self, idx: I) -> &T {
         self.items.get_unchecked(self.wrap_to_index(idx))
     }
 
-    unsafe fn get_unchecked_mut<I: StaticGridIdx>(&mut self, idx: I) -> &mut T {
+    pub unsafe fn get_unchecked_mut<I: StaticGridIdx>(&mut self, idx: I) -> &mut T {
         let wrapped_idx = self.wrap_to_index(idx);
         self.items.get_unchecked_mut(wrapped_idx)
     }
