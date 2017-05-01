@@ -31,7 +31,7 @@ macro_rules! component_type_decl {
 
 macro_rules! entity_store_decl {
     ($EntityStore:ident) => {
-        #[derive(Serialize, Deserialize, Debug)]
+        #[derive(Debug, Clone, Serialize, Deserialize)]
         pub struct $EntityStore {
 {{#each components}}
     {{#if type}}

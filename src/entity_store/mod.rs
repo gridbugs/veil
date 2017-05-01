@@ -96,12 +96,12 @@ impl ComponentType {
     component_type_cons_methods!{}
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntityComponentSet {
     set: HashSet<EntityComponentCombination>,
 }
 
-#[derive(Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 struct EntityComponentCombination(u64);
 impl EntityComponentCombination {
     fn new(entity: EntityId, component: ComponentType) -> Self {
@@ -149,6 +149,7 @@ impl<'a> Iterator for EntityComponentSetIter<'a> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct EntityStoreChange {
     pub insertions: EntityStore,
     pub removals: EntityComponentSet,
