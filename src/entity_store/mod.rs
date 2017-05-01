@@ -5,6 +5,7 @@ use enum_primitive::FromPrimitive;
 
 #[macro_use] mod generated_component_list_macros;
 #[macro_use] pub mod post_change;
+#[macro_use] pub mod migration;
 
 entity_store_imports!{}
 
