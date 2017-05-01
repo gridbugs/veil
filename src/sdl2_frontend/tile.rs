@@ -7,14 +7,20 @@ use toml;
 pub const NUM_TILE_CHANNELS: usize = 3;
 
 #[derive(Clone, Debug)]
+pub struct Channel {
+    pub id: usize,
+    pub sprite: Rect,
+}
+
+#[derive(Clone, Debug)]
 pub struct Tile {
-    pub channels: [Option<Rect>; NUM_TILE_CHANNELS],
+    pub channels: Vec<Channel>,
 }
 
 impl Tile {
     fn new() -> Self {
         Tile {
-            channels: [None; NUM_TILE_CHANNELS],
+            channels: Vec::new(),
         }
     }
 }
@@ -66,7 +72,10 @@ impl TileResolver {
                 let mut tile = Tile::new();
                 for j in 0..NUM_TILE_CHANNELS {
                     if let Some(coord) = channels.get(&format!("{}", j)) {
-                        tile.channels[j] = Some(tile_desc.rect(coord[0], coord[1]));
+                        tile.channels.push(Channel {
+                            id: j,
+                            sprite: tile_desc.rect(coord[0], coord[1]),
+                        });
                     }
                 }
                 resolver.tiles.push(tile);
