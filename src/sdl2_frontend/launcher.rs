@@ -50,7 +50,7 @@ pub fn launch() {
     }
 
     spatial_hash.update(&entity_store, &change, 0);
-    entity_store.commit(&mut change);
+    entity_store.commit_change(&mut change);
 
     println!("{:?}", tile_resolver);
 }

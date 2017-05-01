@@ -20,7 +20,7 @@ impl EntityStore {
         entity_store_cons!(EntityStore)
     }
 
-    fn commit_insertions(&mut self, insertions: &mut EntityStore) {
+    pub fn commit_insertions(&mut self, insertions: &mut EntityStore) {
         commit_insertions!(self, insertions)
     }
 
@@ -28,14 +28,17 @@ impl EntityStore {
         remove_component!(self, entity, component_type);
     }
 
-    pub fn commit(&mut self, change: &mut EntityStoreChange) {
+    pub fn commit_removals(&mut self, removals: &mut EntityComponentSet) {
         for (entity, component_type) in
-            change.removals.set.drain()
+            removals.set.drain()
                 .map(|x| (x.entity(), x.component()))
         {
             self.remove_component(entity, component_type);
         }
+    }
 
+    pub fn commit_change(&mut self, change: &mut EntityStoreChange) {
+        self.commit_removals(&mut change.removals);
         self.commit_insertions(&mut change.insertions);
     }
 
@@ -43,14 +46,17 @@ impl EntityStore {
         remove_component_into!(self, entity, component_type, dest);
     }
 
-    pub fn commit_into(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStore) {
+    pub fn commit_removals_into(&mut self, removals: &mut EntityComponentSet, dest: &mut EntityStore) {
         for (entity, component_type) in
-            change.removals.set.drain()
+            removals.set.drain()
                 .map(|x| (x.entity(), x.component()))
         {
             self.remove_component_into(entity, component_type, dest);
         }
+    }
 
+    pub fn commit_change_into(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStore) {
+        self.commit_removals_into(&mut change.removals, dest);
         self.commit_insertions(&mut change.insertions);
     }
 }

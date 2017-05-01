@@ -24,7 +24,7 @@ impl Env {
 
     fn commit(&mut self) {
         self.spatial_hash.update(&self.entity_store, &self.change, self.time);
-        self.entity_store.commit(&mut self.change);
+        self.entity_store.commit_change(&mut self.change);
         self.time += 1;
     }
 }
