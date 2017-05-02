@@ -1,7 +1,7 @@
+use sdl2;
+use sdl2::image::INIT_PNG;
 use cgmath::Vector2;
-use simple_file;
-use sdl2_frontend::tile::*;
-use sdl2_frontend::tile_buffer::*;
+use sdl2_frontend::renderer::*;
 use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
@@ -25,10 +25,6 @@ pub fn launch() {
         "#..........#",
         "############",
     ];
-
-    let tile_desc_str = simple_file::read_string("resources/tiles.toml")
-        .expect("Failed to open tile description");
-    let tile_resolver = TileResolver::from_str(&tile_desc_str);
 
     let mut entity_store = EntityStore::new();
     let mut change = EntityStoreChange::new();
@@ -74,11 +70,9 @@ pub fn launch() {
         time,
         &mut knowledge);
 
-    let mut buffer = TileBuffer::new(SCREEN_WIDTH, SCREEN_HEIGHT);
-    buffer.update(&knowledge, &tile_resolver, time, *entity_store.position.get(&pc).unwrap());
+    let sdl = sdl2::init().expect("SDL2 initialization failed");
+    let video = sdl.video().expect("Failed to connect to video subsystem");
+    sdl2::image::init(INIT_PNG).expect("Failed to connect to image subsystem");
 
-    println!("{:?}", pc);
-    println!("{:?}", tile_resolver);
-    println!("{:?}", knowledge);
-    println!("{:?}", buffer);
+    GameRenderer::new(SCREEN_WIDTH, SCREEN_HEIGHT, &video, "resources/tiles.png", "resources/tiles.toml");
 }
