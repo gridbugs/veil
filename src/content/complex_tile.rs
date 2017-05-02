@@ -1,6 +1,6 @@
 use content::TileType;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ComplexTile {
     Wall {
         front: TileType,
