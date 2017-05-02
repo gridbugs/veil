@@ -1,3 +1,5 @@
+use std::slice;
+
 pub struct StaticGrid<T> {
     items: Vec<T>,
     width: usize,
@@ -101,5 +103,54 @@ impl<T> StaticGrid<T> {
     pub unsafe fn get_unchecked_mut<I: StaticGridIdx>(&mut self, idx: I) -> &mut T {
         let wrapped_idx = self.wrap_to_index(idx);
         self.items.get_unchecked_mut(wrapped_idx)
+    }
+
+    pub fn iter(&self) -> Iter<T> {
+        self.items.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        self.items.iter_mut()
+    }
+
+    pub fn coord_iter(&self) -> CoordIter {
+        CoordIter::new(self.width, self.height)
+    }
+}
+
+pub type Iter<'a, T> = slice::Iter<'a, T>;
+pub type IterMut<'a, T> = slice::IterMut<'a, T>;
+pub struct CoordIter {
+    width: usize,
+    height: usize,
+    x: usize,
+    y: usize,
+}
+
+impl CoordIter {
+    pub fn new(width: usize, height: usize) -> Self {
+        CoordIter {
+            width: width,
+            height: height,
+            x: 0,
+            y: 0,
+        }
+    }
+}
+
+impl Iterator for CoordIter {
+    type Item = (usize, usize);
+    fn next(&mut self) -> Option<Self::Item> {
+        let ret = (self.x, self.y);
+        self.x += 1;
+        if self.x == self.width {
+            self.x = 0;
+            self.y += 1;
+            if self.y == self.height {
+                return None;
+            }
+        }
+
+        Some(ret)
     }
 }
