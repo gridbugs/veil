@@ -9,3 +9,4 @@ opacity_total = { component = 'opacity', aggregate = 'f64_total' }
 solid_count = { component = 'solid', aggregate = 'count' }
 enemy_set = { component = 'enemy', aggregate = 'set' }
 floor_set = { component = 'floor', aggregate = 'set' }
+tile_set = { component = 'tile_priority', aggregate = 'set' }
