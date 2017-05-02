@@ -1,5 +1,6 @@
 use std::slice;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StaticGrid<T> {
     items: Vec<T>,
     width: usize,

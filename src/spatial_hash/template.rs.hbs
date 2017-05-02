@@ -22,6 +22,7 @@ macro_rules! position {
 
 macro_rules! spatial_hash_cell_decl {
     ($SpatialHashCell:ident) => {
+        #[derive(Serialize, Deserialize)]
         pub struct $SpatialHashCell {
 {{#each components}}
     {{#each fields}}

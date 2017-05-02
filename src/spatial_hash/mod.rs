@@ -32,6 +32,7 @@ impl SpatialHashCell {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct SpatialHashTable {
     grid: StaticGrid<SpatialHashCell>,
 }

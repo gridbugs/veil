@@ -3,17 +3,20 @@ use spatial_hash::SpatialHashCell;
 use grid::{StaticGrid, StaticGridIdx};
 use content::{ComplexTile, OverlayType};
 
+#[derive(Debug)]
 pub struct PlayerKnowledgeTile {
     pub priority: u8,
     pub tile: ComplexTile,
 }
 
+#[derive(Debug)]
 pub struct PlayerKnowledgeCell {
     pub last_updated: u64,
     pub tiles: Vec<PlayerKnowledgeTile>,
     pub overlay: Option<OverlayType>,
 }
 
+#[derive(Debug)]
 pub struct PlayerKnowledgeGrid {
     last_updated: u64,
     grid: StaticGrid<PlayerKnowledgeCell>,
