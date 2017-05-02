@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![feature(inclusive_range_syntax)]
 
 extern crate cgmath;
 #[macro_use] extern crate serde_derive;
