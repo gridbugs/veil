@@ -1,10 +1,10 @@
+use cgmath::Vector2;
 use simple_file;
 use sdl2_frontend::tile::*;
 use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
 use entity_id_allocator::*;
-use cgmath::Vector2;
 
 pub fn launch() {
 
