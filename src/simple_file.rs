@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 
 use serde::ser::Serialize;
+use serde::de::DeserializeOwned;
 use toml;
 
 #[derive(Debug, Clone, Copy)]
@@ -22,6 +23,12 @@ pub fn read_string<P: AsRef<path::Path>>(path: P) -> FileResult<String> {
     file.read_to_string(&mut string).map_err(|_| FileError::InvalidFile)?;
 
     Ok(string)
+}
+
+pub fn read_toml<P: AsRef<path::Path>, T: DeserializeOwned>(path: P) -> FileResult<T> {
+    read_string(path).and_then(|s| {
+        toml::from_str(s.as_ref()).map_err(|_| FileError::InvalidFormat)
+    })
 }
 
 pub fn write_string<P: AsRef<path::Path>, S: AsRef<str>>(path: P, string: S) -> FileResult<()> {
