@@ -11,4 +11,4 @@ solid = { name = 'Solid' }
 opacity = { name = 'Opacity', type = 'f64' }
 enemy = { name = 'Enemy' }
 tile = { name = 'Tile', type = 'ComplexTile' }
-tile_priority = { name = 'TilePriority', type = 'usize' }
+tile_priority = { name = 'TilePriority', type = 'u8' }
