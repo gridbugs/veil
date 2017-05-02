@@ -5,6 +5,7 @@ extern crate cgmath;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
 #[macro_use] extern crate enum_primitive;
+#[macro_use] extern crate itertools;
 
 extern crate rand;
 extern crate sdl2;
@@ -19,6 +20,7 @@ mod sdl2_frontend;
 mod simple_file;
 mod entity_id_allocator;
 mod knowledge;
+mod observation;
 
 mod tests;
 

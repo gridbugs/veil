@@ -8,3 +8,12 @@ pub enum ComplexTile {
     },
     Simple(TileType),
 }
+
+impl ComplexTile {
+    pub fn is_wall(&self) -> bool {
+        match self {
+            &ComplexTile::Wall { .. } => true,
+            _ => false,
+        }
+    }
+}

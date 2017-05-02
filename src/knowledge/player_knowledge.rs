@@ -14,6 +14,7 @@ pub struct PlayerKnowledgeCell {
     pub last_updated: u64,
     pub tiles: Vec<PlayerKnowledgeTile>,
     pub overlay: Option<OverlayType>,
+    pub wall: bool,
 }
 
 #[derive(Debug)]
@@ -28,6 +29,7 @@ impl Default for PlayerKnowledgeCell {
             last_updated: 0,
             tiles: Vec::new(),
             overlay: None,
+            wall: false,
         }
     }
 }
@@ -39,6 +41,7 @@ impl PlayerKnowledgeCell {
 
         if self.last_updated < spatial_hash_cell.last_updated {
             self.tiles.clear();
+            self.wall = false;
             for entity_id in spatial_hash_cell.tile_set.iter() {
                 if let Some(tile) = entity_store.tile.get(entity_id) {
                     if let Some(priority) = entity_store.tile_priority.get(entity_id) {
@@ -46,6 +49,9 @@ impl PlayerKnowledgeCell {
                             tile: *tile,
                             priority: *priority,
                         });
+                        if tile.is_wall() {
+                            self.wall = true;
+                        }
                     }
                 }
             }
@@ -65,6 +71,10 @@ impl PlayerKnowledgeGrid {
             last_updated: 0,
             grid: StaticGrid::new_default(width, height),
         }
+    }
+
+    pub fn get<I: StaticGridIdx>(&self, coord: I) -> Option<&PlayerKnowledgeCell> {
+        self.grid.get(coord)
     }
 
     pub fn update_cell<I: StaticGridIdx>(&mut self, coord: I, spatial_hash_cell: &SpatialHashCell,
