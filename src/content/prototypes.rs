@@ -21,4 +21,5 @@ pub fn wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
     change.insertions.solid.insert(entity_id);
     change.insertions.opacity.insert(entity_id, 1.0);
     change.insertions.tile.insert(entity_id, ComplexTile::Wall { front: TileType::WallFront, top: TileType::WallTop });
+    change.insertions.tile_priority.insert(entity_id, 2);
 }
