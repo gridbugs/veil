@@ -17,6 +17,7 @@ mod content;
 mod sdl2_frontend;
 mod simple_file;
 mod entity_id_allocator;
+mod knowledge;
 
 mod tests;
 
