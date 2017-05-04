@@ -127,3 +127,52 @@ macro_rules! component_type_cons_methods {
 {{/each}}
     }
 }
+
+macro_rules! entity_store_change_decl {
+    ($EntityStoreChange:ident) => {
+        #[derive(Debug, Clone)]
+        pub struct $EntityStoreChange {
+{{#each components}}
+    {{#if type}}
+            pub {{@key}}: HashMap<EntityId, DataChangeType<{{type}}>>,
+    {{else}}
+            pub {{@key}}: HashMap<EntityId, FlagChangeType>,
+    {{/if}}
+{{/each}}
+        }
+    }
+}
+
+macro_rules! entity_store_change_cons {
+    ($EntityStoreChange:ident) => {
+        $EntityStoreChange {
+{{#each components}}
+            {{@key}}: HashMap::new(),
+{{/each}}
+        }
+    }
+}
+
+macro_rules! commit_change {
+    ($self:ident, $source:ident) => {
+        {
+{{#each components}}
+    {{#if type}}
+    for (id, change) in $source.{{@key}}.drain() {
+        match change {
+            DataChangeType::Insert(v) => { $self.{{@key}}.insert(id, v); }
+            DataChangeType::Remove => { $self.{{@key}}.remove(&id); }
+        }
+    }
+    {{else}}
+    for (id, change) in $source.{{@key}}.drain() {
+        match change {
+            FlagChangeType::Insert => { $self.{{@key}}.insert(id); }
+            FlagChangeType::Remove => { $self.{{@key}}.remove(&id); }
+        }
+    }
+    {{/if}}
+{{/each}}
+        }
+    }
+}

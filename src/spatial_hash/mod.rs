@@ -1,7 +1,7 @@
 #![allow(unreachable_patterns)]
 #![allow(unused_variables)]
 use std::collections::HashSet;
-use entity_store::{EntityId, EntityStore, EntityStoreChange, ComponentType};
+use entity_store::{EntityId, EntityStore, EntityStoreChange, ComponentType, EntityStoreChange_, DataChangeType, FlagChangeType};
 use grid::{StaticGridIdx, StaticGrid};
 
 #[macro_use] mod generated_component_list_macros;
@@ -29,6 +29,14 @@ impl SpatialHashCell {
     fn insert_implicit(&mut self, entity_id: EntityId, store: &EntityStore, change: &EntityStoreChange) {
         insert_implicit!(self, entity_id, store, change);
         self.entities.insert(entity_id);
+    }
+
+    fn remove(&mut self, entity_id: EntityId, store: &EntityStore) {
+
+    }
+
+    fn insert(&mut self, entity_id: EntityId, store: &EntityStore) {
+
     }
 }
 
@@ -85,5 +93,34 @@ impl SpatialHashTable {
         // values.
 
         update_component_loops!(self, store, change, time);
+    }
+
+    pub fn update_(&mut self, store: &EntityStore, change: &EntityStoreChange_, time: u64) {
+        for (entity_id, change) in position!(change).iter() {
+            match change {
+                &DataChangeType::Insert(position) => {
+                    if let Some(current) = position!(store).get(entity_id) {
+                        if let Some(mut cell) = self.grid.get_mut(*current) {
+                            cell.remove(*entity_id, store);
+                            cell.last_updated = time;
+                        }
+                    }
+                    if let Some(mut cell) = self.grid.get_mut(position) {
+                        cell.insert(*entity_id, store);
+                        cell.last_updated = time;
+                    }
+                }
+                &DataChangeType::Remove => {
+                    if let Some(current) = position!(store).get(entity_id) {
+                        if let Some(mut cell) = self.grid.get_mut(*current) {
+                            cell.remove(*entity_id, store);
+                            cell.last_updated = time;
+                        }
+                    }
+                }
+            }
+        }
+
+        update_component_loops_!(self, store, change, time);
     }
 }

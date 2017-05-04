@@ -176,3 +176,35 @@ macro_rules! update_component_loops {
 {{/each}}
     }
 }
+
+macro_rules! update_component_loops_ {
+    ($self:expr, $store:expr, $change:expr, $time:expr) => {
+{{#each components}}
+        for (entity_id, change) in $change.{{@key}}.iter() {
+            match change {
+    {{#if type}}
+                &DataChangeType::Insert(v) => {
+        {{#if fields.f64_total}}
+                    let old = $store.{{@key}}.get(entity_id).map(Clone::clone).unwrap_or(0.0);
+                    let increase = v - old;
+                    if let Some(position) = post_change_get_!($store, $change, *entity_id, position) {
+                        if let Some(mut cell) = $self.grid.get_mut(*position) {
+                            cell.{{fields.f64_total.aggregate_name}} += increase;
+                            cell.last_updated = $time;
+                        }
+                    }
+        {{/if}}
+                }
+                &DataChangeType::Remove => {
+                }
+    {{else}}
+                &FlagChangeType::Insert => {
+                }
+                &FlagChangeType::Remove => {
+                }
+    {{/if}}
+            }
+        }
+{{/each}}
+    }
+}

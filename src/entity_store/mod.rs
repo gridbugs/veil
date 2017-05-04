@@ -21,6 +21,10 @@ impl EntityStore {
         entity_store_cons!(EntityStore)
     }
 
+    pub fn commit_change_(&mut self, change: &mut EntityStoreChange_) {
+        commit_change!(self, change)
+    }
+
     pub fn commit_insertions(&mut self, insertions: &mut EntityStore) {
         commit_insertions!(self, insertions)
     }
@@ -146,6 +150,26 @@ impl<'a> Iterator for EntityComponentSetIter<'a> {
     type Item = (EntityId, ComponentType);
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|combo| (combo.entity(), combo.component()))
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum DataChangeType<T> {
+    Insert(T),
+    Remove,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum FlagChangeType {
+    Insert,
+    Remove,
+}
+
+entity_store_change_decl!{EntityStoreChange_}
+
+impl EntityStoreChange_ {
+    pub fn new() -> Self {
+        entity_store_change_cons!(EntityStoreChange_)
     }
 }
 
