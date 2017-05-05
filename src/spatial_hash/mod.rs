@@ -1,4 +1,3 @@
-#![allow(unreachable_patterns)]
 #![allow(unused_variables)]
 use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, FlagChangeType};
