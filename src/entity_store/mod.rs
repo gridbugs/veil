@@ -1,7 +1,4 @@
-use std::collections::{HashMap, HashSet, hash_set};
-use std::hash::Hash;
-
-use enum_primitive::FromPrimitive;
+use std::collections::{HashMap, HashSet, hash_map};
 
 #[macro_use] mod generated_component_list_macros;
 #[macro_use] pub mod post_change;
@@ -21,60 +18,16 @@ impl EntityStore {
         entity_store_cons!(EntityStore)
     }
 
-    pub fn commit_change_(&mut self, change: &mut EntityStoreChange_) {
+    pub fn commit_change(&mut self, change: &mut EntityStoreChange) {
         commit_change!(self, change)
     }
 
-    pub fn commit_insertions(&mut self, insertions: &mut EntityStore) {
-        commit_insertions!(self, insertions)
+    pub fn commit_change_into_change(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStoreChange) {
+        commit_change_into!(self, change, dest)
     }
 
-    fn remove_component(&mut self, entity: EntityId, component_type: ComponentType) {
-        remove_component!(self, entity, component_type);
-    }
-
-    pub fn commit_removals(&mut self, removals: &mut EntityComponentSet) {
-        for (entity, component_type) in
-            removals.set.drain()
-                .map(|x| (x.entity(), x.component()))
-        {
-            self.remove_component(entity, component_type);
-        }
-    }
-
-    pub fn commit_change(&mut self, change: &mut EntityStoreChange) {
-        self.commit_removals(&mut change.removals);
-        self.commit_insertions(&mut change.insertions);
-    }
-
-    fn remove_component_into(&mut self, entity: EntityId, component_type: ComponentType, dest: &mut EntityStore) {
-        remove_component_into!(self, entity, component_type, dest);
-    }
-
-    pub fn commit_removals_into(&mut self, removals: &mut EntityComponentSet, dest: &mut EntityStore) {
-        for (entity, component_type) in
-            removals.set.drain()
-                .map(|x| (x.entity(), x.component()))
-        {
-            self.remove_component_into(entity, component_type, dest);
-        }
-    }
-
-    pub fn commit_change_into(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStore) {
-        self.commit_removals_into(&mut change.removals, dest);
-        self.commit_insertions(&mut change.insertions);
-    }
-}
-
-fn merge_hash_maps<K: Hash + Eq, V>(a: &mut HashMap<K, V>, b: &mut HashMap<K, V>) {
-    for (k, v) in b.drain() {
-        a.insert(k, v);
-    }
-}
-
-fn merge_hash_sets<T: Hash + Eq>(a: &mut HashSet<T>, b: &mut HashSet<T>) {
-    for x in b.drain() {
-        a.insert(x);
+    pub fn commit_change_into_store(&mut self, change: &mut EntityStoreChange, dest: &mut EntityStore) {
+        commit_change_into!(self, change, dest)
     }
 }
 
@@ -97,60 +50,6 @@ impl EntityId {
 impl ComponentType {
     fn index(self) -> u64 { self as u64 }
     fn shifted_index(self) -> u64 { self.index() << ENTITY_ID_BITS }
-    component_type_cons_methods!{}
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EntityComponentSet {
-    set: HashSet<EntityComponentCombination>,
-}
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-struct EntityComponentCombination(u64);
-impl EntityComponentCombination {
-    fn new(entity: EntityId, component: ComponentType) -> Self {
-        EntityComponentCombination(component.shifted_index() | entity.0)
-    }
-    fn entity(self) -> EntityId {
-        EntityId(self.0 & ENTITY_ID_MASK)
-    }
-    fn component(self) -> ComponentType {
-        ComponentType::from_u64(self.0 >> ENTITY_ID_BITS).expect("invalid component type")
-    }
-}
-
-impl EntityComponentSet {
-    pub fn new() -> Self {
-        EntityComponentSet {
-            set: HashSet::new(),
-        }
-    }
-    pub fn insert(&mut self, entity: EntityId, component: ComponentType) -> bool {
-        self.set.insert(EntityComponentCombination::new(entity, component))
-    }
-    pub fn remove(&mut self, entity: EntityId, component: ComponentType) -> bool {
-        self.set.remove(&EntityComponentCombination::new(entity, component))
-    }
-    pub fn contains(&self, entity: EntityId, component: ComponentType) -> bool {
-        self.set.contains(&EntityComponentCombination::new(entity, component))
-    }
-    pub fn insert_all(&mut self, entity: EntityId, store: &EntityStore) {
-        insert_all!(self, entity, store)
-    }
-    pub fn iter(&self) -> EntityComponentSetIter {
-        EntityComponentSetIter(self.set.iter())
-    }
-    pub fn clear(&mut self) {
-        self.set.clear();
-    }
-}
-
-pub struct EntityComponentSetIter<'a>(hash_set::Iter<'a, EntityComponentCombination>);
-impl<'a> Iterator for EntityComponentSetIter<'a> {
-    type Item = (EntityId, ComponentType);
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().map(|combo| (combo.entity(), combo.component()))
-    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -165,25 +64,44 @@ pub enum FlagChangeType {
     Remove,
 }
 
-entity_store_change_decl!{EntityStoreChange_}
+#[derive(Debug, Clone)]
+pub struct DataComponentChange<T>(HashMap<EntityId, DataChangeType<T>>);
+#[derive(Debug, Clone)]
+pub struct FlagComponentChange(HashMap<EntityId, FlagChangeType>);
 
-impl EntityStoreChange_ {
-    pub fn new() -> Self {
-        entity_store_change_cons!(EntityStoreChange_)
+impl<T> DataComponentChange<T> {
+    pub fn get(&self, id: &EntityId) -> Option<&DataChangeType<T>> {
+        self.0.get(&id)
+    }
+    pub fn iter(&self) -> hash_map::Iter<EntityId, DataChangeType<T>> {
+        self.0.iter()
+    }
+    pub fn insert(&mut self, id: EntityId, value: T) {
+        self.0.insert(id, DataChangeType::Insert(value));
+    }
+    pub fn remove(&mut self, id: EntityId) {
+        self.0.insert(id, DataChangeType::Remove);
+    }
+}
+impl FlagComponentChange {
+    pub fn iter(&self) -> hash_map::Iter<EntityId, FlagChangeType> {
+        self.0.iter()
+    }
+    pub fn insert(&mut self, id: EntityId) {
+        self.0.insert(id, FlagChangeType::Insert);
+    }
+    pub fn remove(&mut self, id: EntityId) {
+        self.0.insert(id, FlagChangeType::Remove);
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct EntityStoreChange {
-    pub insertions: EntityStore,
-    pub removals: EntityComponentSet,
-}
+entity_store_change_decl!{EntityStoreChange}
 
 impl EntityStoreChange {
     pub fn new() -> Self {
-        EntityStoreChange {
-            insertions: EntityStore::new(),
-            removals: EntityComponentSet::new(),
-        }
+        entity_store_change_cons!(EntityStoreChange)
+    }
+    pub fn remove_entity(&mut self, entity: EntityId, store: &EntityStore) {
+        remove_entity!(self, entity, store);
     }
 }

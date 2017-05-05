@@ -1,7 +1,7 @@
 use entity_store::*;
 
 #[test]
-fn commit_into() {
+fn commit_into_store() {
 
     let mut es0 = EntityStore::new();
     let mut es1 = EntityStore::new();
@@ -10,14 +10,14 @@ fn commit_into() {
 
     let e0 = EntityId::new(0);
 
-    change.insertions.solid.insert(e0);
+    change.solid.insert(e0);
     es0.commit_change(&mut change);
 
     assert!(es0.solid.contains(&e0));
     assert!(!es1.solid.contains(&e0));
 
-    change.removals.insert(e0, ComponentType::Solid);
-    es0.commit_change_into(&mut change, &mut es1);
+    change.solid.remove(e0);
+    es0.commit_change_into_store(&mut change, &mut es1);
     assert!(!es0.solid.contains(&e0));
     assert!(es1.solid.contains(&e0));
 }

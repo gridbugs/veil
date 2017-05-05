@@ -20,11 +20,11 @@ macro_rules! component_type_decl {
     ($ComponentType:ident) => {
         enum_from_primitive! {
         #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
-        pub enum $ComponentType {
+            pub enum $ComponentType {
 {{#each components}}
-    {{name}},
+                {{name}},
 {{/each}}
-        }
+            }
         }
     }
 }
@@ -58,73 +58,22 @@ macro_rules! entity_store_cons {
     }
 }
 
-macro_rules! commit_insertions {
-    ($self:ident, $source:ident) => {
+macro_rules! remove_entity {
+    ($self:expr, $entity:expr, $store:expr) => {
         {
 {{#each components}}
     {{#if type}}
-            merge_hash_maps(&mut $self.{{@key}}, &mut $source.{{@key}});
-    {{else}}
-            merge_hash_sets(&mut $self.{{@key}}, &mut $source.{{@key}});
-    {{/if}}
-{{/each}}
-        }
-    }
-}
-
-macro_rules! remove_component {
-    ($self:ident, $entity:ident, $component_type:ident) => {
-        {
-            match $component_type {
-{{#each components}}
-                ComponentType::{{name}} => { $self.{{@key}}.remove(&$entity); }
-{{/each}}
+            if $store.{{@key}}.contains_key(&$entity) {
+                $self.{{@key}}.remove($entity);
             }
-        }
-    }
-}
-
-macro_rules! remove_component_into {
-    ($self:ident, $entity:ident, $component_type:ident, $dest:expr) => {
-        {
-            match $component_type {
-{{#each components}}
-                ComponentType::{{name}} => {
-    {{#if type}}
-                    if let Some(v) = $self.{{@key}}.remove(&$entity) {
-                        $dest.{{@key}}.insert($entity, v);
-                    }
     {{else}}
-                    if $self.{{@key}}.remove(&$entity) {
-                        $dest.{{@key}}.insert($entity);
-                    }
-    {{/if}}
-                }
-{{/each}}
+            if $store.{{@key}}.contains(&$entity) {
+                $self.{{@key}}.remove($entity);
             }
-        }
-    }
-}
-
-macro_rules! insert_all {
-    ($self:ident, $entity:ident, $store:ident) => {
-        {
-{{#each components}}
-    {{#if type}}
-            if $store.{{@key}}.contains_key(&$entity) { $self.insert($entity, ComponentType::{{name}}); }
-    {{else}}
-            if $store.{{@key}}.contains(&$entity) { $self.insert($entity, ComponentType::{{name}}); }
     {{/if}}
 {{/each}}
         }
-    }
-}
 
-macro_rules! component_type_cons_methods {
-    () => {
-{{#each components}}
-        pub fn {{@key}}() -> Self { ComponentType::{{name}} }
-{{/each}}
     }
 }
 
@@ -134,9 +83,9 @@ macro_rules! entity_store_change_decl {
         pub struct $EntityStoreChange {
 {{#each components}}
     {{#if type}}
-            pub {{@key}}: HashMap<EntityId, DataChangeType<{{type}}>>,
+            pub {{@key}}: DataComponentChange<{{type}}>,
     {{else}}
-            pub {{@key}}: HashMap<EntityId, FlagChangeType>,
+            pub {{@key}}: FlagComponentChange,
     {{/if}}
 {{/each}}
         }
@@ -147,7 +96,11 @@ macro_rules! entity_store_change_cons {
     ($EntityStoreChange:ident) => {
         $EntityStoreChange {
 {{#each components}}
-            {{@key}}: HashMap::new(),
+    {{#if type}}
+            {{@key}}: DataComponentChange(HashMap::new()),
+    {{else}}
+            {{@key}}: FlagComponentChange(HashMap::new()),
+    {{/if}}
 {{/each}}
         }
     }
@@ -158,17 +111,45 @@ macro_rules! commit_change {
         {
 {{#each components}}
     {{#if type}}
-    for (id, change) in $source.{{@key}}.drain() {
+    for (id, change) in $source.{{@key}}.0.drain() {
         match change {
             DataChangeType::Insert(v) => { $self.{{@key}}.insert(id, v); }
             DataChangeType::Remove => { $self.{{@key}}.remove(&id); }
         }
     }
     {{else}}
-    for (id, change) in $source.{{@key}}.drain() {
+    for (id, change) in $source.{{@key}}.0.drain() {
         match change {
             FlagChangeType::Insert => { $self.{{@key}}.insert(id); }
             FlagChangeType::Remove => { $self.{{@key}}.remove(&id); }
+        }
+    }
+    {{/if}}
+{{/each}}
+        }
+    }
+}
+
+macro_rules! commit_change_into {
+    ($self:ident, $source:ident, $dest:ident) => {
+        {
+{{#each components}}
+    {{#if type}}
+    for (id, change) in $source.{{@key}}.0.drain() {
+        if let Some(existing) = match change {
+            DataChangeType::Insert(v) => $self.{{@key}}.insert(id, v),
+            DataChangeType::Remove => $self.{{@key}}.remove(&id),
+        } {
+            $dest.{{@key}}.insert(id, existing);
+        }
+    }
+    {{else}}
+    for (id, change) in $source.{{@key}}.0.drain() {
+        if match change {
+            FlagChangeType::Insert => $self.{{@key}}.insert(id),
+            FlagChangeType::Remove => $self.{{@key}}.remove(&id),
+        } {
+            $dest.{{@key}}.insert(id);
         }
     }
     {{/if}}
