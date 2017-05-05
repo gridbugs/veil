@@ -1,3 +1,5 @@
+// Generated code may contain pattern matches that bind variables
+// that are never used
 #![allow(unused_variables)]
 use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, FlagChangeType};
