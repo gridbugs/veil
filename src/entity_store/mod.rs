@@ -6,9 +6,6 @@ use std::collections::{HashMap, HashSet, hash_map};
 
 entity_store_imports!{}
 
-const NUM_COMPONENTS: usize = num_components!();
-const COMPONENT_BITS: usize = component_bits!();
-
 component_type_decl!{ComponentType}
 
 entity_store_decl!{EntityStore}
@@ -31,10 +28,6 @@ impl EntityStore {
     }
 }
 
-const ENTITY_ID_BITS: usize = 64 - COMPONENT_BITS;
-const MAX_ENTITY_ID: u64 = (1 << (ENTITY_ID_BITS as u64)) - 1;
-const ENTITY_ID_MASK: u64 = MAX_ENTITY_ID;
-
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct EntityId(u64);
 
@@ -42,14 +35,6 @@ impl EntityId {
     pub fn new(value: u64) -> Self {
         EntityId(value)
     }
-    pub fn is_valid(self) -> bool {
-        self.0 & !ENTITY_ID_MASK == 0
-    }
-}
-
-impl ComponentType {
-    fn index(self) -> u64 { self as u64 }
-    fn shifted_index(self) -> u64 { self.index() << ENTITY_ID_BITS }
 }
 
 #[derive(Debug, Clone, Copy)]

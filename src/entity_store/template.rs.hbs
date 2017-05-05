@@ -8,23 +8,13 @@ macro_rules! entity_store_imports {
     }
 }
 
-macro_rules! num_components {
-    () => { {{num_components}} }
-}
-
-macro_rules! component_bits {
-    () => { {{component_bits}} }
-}
-
 macro_rules! component_type_decl {
     ($ComponentType:ident) => {
-        enum_from_primitive! {
-        #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
-            pub enum $ComponentType {
+    #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
+        pub enum $ComponentType {
 {{#each components}}
-                {{name}},
+            {{name}},
 {{/each}}
-            }
         }
     }
 }

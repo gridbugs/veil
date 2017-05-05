@@ -68,8 +68,6 @@ struct EntityStoreDesc {
 struct EntityStoreDescOut {
     imports: Vec<String>,
     components: HashMap<String, ComponentDesc>,
-    num_components: usize,
-    component_bits: usize,
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> String {
@@ -106,12 +104,7 @@ fn render_entity_system_template_internal<P: AsRef<Path>>(desc: EntityStoreDesc,
 
     let EntityStoreDesc { imports, components } = desc;
 
-    let num_components = components.len() as u64;
-    let component_bits = 64 - (num_components - 1).leading_zeros();
-
     let entity_store_desc_out = EntityStoreDescOut {
-        num_components: num_components as usize,
-        component_bits: component_bits as usize,
         imports: imports,
         components: components,
     };
