@@ -11,7 +11,7 @@ impl EntityIdAllocator {
         }
     }
     pub fn allocate(&mut self) -> EntityId {
-        let entity_id = EntityId::new(self.next);
+        let entity_id = self.next;
         self.next += 1;
         entity_id
     }

@@ -8,7 +8,7 @@ fn commit_into_store() {
 
     let mut change = EntityStoreChange::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     change.solid.insert(e0);
     es0.commit_change(&mut change);
@@ -27,8 +27,8 @@ fn migration_copy() {
     let mut dest = EntityStore::new();
     let mut source = EntityStore::new();
     let mut dest_change = EntityStoreChange::new();
-    let e0 = EntityId::new(0);
-    let e1 = EntityId::new(1);
+    let e0 = 0;
+    let e1 = 1;
 
     source.solid.insert(e0);
     source.opacity.insert(e0, 0.2);
@@ -54,8 +54,8 @@ fn migration_move() {
     let mut source = EntityStore::new();
     let mut dest_change = EntityStoreChange::new();
     let mut source_change = EntityStoreChange::new();
-    let e0 = EntityId::new(0);
-    let e1 = EntityId::new(1);
+    let e0 = 0;
+    let e1 = 1;
 
     source.solid.insert(e0);
     source.opacity.insert(e0, 0.2);
@@ -84,8 +84,8 @@ fn migration_swap() {
     let mut source = EntityStore::new();
     let mut dest_change = EntityStoreChange::new();
     let mut source_change = EntityStoreChange::new();
-    let e0 = EntityId::new(0);
-    let e1 = EntityId::new(1);
+    let e0 = 0;
+    let e1 = 1;
 
     source.solid.insert(e0);
     source.opacity.insert(e0, 0.2);

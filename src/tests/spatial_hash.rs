@@ -33,7 +33,7 @@ impl Env {
 fn insert_change_move_remove() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.opacity.insert(e0, 0.5);
@@ -74,7 +74,7 @@ fn insert_change_move_remove() {
 fn insert_and_move() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.opacity.insert(e0, 0.5);
@@ -91,7 +91,7 @@ fn insert_and_move() {
 fn insert_and_remove() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.opacity.insert(e0, 0.5);
@@ -119,8 +119,8 @@ fn insert_and_remove() {
 fn change_and_move() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
-    let e1 = EntityId::new(1);
+    let e0 = 0;
+    let e1 = 1;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.opacity.insert(e0, 0.5);
@@ -139,7 +139,7 @@ fn change_and_move() {
 fn redundant_insert() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.solid.insert(e0);
@@ -160,7 +160,7 @@ fn redundant_insert() {
 fn redundant_remove() {
     let mut env = Env::new();
 
-    let e0 = EntityId::new(0);
+    let e0 = 0;
 
     env.change.position.insert(e0, Vector2::new(0, 0));
     env.change.solid.insert(e0);

@@ -28,14 +28,7 @@ impl EntityStore {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct EntityId(u64);
-
-impl EntityId {
-    pub fn new(value: u64) -> Self {
-        EntityId(value)
-    }
-}
+pub type EntityId = u64;
 
 #[derive(Debug, Clone, Copy)]
 pub enum DataChangeType<T> {

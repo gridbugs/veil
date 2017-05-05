@@ -31,7 +31,7 @@ pub fn launch() {
     let mut allocator = EntityIdAllocator::new();
     let mut spatial_hash = SpatialHashTable::new(WIDTH, HEIGHT);
 
-    let mut pc = EntityId::new(0);
+    let mut pc = 0;
     let mut y = 0;
     for row in level_str.iter() {
         let mut x = 0;
