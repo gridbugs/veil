@@ -1,5 +1,4 @@
-tile_width = 16
-tile_height = 16
+tile_size = 16
 
 [overlays]
 Blank = [0, 4]

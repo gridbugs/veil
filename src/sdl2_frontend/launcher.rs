@@ -1,5 +1,6 @@
 use sdl2;
 use sdl2::image::INIT_PNG;
+use sdl2::event::Event;
 use cgmath::Vector2;
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
@@ -15,9 +16,6 @@ const HEIGHT: usize = 6;
 
 const WIDTH_PX: u32 = 800;
 const HEIGHT_PX: u32 = 600;
-
-const SCREEN_WIDTH: usize = 8;
-const SCREEN_HEIGHT: usize = 8;
 
 pub fn launch() {
 
@@ -79,5 +77,23 @@ pub fn launch() {
     let mut renderer_env = RendererEnv::new(WIDTH_PX, HEIGHT_PX, &video);
     sdl2::image::init(INIT_PNG).expect("Failed to connect to image subsystem");
 
-    GameRenderer::new(SCREEN_WIDTH, SCREEN_HEIGHT, &mut renderer_env, "resources/tiles.png", "resources/tiles.toml");
+    let mut renderer = GameRenderer::new(WIDTH,
+                                         HEIGHT,
+                                         &mut renderer_env,
+                                         "resources/tiles.png",
+                                         "resources/tiles.toml");
+
+    renderer.update(&knowledge, time);
+    renderer.draw();
+    renderer.publish();
+
+    let mut event_pump = sdl.event_pump().expect("Failed to initialize event pump");
+
+    loop {
+        match event_pump.wait_event() {
+            Event::Quit { .. } => break,
+            Event::KeyDown { .. } => break,
+            _ => {}
+        }
+    }
 }

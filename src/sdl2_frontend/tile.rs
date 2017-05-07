@@ -27,15 +27,14 @@ impl Tile {
 
 #[derive(Deserialize)]
 struct TileDesc {
-    tile_width: u32,
-    tile_height: u32,
+    tile_size: u32,
     overlays: HashMap<String, [u32; 2]>,
     tiles: HashMap<String, HashMap<String, [u32; 2]>>,
 }
 
 impl TileDesc {
     fn rect(&self, x: u32, y: u32) -> Rect {
-        Rect::new((x * self.tile_width) as i32, (y * self.tile_height) as i32, self.tile_width, self.tile_height)
+        Rect::new((x * self.tile_size) as i32, (y * self.tile_size) as i32, self.tile_size, self.tile_size)
     }
 }
 
@@ -43,19 +42,21 @@ impl TileDesc {
 pub struct TileResolver {
     tiles: Vec<Tile>,
     overlays: Vec<Rect>,
+    tile_size: u32,
 }
 
 impl TileResolver {
-    fn new() -> Self {
+    fn new(tile_size: u32) -> Self {
         TileResolver {
             tiles: Vec::new(),
             overlays: Vec::new(),
+            tile_size: tile_size,
         }
     }
 
     pub fn from_str(s: &str) -> Self {
         let tile_desc: TileDesc = toml::from_str(s).expect("Failed to parse tile description");
-        let mut resolver = TileResolver::new();
+        let mut resolver = TileResolver::new(tile_desc.tile_size);
 
         for i in 0..NUM_OVERLAYS {
             if let Some(overlay_type) = OverlayType::from_usize(i) {
@@ -91,5 +92,9 @@ impl TileResolver {
 
     pub fn resolve_overlay(&self, overlay_type: OverlayType) -> &Rect {
         &self.overlays[overlay_type as usize]
+    }
+
+    pub fn tile_size(&self) -> u32 {
+        self.tile_size
     }
 }

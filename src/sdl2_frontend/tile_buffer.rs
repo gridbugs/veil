@@ -1,6 +1,6 @@
 use sdl2::rect::Rect;
 use cgmath::Vector2;
-use grid::{StaticGrid, StaticGridIdx};
+use grid::{StaticGrid, StaticGridIdx, static_grid};
 use content::ComplexTile;
 use sdl2_frontend::tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
@@ -44,6 +44,9 @@ impl TileBufferCell {
     }
 }
 
+pub type Iter<'a> = static_grid::Iter<'a, TileBufferCell>;
+pub type CoordIter = static_grid::CoordIter;
+
 impl TileBuffer {
     pub fn new(width: usize, height: usize) -> Self {
         TileBuffer {
@@ -55,10 +58,18 @@ impl TileBuffer {
         self.grid.get(index)
     }
 
-    pub fn update(&mut self, knowledge: &PlayerKnowledgeGrid, resolver: &tile::TileResolver, time: u64, offset: Vector2<i32>) {
+    pub fn iter(&self) -> Iter {
+        self.grid.iter()
+    }
+
+    pub fn coord_iter(&self) -> CoordIter {
+        self.grid.coord_iter()
+    }
+
+    pub fn update(&mut self, knowledge: &PlayerKnowledgeGrid, resolver: &tile::TileResolver, time: u64) {
         for (coord, mut cell) in izip!(self.grid.coord_iter(), self.grid.iter_mut()) {
             cell.clear();
-            let world_coord = Vector2::new(offset.x + coord.0 as i32, offset.y + coord.0 as i32);
+            let world_coord = Vector2::new(coord.0 as i32, coord.1 as i32);
             if let Some(knowledge_cell) = knowledge.get(world_coord) {
                 cell.visible = knowledge_cell.last_updated == time;
                 for &PlayerKnowledgeTile { priority, tile } in knowledge_cell.tiles.iter() {

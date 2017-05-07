@@ -47,11 +47,14 @@ pub struct DataComponentChange<T>(HashMap<EntityId, DataChangeType<T>>);
 #[derive(Debug, Clone)]
 pub struct FlagComponentChange(HashMap<EntityId, FlagChangeType>);
 
+pub type DataComponentChangeIter<'a, T> = hash_map::Iter<'a, EntityId, DataChangeType<T>>;
+pub type FlagComponentChangeIter<'a> = hash_map::Iter<'a, EntityId, FlagChangeType>;
+
 impl<T> DataComponentChange<T> {
     pub fn get(&self, id: &EntityId) -> Option<&DataChangeType<T>> {
         self.0.get(&id)
     }
-    pub fn iter(&self) -> hash_map::Iter<EntityId, DataChangeType<T>> {
+    pub fn iter(&self) -> DataComponentChangeIter<T> {
         self.0.iter()
     }
     pub fn insert(&mut self, id: EntityId, value: T) {
@@ -62,7 +65,7 @@ impl<T> DataComponentChange<T> {
     }
 }
 impl FlagComponentChange {
-    pub fn iter(&self) -> hash_map::Iter<EntityId, FlagChangeType> {
+    pub fn iter(&self) -> FlagComponentChangeIter {
         self.0.iter()
     }
     pub fn insert(&mut self, id: EntityId) {

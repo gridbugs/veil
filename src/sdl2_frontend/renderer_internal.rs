@@ -1,6 +1,9 @@
 use std::path::Path;
 use sdl2::render::WindowCanvas;
 use sdl2_frontend::tile::TileResolver;
+use sdl2_frontend::tile_buffer::TileBufferCell;
+use sdl2_frontend::renderer_dimensions::RendererDimensions;
+use sdl2_frontend::textures::GameTextures;
 use simple_file;
 
 pub struct GameRendererInternal<'a> {
@@ -18,6 +21,17 @@ impl<'a> GameRendererInternal<'a> {
         GameRendererInternal {
             tile_resolver: tile_resolver,
             canvas: canvas,
+        }
+    }
+
+    pub fn draw_cell(&mut self, cell: &TileBufferCell, (x, y): (usize, usize),
+                     dimensions: &RendererDimensions, textures: &GameTextures) {
+
+        for channel in cell.channels.iter() {
+            if let &Some(source) = channel {
+                self.canvas.copy(&textures.colour, source, dimensions.dest_rect(x as u32, y as u32))
+                    .expect("Failed to draw cell");
+            }
         }
     }
 }
