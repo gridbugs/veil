@@ -2,8 +2,7 @@ use std::path::Path;
 use sdl2::VideoSubsystem;
 use sdl2_frontend::tile_buffer::TileBuffer;
 use sdl2_frontend::textures::GameTextures;
-use sdl2_frontend::tile::TileResolver;
-use simple_file;
+use sdl2_frontend::renderer_internal::GameRendererInternal;
 
 pub struct GameRenderer {
     buffer: TileBuffer,
@@ -24,21 +23,6 @@ impl GameRenderer {
             buffer: TileBuffer::new(width, height),
             textures: textures,
             internal: internal,
-        }
-    }
-}
-
-struct GameRendererInternal {
-    tile_resolver: TileResolver,
-}
-
-impl GameRendererInternal {
-    fn new<P: AsRef<Path>>(tile_desc_path: P) -> Self {
-        let tile_desc_str = simple_file::read_string(tile_desc_path)
-            .expect("Failed to open tile description");
-        let tile_resolver = TileResolver::from_str(&tile_desc_str);
-        GameRendererInternal {
-            tile_resolver: tile_resolver,
         }
     }
 }
