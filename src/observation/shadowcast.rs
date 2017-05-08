@@ -376,7 +376,7 @@ impl Shadowcast {
                       Octant::new(CardinalDirection::East, CardinalDirection::North),
                       Octant::new(CardinalDirection::North, CardinalDirection::East),
                       Octant::new(CardinalDirection::North, CardinalDirection::West),
-                      Octant::new(CardinalDirection::West, CardinalDirection::North)],
+                      Octant::new(CardinalDirection::West, CardinalDirection::North),],
             stack: UnsafeCell::new(Vec::new()),
         }
     }
