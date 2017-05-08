@@ -142,16 +142,18 @@ impl CoordIter {
 impl Iterator for CoordIter {
     type Item = (usize, usize);
     fn next(&mut self) -> Option<Self::Item> {
-        let ret = (self.x, self.y);
+        if self.y == self.height {
+            return None
+        }
+
+        let ret = Some((self.x, self.y));
+
         self.x += 1;
         if self.x == self.width {
             self.x = 0;
             self.y += 1;
-            if self.y == self.height {
-                return None;
-            }
         }
 
-        Some(ret)
+        ret
     }
 }
