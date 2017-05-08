@@ -21,6 +21,7 @@ mod simple_file;
 mod entity_id_allocator;
 mod knowledge;
 mod observation;
+mod direction;
 
 mod tests;
 

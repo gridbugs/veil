@@ -64,13 +64,15 @@ pub fn launch() {
 
     let mut knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
-    square::observe(
+    let shadowcast = shadowcast::Shadowcast::new();
+    shadowcast.observe(
         *entity_store.position.get(&pc).unwrap(),
-        4,
         &spatial_hash,
+        10,
         &entity_store,
         time,
-        &mut knowledge);
+        &mut knowledge
+    );
 
     let sdl = sdl2::init().expect("SDL2 initialization failed");
     let video = sdl.video().expect("Failed to connect to video subsystem");
