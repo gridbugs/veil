@@ -1,6 +1,7 @@
 use sdl2;
 use sdl2::image::INIT_PNG;
 use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use cgmath::Vector2;
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
@@ -58,22 +59,13 @@ pub fn launch() {
         y += 1;
     }
 
-    let time = 1;
+    let mut time = 1;
     spatial_hash.update(&entity_store, &change, time);
     entity_store.commit_change(&mut change);
 
     let mut knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
     let shadowcast = shadowcast::Shadowcast::new();
-    shadowcast.observe(
-        *entity_store.position.get(&pc).unwrap(),
-        &spatial_hash,
-        10,
-        &entity_store,
-        time,
-        &mut knowledge
-    );
-
     let sdl = sdl2::init().expect("SDL2 initialization failed");
     let video = sdl.video().expect("Failed to connect to video subsystem");
     let mut renderer_env = RendererEnv::new(WIDTH_PX, HEIGHT_PX, &video);
@@ -84,18 +76,42 @@ pub fn launch() {
                                          &mut renderer_env,
                                          "resources/tiles.png",
                                          "resources/tiles.toml");
-
-    renderer.update(&knowledge, time);
-    renderer.draw();
-    renderer.publish();
-
     let mut event_pump = sdl.event_pump().expect("Failed to initialize event pump");
 
-    loop {
-        match event_pump.wait_event() {
-            Event::Quit { .. } => break,
-            Event::KeyDown { .. } => break,
-            _ => {}
+    'outer: loop {
+
+        shadowcast.observe(
+            *entity_store.position.get(&pc).unwrap(),
+            &spatial_hash,
+            10,
+            &entity_store,
+            time,
+            &mut knowledge
+        );
+
+        renderer.update(&knowledge, time);
+        renderer.draw();
+        renderer.publish();
+
+        'inner: loop {
+            match event_pump.wait_event() {
+                Event::Quit { .. } => break 'outer,
+                Event::KeyDown { keycode: Some(keycode), .. } => {
+                    let v = match keycode {
+                        Keycode::Up => Vector2::new(0, -1),
+                        Keycode::Down => Vector2::new(0, 1),
+                        Keycode::Left => Vector2::new(-1, 0),
+                        Keycode::Right => Vector2::new(1, 0),
+                        _ => continue 'inner,
+                    };
+                    change.position.insert(pc, entity_store.position.get(&pc).unwrap() + v);
+                    time += 1;
+                    spatial_hash.update(&entity_store, &change, time);
+                    entity_store.commit_change(&mut change);
+                    break 'inner;
+                }
+                _ => {}
+            }
         }
     }
 }
