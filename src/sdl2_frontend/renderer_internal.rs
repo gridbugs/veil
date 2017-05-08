@@ -27,9 +27,15 @@ impl<'a> GameRendererInternal<'a> {
     pub fn draw_cell(&mut self, cell: &TileBufferCell, (x, y): (usize, usize),
                      dimensions: &RendererDimensions, textures: &GameTextures) {
 
+        let texture = if cell.visible {
+            &textures.colour
+        } else {
+            &textures.greyscale
+        };
+
         for channel in cell.channels.iter() {
             if let &Some(source) = channel {
-                self.canvas.copy(&textures.colour, source, dimensions.dest_rect(x as u32, y as u32))
+                self.canvas.copy(texture, source, dimensions.dest_rect(x as u32, y as u32))
                     .expect("Failed to draw cell");
             }
         }
