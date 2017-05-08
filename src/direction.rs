@@ -149,7 +149,7 @@ impl OrdinalDirection {
             CardinalDirection::North => {
                 match b {
                     CardinalDirection::East => return Some(OrdinalDirection::NorthEast),
-                    CardinalDirection::West => return Some(OrdinalDirection::NorthEast),
+                    CardinalDirection::West => return Some(OrdinalDirection::NorthWest),
                     _ => return None,
                 }
             }
