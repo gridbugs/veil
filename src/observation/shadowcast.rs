@@ -178,7 +178,7 @@ impl Octant {
             lateral_step: lateral_step,
             lateral_step_float: lateral_step as f64,
 
-            opacity_increase_corner: OrdinalDirection::from_cardinals(card_depth_dir, card_lateral_dir)
+            opacity_increase_corner: OrdinalDirection::from_cardinals(card_depth_dir, card_lateral_dir.opposite())
                 .expect("Failed to combine directions"),
 
             opacity_decrease_corner: OrdinalDirection::from_cardinals(
