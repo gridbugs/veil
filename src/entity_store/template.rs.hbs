@@ -147,3 +147,11 @@ macro_rules! commit_change_into {
         }
     }
 }
+
+macro_rules! entity_store_change_clear {
+    ($self:expr) => {
+{{#each components}}
+        $self.{{@key}}.0.clear();
+{{/each}}
+    }
+}

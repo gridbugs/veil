@@ -85,4 +85,7 @@ impl EntityStoreChange {
     pub fn remove_entity(&mut self, entity: EntityId, store: &EntityStore) {
         remove_entity!(self, entity, store);
     }
+    pub fn clear(&mut self) {
+        entity_store_change_clear!(self);
+    }
 }
