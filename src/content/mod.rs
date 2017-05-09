@@ -1,7 +1,10 @@
 mod tile_type;
 mod overlay_type;
 mod complex_tile;
+mod action_type;
 pub use self::tile_type::*;
 pub use self::overlay_type::*;
 pub use self::complex_tile::*;
+pub use self::action_type::*;
 pub mod prototypes;
+pub mod actions;

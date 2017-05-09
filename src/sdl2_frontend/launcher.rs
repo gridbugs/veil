@@ -8,10 +8,12 @@ use sdl2_frontend::renderer_env::*;
 use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
+use content::ActionType;
 use entity_id_allocator::*;
 use knowledge::*;
 use observation::*;
 use policy::GamePolicy;
+use direction::Direction;
 
 const WIDTH: usize = 12;
 const HEIGHT: usize = 6;
@@ -100,19 +102,22 @@ pub fn launch() {
             match event_pump.wait_event() {
                 Event::Quit { .. } => break 'outer,
                 Event::KeyDown { keycode: Some(keycode), .. } => {
-                    let v = match keycode {
-                        Keycode::Up => Vector2::new(0, -1),
-                        Keycode::Down => Vector2::new(0, 1),
-                        Keycode::Left => Vector2::new(-1, 0),
-                        Keycode::Right => Vector2::new(1, 0),
+                    let action = match keycode {
+                        Keycode::Up => ActionType::Walk(pc, Direction::North),
+                        Keycode::Down => ActionType::Walk(pc, Direction::South),
+                        Keycode::Left => ActionType::Walk(pc, Direction::West),
+                        Keycode::Right => ActionType::Walk(pc, Direction::East),
                         _ => continue 'inner,
                     };
-                    change.position.insert(pc, entity_store.position.get(&pc).unwrap() + v);
+
+                    action.populate(&mut change, &entity_store);
 
                     if policy.on_action(&change, &entity_store, &spatial_hash) {
                         time += 1;
                         spatial_hash.update(&entity_store, &change, time);
                         entity_store.commit_change(&mut change);
+                    } else {
+                        change.clear();
                     }
                     break 'inner;
                 }
