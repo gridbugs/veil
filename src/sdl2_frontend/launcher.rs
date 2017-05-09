@@ -11,6 +11,7 @@ use content::prototypes;
 use entity_id_allocator::*;
 use knowledge::*;
 use observation::*;
+use policy::GamePolicy;
 
 const WIDTH: usize = 12;
 const HEIGHT: usize = 6;
@@ -65,6 +66,8 @@ pub fn launch() {
 
     let mut knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
+    let policy = GamePolicy;
+
     let shadowcast = shadowcast::Shadowcast::new();
     let sdl = sdl2::init().expect("SDL2 initialization failed");
     let video = sdl.video().expect("Failed to connect to video subsystem");
@@ -105,9 +108,12 @@ pub fn launch() {
                         _ => continue 'inner,
                     };
                     change.position.insert(pc, entity_store.position.get(&pc).unwrap() + v);
-                    time += 1;
-                    spatial_hash.update(&entity_store, &change, time);
-                    entity_store.commit_change(&mut change);
+
+                    if policy.on_action(&change, &entity_store, &spatial_hash) {
+                        time += 1;
+                        spatial_hash.update(&entity_store, &change, time);
+                        entity_store.commit_change(&mut change);
+                    }
                     break 'inner;
                 }
                 _ => {}

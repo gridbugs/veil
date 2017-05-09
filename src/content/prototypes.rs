@@ -5,6 +5,7 @@ use cgmath::Vector2;
 pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
     change.position.insert(entity_id, position);
     change.player.insert(entity_id);
+    change.collider.insert(entity_id);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Player));
     change.tile_priority.insert(entity_id, 4);
 }
