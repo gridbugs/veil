@@ -48,6 +48,7 @@ struct SpatialHashFieldDescOut {
     aggregate_name: String,
     aggregate_type: String,
     aggregate_cons: String,
+    void: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -129,6 +130,7 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
             "count" => ("usize", "0"),
             "f64_total" => ("f64", "0.0"),
             "set" => ("HashSet<EntityId>", "HashSet::new()"),
+            "void" => ("", ""),
             other => panic!("No such aggregate: {}", other),
         };
 
@@ -141,6 +143,7 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
             aggregate_name: field_name.clone(),
             aggregate_type: aggregate_type.to_string(),
             aggregate_cons: aggregate_cons.to_string(),
+            void: field.aggregate == "void",
         };
 
         component.fields.insert(field.aggregate.clone(), field_out);

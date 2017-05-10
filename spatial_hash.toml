@@ -12,3 +12,6 @@ floor_set = { component = 'floor', aggregate = 'set' }
 tile_set = { component = 'tile_priority', aggregate = 'set' }
 opacity_count = { component = 'opacity', aggregate = 'count' }
 opacity_set = { component = 'opacity', aggregate = 'set' }
+door_set = { component = 'door_state', aggregate = 'set' }
+tile_change = { component = 'tile', aggregate = 'void' }
+

@@ -21,4 +21,17 @@ PreEldrich = [3, 4]
 1 = [0, 2]
 
 [tiles.Rain]
-2 = [0, 3]
+3 = [0, 3]
+
+[tiles.OpenDoorTop]
+2 = [1, 5]
+
+[tiles.ClosedDoorTop]
+2 = [0, 5]
+
+[tiles.OpenDoorFront]
+2 = [3, 5]
+
+[tiles.ClosedDoorFront]
+2 = [2, 5]
+

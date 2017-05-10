@@ -30,6 +30,21 @@ impl Env {
 }
 
 #[test]
+fn insert_change() {
+    let mut env = Env::new();
+
+    let e0 = 0;
+
+    env.change.position.insert(e0, Vector2::new(0, 0));
+    env.change.opacity.insert(e0, 0.5);
+    env.commit();
+    assert_eq!((env.spatial_hash.get(Vector2::new(0, 0)).unwrap().opacity_total * 10.0).round(), 5.0);
+    env.change.opacity.insert(e0, 0.8);
+    env.commit();
+    assert_eq!((env.spatial_hash.get(Vector2::new(0, 0)).unwrap().opacity_total * 10.0).round(), 8.0);
+}
+
+#[test]
 fn insert_change_move_remove() {
     let mut env = Env::new();
 

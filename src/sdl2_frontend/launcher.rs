@@ -9,6 +9,7 @@ use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
 use content::ActionType;
+use content::DoorState;
 use entity_id_allocator::*;
 use knowledge::*;
 use observation::*;
@@ -26,8 +27,8 @@ pub fn launch() {
     let level_str = vec![
         "############",
         "#..#....#..#",
-        "#..#....#..#",
-        "#.@...###..#",
+        "#..-....#..#",
+        "#.@#+####..#",
         "#..........#",
         "############",
     ];
@@ -53,6 +54,14 @@ pub fn launch() {
                 '@' => {
                     pc = allocator.allocate();
                     prototypes::player(&mut change, pc, Vector2::new(x, y));
+                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
+                }
+                '+' => {
+                    prototypes::door(&mut change, allocator.allocate(), Vector2::new(x, y), DoorState::Closed);
+                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
+                }
+                '-' => {
+                    prototypes::door(&mut change, allocator.allocate(), Vector2::new(x, y), DoorState::Open);
                     prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
                 }
                 _ => panic!(),
@@ -83,6 +92,8 @@ pub fn launch() {
                                          "resources/tiles.toml");
     let mut event_pump = sdl.event_pump().expect("Failed to initialize event pump");
 
+    let mut reactions = Vec::new();
+
     'outer: loop {
 
         shadowcast.observe(
@@ -110,16 +121,21 @@ pub fn launch() {
                         _ => continue 'inner,
                     };
 
-                    action.populate(&mut change, &entity_store);
+                    reactions.push(action);
 
-                    if policy.on_action(&change, &entity_store, &spatial_hash) {
-                        time += 1;
-                        spatial_hash.update(&entity_store, &change, time);
-                        entity_store.commit_change(&mut change);
-                    } else {
-                        change.clear();
+                    while let Some(action) = reactions.pop() {
+                        action.populate(&mut change, &entity_store);
+
+                        if policy.on_action(&change, &entity_store, &spatial_hash, &mut reactions) {
+                            time += 1;
+                            spatial_hash.update(&entity_store, &change, time);
+                            entity_store.commit_change(&mut change);
+                        } else {
+                            change.clear();
+                        }
                     }
-                    break 'inner;
+
+                   break 'inner;
                 }
                 _ => {}
             }

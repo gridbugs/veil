@@ -4,7 +4,7 @@ use enum_primitive::FromPrimitive;
 use content::*;
 use toml;
 
-pub const NUM_TILE_CHANNELS: usize = 3;
+pub const NUM_TILE_CHANNELS: usize = 4;
 
 #[derive(Clone, Debug)]
 pub struct Channel {
