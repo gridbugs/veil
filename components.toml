@@ -1,15 +1,17 @@
 imports = [
     'cgmath::Vector2',
     'content::ComplexTile',
+    'content::DoorState',
 ]
 
 [components]
-position = { name = 'Position', type = 'Vector2<i32>' }
-player = { name = 'Player' }
-floor = { name = 'Floor' }
-collider = { name = 'Collider' }
-solid = { name = 'Solid' }
-opacity = { name = 'Opacity', type = 'f64' }
-enemy = { name = 'Enemy' }
-tile = { name = 'Tile', type = 'ComplexTile' }
-tile_priority = { name = 'TilePriority', type = 'u8' }
+position = { type = 'Vector2<i32>' }
+player = {}
+floor = {}
+collider = {}
+solid = {}
+opacity = { type = 'f64' }
+enemy = {}
+tile = { type = 'ComplexTile' }
+tile_priority = { type = 'u8' }
+door_state = { type = 'DoorState' }

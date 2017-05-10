@@ -38,7 +38,6 @@ struct SpatialHashDescOut {
 
 #[derive(Debug, Serialize)]
 struct SpatialHashComponentDescOut {
-    name: String,
     #[serde(rename = "type", default = "ret_none")]
     type_name: Option<String>,
     fields: HashMap<String, SpatialHashFieldDescOut>,
@@ -53,7 +52,6 @@ struct SpatialHashFieldDescOut {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ComponentDesc {
-    name: String,
     #[serde(rename = "type", default = "ret_none")]
     type_name: Option<String>,
 }
@@ -135,7 +133,6 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
         };
 
         let mut component = components_out.entry(field.component.clone()).or_insert_with(|| SpatialHashComponentDescOut {
-            name: component_desc.name.clone(),
             type_name: component_desc.type_name.clone(),
             fields: HashMap::new(),
         });
