@@ -8,17 +8,6 @@ macro_rules! entity_store_imports {
     }
 }
 
-macro_rules! component_type_decl {
-    ($ComponentType:ident) => {
-    #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
-        pub enum $ComponentType {
-{{#each components}}
-            {{name}},
-{{/each}}
-        }
-    }
-}
-
 macro_rules! entity_store_decl {
     ($EntityStore:ident) => {
         #[derive(Debug, Clone, Serialize, Deserialize)]

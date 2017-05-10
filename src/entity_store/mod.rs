@@ -6,8 +6,6 @@ use std::collections::{HashMap, HashSet, hash_map};
 
 entity_store_imports!{}
 
-component_type_decl!{ComponentType}
-
 entity_store_decl!{EntityStore}
 
 impl EntityStore {
