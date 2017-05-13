@@ -74,6 +74,10 @@ impl<T> StaticGrid<T> {
         idx.is_valid(self.width)
     }
 
+    pub fn contains<I: StaticGridIdx>(&self, idx: I) -> bool {
+        idx.is_valid(self.width) && idx.wrap_to_index(self.width) < self.items.len()
+    }
+
     pub fn get<I: StaticGridIdx>(&self, idx: I) -> Option<&T> {
         if self.is_valid(idx) {
             self.get_valid(idx)

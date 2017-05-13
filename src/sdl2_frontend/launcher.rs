@@ -27,8 +27,8 @@ pub fn launch() {
 
     let level_str = vec![
         "############",
-        "#..#....#..#",
-        "#..-....#..#",
+        "#..#,,,,#..#",
+        "#..-,,,,#..#",
         "#.@#+####..#",
         "#..........#",
         "############",
@@ -53,6 +53,11 @@ pub fn launch() {
                 }
                 '.' => {
                     prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
+                }
+                ',' => {
+                    let id = allocator.allocate();
+                    prototypes::stone_floor(&mut change, id, Vector2::new(x, y));
+                    change.inside.insert(id);
                 }
                 '@' => {
                     pc = allocator.allocate();
@@ -118,9 +123,9 @@ pub fn launch() {
         renderer.publish();
 
         'inner: loop {
-            match event_pump.wait_event() {
-                Event::Quit { .. } => break 'outer,
-                Event::KeyDown { keycode: Some(keycode), .. } => {
+            match event_pump.wait_event_timeout(200) {
+                Some(Event::Quit { .. }) => break 'outer,
+                Some(Event::KeyDown { keycode: Some(keycode), .. }) => {
                     let action = match keycode {
                         Keycode::Up => ActionType::Walk(pc, Direction::North),
                         Keycode::Down => ActionType::Walk(pc, Direction::South),
@@ -143,9 +148,16 @@ pub fn launch() {
                         }
                     }
 
-                   break 'inner;
+                    break 'inner;
                 }
-                _ => {}
+                Some(_) => {}
+                None => {
+                    policy.on_tick(&entity_store, &spatial_hash, &mut rng, &mut change);
+                    time += 1;
+                    spatial_hash.update(&entity_store, &change, time);
+                    entity_store.commit_change(&mut change);
+                    break 'inner;
+                }
             }
         }
     }

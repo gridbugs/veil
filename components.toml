@@ -2,6 +2,7 @@ imports = [
     'cgmath::Vector2',
     'content::ComplexTile',
     'content::DoorState',
+    'straight_line::FiniteAbsoluteLineTraverse',
 ]
 
 [components]
@@ -15,3 +16,8 @@ enemy = {}
 tile = { type = 'ComplexTile' }
 tile_priority = { type = 'u8' }
 door_state = { type = 'DoorState' }
+finite_trajectory = { type = 'FiniteAbsoluteLineTraverse' }
+rain = {}
+forgetable = {}
+invisible = {}
+inside = {}

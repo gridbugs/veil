@@ -46,6 +46,10 @@ impl SpatialHashTable {
     pub fn width(&self) -> usize { self.grid.width() }
     pub fn height(&self) -> usize { self.grid.height() }
 
+    pub fn contains<I: StaticGridIdx>(&self, index: I) -> bool {
+        self.grid.contains(index)
+    }
+
     pub fn get<I: StaticGridIdx>(&self, index: I) -> Option<&SpatialHashCell> {
         self.grid.get(index)
     }

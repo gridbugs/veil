@@ -1,10 +1,73 @@
+use rand::Rng;
+use cgmath::Vector2;
 use entity_store::*;
 use spatial_hash::*;
+use straight_line::*;
 use content::ActionType;
 
 pub struct GamePolicy;
 
+enum RainUpdate {
+    Fall(Vector2<i32>, FiniteAbsoluteLineTraverse),
+    Reset(FiniteAbsoluteLineTraverse),
+}
+
 impl GamePolicy {
+
+    fn update_finite_trajectory(&self, id: EntityId, entity_store: &EntityStore,
+                                    spatial_hash: &SpatialHashTable) -> Option<RainUpdate> {
+
+        if let Some(trajectory) = entity_store.finite_trajectory.get(&id) {
+            if let Some((new_position, new_trajectory)) = trajectory.step() {
+                if spatial_hash.contains(new_position) {
+                    return Some(RainUpdate::Fall(new_position, new_trajectory));
+                }
+            }
+
+            return Some(RainUpdate::Reset(*trajectory));
+        }
+
+        None
+    }
+
+    pub fn on_tick<R: Rng>(&self, entity_store: &EntityStore, spatial_hash: &SpatialHashTable, rng: &mut R, change: &mut EntityStoreChange) {
+        for id in entity_store.rain.iter() {
+            if let Some(update) = self.update_finite_trajectory(*id, entity_store, spatial_hash) {
+                match update {
+                    RainUpdate::Fall(new_position, new_trajectory) => {
+                        if let Some(cell) = spatial_hash.get(new_position) {
+                            if cell.inside_count > 0 {
+                                change.invisible.insert(*id);
+                            } else {
+                                change.invisible.remove(*id);
+                            }
+                        }
+                        change.position.insert(*id, new_position);
+                        change.finite_trajectory.insert(*id, new_trajectory);
+                    }
+                    RainUpdate::Reset(trajectory) => {
+                        let x = (rng.next_u32() % (spatial_hash.width() as u32)) as i32;
+                        let y = (rng.next_u32() % (spatial_hash.height() as u32)) as i32;
+                        let new_position = Vector2::new(x, y);
+                        change.position.insert(*id, new_position);
+
+                        if let Some(cell) = spatial_hash.get(new_position) {
+                            if cell.inside_count > 0 {
+                                change.invisible.insert(*id);
+                            } else {
+                                change.invisible.remove(*id);
+                            }
+                        }
+
+                        let mut new_trajectory = trajectory.reset(new_position);
+                        new_trajectory.step_in_place();
+                        change.finite_trajectory.insert(*id, new_trajectory);
+                    }
+                }
+            }
+        }
+    }
+
     pub fn on_action(&self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                      reactions: &mut Vec<ActionType>) -> bool {
         for (id, position_change) in change.position.iter() {

@@ -70,6 +70,15 @@ impl InfiniteRelativeLineTraverse {
         let coord = self.step_in_place();
         (coord, self)
     }
+
+    pub fn reset_in_place(&mut self) {
+        self.accumulator = 0;
+    }
+
+    pub fn reset(mut self) -> Self {
+        self.reset_in_place();
+        self
+    }
 }
 
 impl Iterator for InfiniteRelativeLineTraverse {
@@ -110,6 +119,16 @@ impl FiniteRelativeLineTraverse {
             None
         }
     }
+
+    pub fn reset_in_place(&mut self) {
+        self.infinite.reset_in_place();
+        self.count = 0;
+    }
+
+    pub fn reset(mut self) -> Self {
+        self.reset_in_place();
+        self
+    }
 }
 
 impl Iterator for FiniteRelativeLineTraverse {
@@ -147,6 +166,20 @@ impl InfiniteAbsoluteLineTraverse {
         let coord = self.step_in_place();
         (coord, self)
     }
+
+    pub fn current(&self) -> Vector2<i32> {
+        self.current
+    }
+
+    pub fn reset_in_place(&mut self, start: Vector2<i32>) {
+        self.relative.reset_in_place();
+        self.current = start;
+    }
+
+    pub fn reset(mut self, start: Vector2<i32>) -> Self {
+        self.reset_in_place(start);
+        self
+    }
 }
 
 impl Iterator for InfiniteAbsoluteLineTraverse {
@@ -156,6 +189,7 @@ impl Iterator for InfiniteAbsoluteLineTraverse {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct FiniteAbsoluteLineTraverse {
     relative: FiniteRelativeLineTraverse,
     current: Vector2<i32>,
@@ -189,6 +223,20 @@ impl FiniteAbsoluteLineTraverse {
         } else {
             None
         }
+    }
+
+    pub fn current(&self) -> Vector2<i32> {
+        self.current
+    }
+
+    pub fn reset_in_place(&mut self, start: Vector2<i32>) {
+        self.relative.reset_in_place();
+        self.current = start;
+    }
+
+    pub fn reset(mut self, start: Vector2<i32>) -> Self {
+        self.reset_in_place(start);
+        self
     }
 }
 

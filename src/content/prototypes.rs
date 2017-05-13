@@ -1,5 +1,6 @@
 use entity_store::*;
 use content::*;
+use straight_line::*;
 use cgmath::Vector2;
 
 pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -41,7 +42,10 @@ pub fn door(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
 }
 
 pub fn rain(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+    change.rain.insert(entity_id);
     change.position.insert(entity_id, position);
     change.tile_priority.insert(entity_id, 2);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Rain));
+    change.finite_trajectory.insert(entity_id, FiniteAbsoluteLineTraverse::new_offset(position, Vector2::new(-6, 8)));
+    change.forgetable.insert(entity_id);
 }

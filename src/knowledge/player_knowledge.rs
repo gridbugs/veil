@@ -7,6 +7,7 @@ use content::{ComplexTile, OverlayType};
 pub struct PlayerKnowledgeTile {
     pub priority: u8,
     pub tile: ComplexTile,
+    pub forgetable: bool,
 }
 
 #[derive(Debug)]
@@ -43,11 +44,15 @@ impl PlayerKnowledgeCell {
             self.tiles.clear();
             self.wall = false;
             for entity_id in spatial_hash_cell.tile_set.iter() {
+                if entity_store.invisible.contains(entity_id) {
+                    continue;
+                }
                 if let Some(tile) = entity_store.tile.get(entity_id) {
                     if let Some(priority) = entity_store.tile_priority.get(entity_id) {
                         self.tiles.push(PlayerKnowledgeTile {
                             tile: *tile,
                             priority: *priority,
+                            forgetable: entity_store.forgetable.contains(entity_id),
                         });
                         if tile.is_wall() {
                             self.wall = true;

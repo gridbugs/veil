@@ -72,7 +72,10 @@ impl TileBuffer {
             let world_coord = Vector2::new(coord.0 as i32, coord.1 as i32);
             if let Some(knowledge_cell) = knowledge.get(world_coord) {
                 cell.visible = knowledge_cell.last_updated == time;
-                for &PlayerKnowledgeTile { priority, tile } in knowledge_cell.tiles.iter() {
+                for &PlayerKnowledgeTile { priority, tile, forgetable } in knowledge_cell.tiles.iter() {
+                    if !cell.visible && forgetable {
+                        continue;
+                    }
                     let simple_tile = match tile {
                         ComplexTile::Wall { front, top } => {
                             let south_coord = world_coord + Vector2::new(0, 1);

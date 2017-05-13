@@ -14,4 +14,5 @@ opacity_count = { component = 'opacity', aggregate = 'count' }
 opacity_set = { component = 'opacity', aggregate = 'set' }
 door_set = { component = 'door_state', aggregate = 'set' }
 tile_change = { component = 'tile', aggregate = 'void' }
+inside_count = { component = 'inside', aggregate = 'count' }
 
