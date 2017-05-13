@@ -17,27 +17,39 @@ use observation::*;
 use policy::GamePolicy;
 use direction::Direction;
 
-const WIDTH: usize = 12;
-const HEIGHT: usize = 6;
 
-const WIDTH_PX: u32 = 800;
+const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
 
 pub fn launch() {
 
     let level_str = vec![
-        "############",
-        "#..#,,,,#..#",
-        "#..-,,,,#..#",
-        "#.@#+####..#",
-        "#..........#",
-        "############",
+"##############################################",
+"#,,,,,,,,,,,#,,,,,,,,,,#...........#,,,,,,,,,#",
+"#,,,,,,,,,,,#,,,,,,,,,,#...........#,,,,,,,,,#",
+"#,,,,,,,,,,,+,,,,,,,,,,+...........#,,,,,,,,,#",
+"#,,,,,,,,,,,#,,,,,,,,,,#...........+,,,,,,,,,#",
+"#,,,,,,,,,,,#,,,,,,,,,,#...........#,,,,,,,,,#",
+"#,,,,,,,,,,,######+#####...........###########",
+"#,,,,,,,,,,,#................................#",
+"#,,,,,,,,,,,#................................#",
+"#####+#######................@...............#",
+"#............................................#",
+"#................##########+#########........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................+,,,,,+,,,,,,,,,,,,+........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................#,,,,,#,,,,,,,,,,,,#........#",
+"##############################################",
     ];
 
     let mut entity_store = EntityStore::new();
     let mut change = EntityStoreChange::new();
     let mut allocator = EntityIdAllocator::new();
-    let mut spatial_hash = SpatialHashTable::new(WIDTH, HEIGHT);
+    let mut spatial_hash = SpatialHashTable::new(level_str[0].len(), level_str.len());
 
     let mut rng = StdRng::new().unwrap();
 
@@ -68,15 +80,11 @@ pub fn launch() {
                     prototypes::door(&mut change, allocator.allocate(), Vector2::new(x, y), DoorState::Closed);
                     prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
                 }
-                '-' => {
-                    prototypes::door(&mut change, allocator.allocate(), Vector2::new(x, y), DoorState::Open);
-                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
-                }
                 _ => panic!(),
             }
 
             if rng.next_f64() < 0.1 {
-                prototypes::rain(&mut change, allocator.allocate(), Vector2::new(x, y));
+                prototypes::rain(&mut change, allocator.allocate(), Vector2::new(x, y), &mut rng);
             }
 
             x += 1;
@@ -98,8 +106,8 @@ pub fn launch() {
     let mut renderer_env = RendererEnv::new(WIDTH_PX, HEIGHT_PX, &video);
     sdl2::image::init(INIT_PNG).expect("Failed to connect to image subsystem");
 
-    let mut renderer = GameRenderer::new(WIDTH,
-                                         HEIGHT,
+    let mut renderer = GameRenderer::new(spatial_hash.width(),
+                                         spatial_hash.height(),
                                          &mut renderer_env,
                                          "resources/tiles.png",
                                          "resources/tiles.toml");

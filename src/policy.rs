@@ -51,12 +51,17 @@ impl GamePolicy {
 
                         if new_trajectory.is_complete() {
                             change.tile.insert(*id, ComplexTile::Simple(TileType::Splash));
+                            change.splash.insert(*id);
                         }
 
                         change.position.insert(*id, new_position);
                         change.finite_trajectory.insert(*id, new_trajectory);
                     }
                     RainUpdate::Reset(trajectory) => {
+                        if entity_store.splash.contains(id) {
+                            change.splash.remove(*id);
+                            continue;
+                        }
                         let x = (rng.gen::<usize>() % (spatial_hash.width())) as i32;
                         let y = (rng.gen::<usize>() % (spatial_hash.height())) as i32;
                         let new_position = Vector2::new(x, y);
