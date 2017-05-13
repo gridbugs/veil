@@ -39,3 +39,9 @@ pub fn door(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
         change.opacity.insert(entity_id, 0.0);
     }
 }
+
+pub fn rain(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+    change.position.insert(entity_id, position);
+    change.tile_priority.insert(entity_id, 2);
+    change.tile.insert(entity_id, ComplexTile::Simple(TileType::Rain));
+}

@@ -3,6 +3,7 @@ use sdl2::image::INIT_PNG;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use cgmath::Vector2;
+use rand::{Rng, StdRng};
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
 use entity_store::*;
@@ -38,6 +39,8 @@ pub fn launch() {
     let mut allocator = EntityIdAllocator::new();
     let mut spatial_hash = SpatialHashTable::new(WIDTH, HEIGHT);
 
+    let mut rng = StdRng::new().unwrap();
+
     let mut pc = 0;
     let mut y = 0;
     for row in level_str.iter() {
@@ -66,6 +69,11 @@ pub fn launch() {
                 }
                 _ => panic!(),
             }
+
+            if rng.next_f64() < 0.1 {
+                prototypes::rain(&mut change, allocator.allocate(), Vector2::new(x, y));
+            }
+
             x += 1;
         }
         y += 1;

@@ -23,6 +23,8 @@ mod knowledge;
 mod observation;
 mod direction;
 mod policy;
+mod straight_line;
+mod vector_index;
 
 mod tests;
 

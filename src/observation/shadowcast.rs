@@ -6,6 +6,7 @@ use direction::{Direction, CardinalDirection, OrdinalDirection};
 use spatial_hash::SpatialHashTable;
 use knowledge::PlayerKnowledgeGrid;
 use entity_store::EntityStore;
+use vector_index::VectorIndex;
 
 // Different types of rounding functions
 enum RoundType {
@@ -33,47 +34,6 @@ enum RotationType {
 }
 
 const NUM_OCTANTS: usize = 8;
-
-#[derive(Clone, Copy)]
-enum VectorIndex {
-    X,
-    Y,
-}
-
-impl VectorIndex {
-    fn get<T: Copy>(self, v: Vector2<T>) -> T {
-        match self {
-            VectorIndex::X => v.x,
-            VectorIndex::Y => v.y,
-        }
-    }
-    fn set<T>(self, v: &mut Vector2<T>, t: T) {
-        match self {
-            VectorIndex::X => v.x = t,
-            VectorIndex::Y => v.y = t,
-        }
-    }
-    fn create_coord(self, i: i32) -> Vector2<i32> {
-        match self {
-            VectorIndex::X => Vector2::new(i, 0),
-            VectorIndex::Y => Vector2::new(0, i),
-        }
-    }
-    fn get_tuple<T: Copy>(self, (x, y): (T, T)) -> T {
-        match self {
-            VectorIndex::X => x,
-            VectorIndex::Y => y,
-        }
-    }
-    fn from_card(direction: CardinalDirection) -> Self {
-        match direction {
-            CardinalDirection::North => VectorIndex::Y,
-            CardinalDirection::East => VectorIndex::X,
-            CardinalDirection::South => VectorIndex::Y,
-            CardinalDirection::West => VectorIndex::X,
-        }
-    }
-}
 
 fn cell_centre(coord: Vector2<i32>) -> Vector2<f64> {
     Vector2::new(coord.x as f64 + 0.5, coord.y as f64 + 0.5)
