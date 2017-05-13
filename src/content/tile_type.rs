@@ -6,6 +6,7 @@ pub enum TileType {
     WallTop,
     Player,
     Rain,
+    Splash,
     OpenDoorFront,
     ClosedDoorFront,
     OpenDoorTop,
@@ -21,6 +22,7 @@ impl TileType {
             TileType::WallTop => "WallTop",
             TileType::Player => "Player",
             TileType::Rain => "Rain",
+            TileType::Splash => "Splash",
             TileType::OpenDoorFront => "OpenDoorFront",
             TileType::ClosedDoorFront => "ClosedDoorFront",
             TileType::OpenDoorTop => "OpenDoorTop",
@@ -29,4 +31,4 @@ impl TileType {
     }
 }
 
-pub const NUM_TILES: usize = 9;
+pub const NUM_TILES: usize = 10;

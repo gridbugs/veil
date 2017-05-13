@@ -23,6 +23,9 @@ PreEldrich = [3, 4]
 [tiles.Rain]
 3 = [0, 3]
 
+[tiles.Splash]
+3 = [1, 3]
+
 [tiles.OpenDoorTop]
 2 = [1, 5]
 

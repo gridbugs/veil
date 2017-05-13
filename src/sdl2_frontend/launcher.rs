@@ -123,7 +123,7 @@ pub fn launch() {
         renderer.publish();
 
         'inner: loop {
-            match event_pump.wait_event_timeout(200) {
+            match event_pump.wait_event_timeout(128) {
                 Some(Event::Quit { .. }) => break 'outer,
                 Some(Event::KeyDown { keycode: Some(keycode), .. }) => {
                     let action = match keycode {

@@ -3,7 +3,7 @@ use cgmath::Vector2;
 use entity_store::*;
 use spatial_hash::*;
 use straight_line::*;
-use content::ActionType;
+use content::*;
 
 pub struct GamePolicy;
 
@@ -21,6 +21,12 @@ impl GamePolicy {
             if let Some((new_position, new_trajectory)) = trajectory.step() {
                 if spatial_hash.contains(new_position) {
                     return Some(RainUpdate::Fall(new_position, new_trajectory));
+                } else {
+                    let wrapped_position = Vector2::new(new_position.x % spatial_hash.width() as i32,
+                                                        new_position.y % spatial_hash.height() as i32);
+                    let mut trajectory = new_trajectory.reset_position(wrapped_position);
+                    trajectory.step_in_place();
+                    return Some(RainUpdate::Fall(wrapped_position, trajectory));
                 }
             }
 
@@ -42,12 +48,17 @@ impl GamePolicy {
                                 change.invisible.remove(*id);
                             }
                         }
+
+                        if new_trajectory.is_complete() {
+                            change.tile.insert(*id, ComplexTile::Simple(TileType::Splash));
+                        }
+
                         change.position.insert(*id, new_position);
                         change.finite_trajectory.insert(*id, new_trajectory);
                     }
                     RainUpdate::Reset(trajectory) => {
-                        let x = (rng.next_u32() % (spatial_hash.width() as u32)) as i32;
-                        let y = (rng.next_u32() % (spatial_hash.height() as u32)) as i32;
+                        let x = (rng.gen::<usize>() % (spatial_hash.width())) as i32;
+                        let y = (rng.gen::<usize>() % (spatial_hash.height())) as i32;
                         let new_position = Vector2::new(x, y);
                         change.position.insert(*id, new_position);
 
@@ -62,6 +73,8 @@ impl GamePolicy {
                         let mut new_trajectory = trajectory.reset(new_position);
                         new_trajectory.step_in_place();
                         change.finite_trajectory.insert(*id, new_trajectory);
+
+                        change.tile.insert(*id, ComplexTile::Simple(TileType::Rain));
                     }
                 }
             }

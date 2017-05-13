@@ -46,6 +46,6 @@ pub fn rain(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
     change.position.insert(entity_id, position);
     change.tile_priority.insert(entity_id, 2);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Rain));
-    change.finite_trajectory.insert(entity_id, FiniteAbsoluteLineTraverse::new_offset(position, Vector2::new(-6, 8)));
+    change.finite_trajectory.insert(entity_id, FiniteAbsoluteLineTraverse::new_offset(position, Vector2::new(0, 8)));
     change.forgetable.insert(entity_id);
 }

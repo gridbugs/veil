@@ -102,8 +102,12 @@ impl FiniteRelativeLineTraverse {
         }
     }
 
+    pub fn is_complete(&self) -> bool {
+        self.count > self.infinite.major_delta_abs
+    }
+
     pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
-        if self.count > self.infinite.major_delta_abs {
+        if self.is_complete() {
             None
         } else {
             let coord = self.infinite.step_in_place();
@@ -229,13 +233,26 @@ impl FiniteAbsoluteLineTraverse {
         self.current
     }
 
+    pub fn is_complete(&self) -> bool {
+        self.relative.is_complete()
+    }
+
     pub fn reset_in_place(&mut self, start: Vector2<i32>) {
         self.relative.reset_in_place();
+        self.reset_position_in_place(start);
+    }
+
+    pub fn reset_position_in_place(&mut self, start: Vector2<i32>) {
         self.current = start;
     }
 
     pub fn reset(mut self, start: Vector2<i32>) -> Self {
         self.reset_in_place(start);
+        self
+    }
+
+    pub fn reset_position(mut self, start: Vector2<i32>) -> Self {
+        self.reset_position_in_place(start);
         self
     }
 }
