@@ -4,9 +4,9 @@ use cgmath::Vector2;
 
 use direction::{Direction, CardinalDirection, OrdinalDirection};
 use spatial_hash::SpatialHashTable;
-use knowledge::PlayerKnowledgeGrid;
 use entity_store::EntityStore;
 use vector_index::VectorIndex;
+use knowledge::KnowledgeGrid;
 
 // Different types of rounding functions
 enum RoundType {
@@ -350,8 +350,9 @@ impl Shadowcast {
     }
 
     // returns true iff knowledge changed as a result of the scan
-    fn scan(&self, args: &OctantArgs, scan: &Scan,
-            entity_store: &EntityStore, time: u64, knowledge: &mut PlayerKnowledgeGrid) -> bool {
+    fn scan<K: KnowledgeGrid>(&self, args: &OctantArgs, scan: &Scan,
+                              entity_store: &EntityStore, time: u64,
+                              knowledge: &mut K) -> bool {
         let mut changed = false;
         let mut coord = args.octant.depth_idx.create_coord(scan.depth_idx);
 
@@ -441,8 +442,9 @@ impl Shadowcast {
     }
 
     // returns true iff the knowledge was changed
-    fn detect_visible_area_octant(&self, args: &OctantArgs,
-                                  entity_store: &EntityStore, time: u64, knowledge: &mut PlayerKnowledgeGrid) -> bool {
+    fn detect_visible_area_octant<K: KnowledgeGrid>(&self, args: &OctantArgs,
+                                                    entity_store: &EntityStore, time: u64,
+                                                    knowledge: &mut K) -> bool {
         let mut changed = false;
         let limits = Limits::new(args.eye, args.world, args.octant);
 
@@ -461,8 +463,8 @@ impl Shadowcast {
     }
 
     // returns true iff the knowledge was changed
-    pub fn observe(&self, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
-                   entity_store: &EntityStore, time: u64, knowledge: &mut PlayerKnowledgeGrid) -> bool {
+    pub fn observe<K: KnowledgeGrid>(&self, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
+                                      entity_store: &EntityStore, time: u64, knowledge: &mut K) -> bool {
 
         let mut changed = if let Some(eye_cell) = world.get(eye) {
             knowledge.update_cell(eye, eye_cell, entity_store, time)

@@ -2,6 +2,7 @@ use entity_store::EntityStore;
 use spatial_hash::SpatialHashCell;
 use grid::{StaticGrid, StaticGridIdx};
 use content::{ComplexTile, OverlayType};
+use knowledge::KnowledgeGrid;
 
 #[derive(Debug)]
 pub struct PlayerKnowledgeTile {
@@ -81,8 +82,10 @@ impl PlayerKnowledgeGrid {
     pub fn get<I: StaticGridIdx>(&self, coord: I) -> Option<&PlayerKnowledgeCell> {
         self.grid.get(coord)
     }
+}
 
-    pub fn update_cell<I: StaticGridIdx>(&mut self, coord: I, spatial_hash_cell: &SpatialHashCell,
+impl KnowledgeGrid for PlayerKnowledgeGrid {
+    fn update_cell<I: StaticGridIdx>(&mut self, coord: I, spatial_hash_cell: &SpatialHashCell,
                                          entity_store: &EntityStore, time: u64) -> bool {
 
         if let Some(knowledge_cell) = self.grid.get_mut(coord) {
