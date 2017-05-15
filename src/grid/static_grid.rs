@@ -1,4 +1,7 @@
 use std::slice;
+use direction::Direction;
+use into_coord::IntoCoord;
+use cgmath::Vector2;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StaticGrid<T> {
@@ -11,6 +14,10 @@ pub struct StaticGrid<T> {
 pub trait StaticGridIdx: Copy {
     fn wrap_to_index(self, width: usize) -> usize;
     fn is_valid(self, width: usize) -> bool;
+    fn to_coord(self, width: usize) -> Vector2<i32> {
+        let idx = self.wrap_to_index(width);
+        Vector2::new((idx % width) as i32, (idx / width) as i32)
+    }
 }
 
 impl StaticGridIdx for (usize, usize) {
@@ -28,6 +35,15 @@ impl StaticGridIdx for (isize, isize) {
     }
     fn is_valid(self, width: usize) -> bool {
         self.0 >= 0 && self.1 >= 0 && (self.0 as usize) < width
+    }
+}
+
+impl StaticGridIdx for usize {
+    fn wrap_to_index(self, _: usize) -> usize {
+        self
+    }
+    fn is_valid(self, width: usize) -> bool {
+        true
     }
 }
 
@@ -121,6 +137,16 @@ impl<T> StaticGrid<T> {
     pub fn coord_iter(&self) -> CoordIter {
         CoordIter::new(self.width, self.height)
     }
+
+    pub fn neighbour_coord_iter<Idx: StaticGridIdx, IC: IntoCoord, Iter: Iterator<Item=IC>, IntoIter: IntoIterator<Item=IC, IntoIter=Iter>>
+        (&self, base: Idx, into_iter: IntoIter) -> NeighbourCoordIter<IC, Iter> {
+        NeighbourCoordIter {
+            width: self.width as i32,
+            height: self.height as i32,
+            base: base.to_coord(self.width),
+            iter: into_iter.into_iter(),
+        }
+    }
 }
 
 pub type Iter<'a, T> = slice::Iter<'a, T>;
@@ -159,5 +185,26 @@ impl Iterator for CoordIter {
         }
 
         ret
+    }
+}
+
+pub struct NeighbourCoordIter<IC: IntoCoord, Iter: Iterator<Item=IC>> {
+    width: i32,
+    height: i32,
+    base: Vector2<i32>,
+    iter: Iter,
+}
+
+impl<IC: IntoCoord, Iter: Iterator<Item=IC>> Iterator for NeighbourCoordIter<IC, Iter> {
+    type Item = Vector2<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(direction) = self.iter.next() {
+            let offset = direction.into_coord();
+            let coord = offset + self.base;
+            if coord.x >= 0 && coord.y >= 0 && coord.x < self.width && coord.y < self.height {
+                return Some(coord);
+            }
+        }
+        None
     }
 }

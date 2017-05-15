@@ -1,5 +1,8 @@
 use cgmath::Vector2;
+use enum_primitive::FromPrimitive;
+use into_coord::IntoCoord;
 
+enum_from_primitive! {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     North,
@@ -11,7 +14,9 @@ pub enum Direction {
     West,
     NorthWest,
 }
+}
 
+enum_from_primitive! {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CardinalDirection {
     North,
@@ -19,13 +24,16 @@ pub enum CardinalDirection {
     South,
     West
 }
+}
 
+enum_from_primitive! {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrdinalDirection {
     NorthEast,
     SouthEast,
     SouthWest,
     NorthWest,
+}
 }
 
 impl Direction {
@@ -176,4 +184,67 @@ impl OrdinalDirection {
             }
         }
     }
+}
+
+macro_rules! make_direction_iter {
+    ($col_name:ident, $iter_name:ident, $type:ident) => {
+        pub struct $iter_name(u8);
+        impl Iterator for $iter_name {
+            type Item = $type;
+            fn next(&mut self) -> Option<Self::Item> {
+                let d = Self::Item::from_u8(self.0);
+                self.0 += 1;
+                d
+            }
+        }
+
+        #[derive(Clone, Copy)]
+        pub struct $col_name;
+        impl IntoIterator for $col_name {
+            type Item = $type;
+            type IntoIter = $iter_name;
+            fn into_iter(self) -> Self::IntoIter {
+                $iter_name(0)
+            }
+        }
+    }
+}
+
+make_direction_iter!{Directions, DirectionIter, Direction}
+make_direction_iter!{CardinalDirections, CardinalDirectionIter, CardinalDirection}
+make_direction_iter!{OrdinalDirections, OrdinalDirectionIter, OrdinalDirection}
+
+macro_rules! make_subdirection_iter {
+    ($col_name:ident, $backing_col_name:ident, $iter_name:ident, $backing_iter_name:ident) => {
+        pub struct $iter_name($backing_iter_name);
+        impl Iterator for $iter_name {
+            type Item = Direction;
+            fn next(&mut self) -> Option<Self::Item> {
+                self.0.next().map(|d| d.direction())
+            }
+        }
+
+        #[derive(Clone, Copy)]
+        pub struct $col_name($backing_col_name);
+        impl IntoIterator for $col_name {
+            type Item = Direction;
+            type IntoIter = $iter_name;
+            fn into_iter(self) -> Self::IntoIter {
+                $iter_name(self.0.into_iter())
+            }
+        }
+    }
+}
+
+make_subdirection_iter!{DirectionsCardinal, CardinalDirections, DirectionCardinalIter, CardinalDirectionIter}
+make_subdirection_iter!{DirectionsOrdinal, OrdinalDirections, DirectionOrdinalIter, OrdinalDirectionIter}
+
+impl IntoCoord for Direction {
+    fn into_coord(self) -> Vector2<i32> { self.vector() }
+}
+impl IntoCoord for CardinalDirection {
+    fn into_coord(self) -> Vector2<i32> { self.vector() }
+}
+impl IntoCoord for OrdinalDirection {
+    fn into_coord(self) -> Vector2<i32> { self.vector() }
 }
