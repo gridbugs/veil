@@ -17,6 +17,7 @@ pub struct PlayerKnowledgeCell {
     pub tiles: Vec<PlayerKnowledgeTile>,
     pub overlay: Option<OverlayType>,
     pub wall: bool,
+    pub solid: bool,
 }
 
 #[derive(Debug)]
@@ -32,6 +33,7 @@ impl Default for PlayerKnowledgeCell {
             tiles: Vec::new(),
             overlay: None,
             wall: false,
+            solid: false,
         }
     }
 }
@@ -60,6 +62,7 @@ impl PlayerKnowledgeCell {
                         }
                     }
                 }
+                self.solid = entity_store.solid.contains(entity_id);
             }
 
             changed = true;
