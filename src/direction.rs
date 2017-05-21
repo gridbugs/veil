@@ -225,12 +225,12 @@ macro_rules! make_subdirection_iter {
         }
 
         #[derive(Clone, Copy)]
-        pub struct $col_name($backing_col_name);
+        pub struct $col_name;
         impl IntoIterator for $col_name {
             type Item = Direction;
             type IntoIter = $iter_name;
             fn into_iter(self) -> Self::IntoIter {
-                $iter_name(self.0.into_iter())
+                $iter_name($backing_col_name.into_iter())
             }
         }
     }

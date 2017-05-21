@@ -1,5 +1,4 @@
 use std::slice;
-use direction::Direction;
 use into_coord::IntoCoord;
 use cgmath::Vector2;
 
@@ -42,7 +41,7 @@ impl StaticGridIdx for usize {
     fn wrap_to_index(self, _: usize) -> usize {
         self
     }
-    fn is_valid(self, width: usize) -> bool {
+    fn is_valid(self, _: usize) -> bool {
         true
     }
 }

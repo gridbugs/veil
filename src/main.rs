@@ -25,7 +25,11 @@ mod direction;
 mod policy;
 mod straight_line;
 mod vector_index;
+mod grid_search;
 mod into_coord;
+mod best;
+mod invert_ord;
+mod behaviour;
 
 mod tests;
 

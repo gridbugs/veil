@@ -7,6 +7,7 @@ use spatial_hash::SpatialHashTable;
 use entity_store::EntityStore;
 use vector_index::VectorIndex;
 use knowledge::KnowledgeGrid;
+use observation::ObservationMetadata;
 
 // Different types of rounding functions
 enum RoundType {
@@ -352,8 +353,7 @@ impl Shadowcast {
     // returns true iff knowledge changed as a result of the scan
     fn scan<K: KnowledgeGrid>(&self, args: &OctantArgs, scan: &Scan,
                               entity_store: &EntityStore, time: u64,
-                              knowledge: &mut K) -> bool {
-        let mut changed = false;
+                              knowledge: &mut K) -> ObservationMetadata {
         let mut coord = args.octant.depth_idx.create_coord(scan.depth_idx);
 
         let mut first_iteration = true;
@@ -361,6 +361,7 @@ impl Shadowcast {
         let mut previous_visibility = -1.0;
         let mut idx = scan.start_lateral_idx;
         let mut min_slope = scan.frame.min_slope;
+        let mut metadata = Default::default();
 
         let final_idx = scan.end_lateral_idx + args.octant.lateral_step;
 
@@ -384,7 +385,7 @@ impl Shadowcast {
             let between = coord - args.eye;
             let distance_squared = between.x * between.x + between.y * between.y;
             if distance_squared < args.distance_squared {
-                changed = knowledge.update_cell(coord, cell, entity_store, time) || changed;
+                metadata |= knowledge.update_cell(coord, cell, entity_store, time);
             }
 
             // compute current visibility
@@ -438,14 +439,14 @@ impl Shadowcast {
             idx += args.octant.lateral_step;
         }
 
-        changed
+        metadata
     }
 
     // returns true iff the knowledge was changed
     fn detect_visible_area_octant<K: KnowledgeGrid>(&self, args: &OctantArgs,
                                                     entity_store: &EntityStore, time: u64,
-                                                    knowledge: &mut K) -> bool {
-        let mut changed = false;
+                                                    knowledge: &mut K) -> ObservationMetadata {
+        let mut metadata = Default::default();
         let limits = Limits::new(args.eye, args.world, args.octant);
 
         // Initial stack frame
@@ -455,28 +456,28 @@ impl Shadowcast {
             if let Some(scan) = Scan::new(&limits, &frame, args.octant, args.distance) {
                 // Scan::new can yield None if the scan would be entirely off the grid
                 // outside the view distance.
-                changed = self.scan(args, &scan, entity_store, time, knowledge) || changed;
+                metadata |= self.scan(args, &scan, entity_store, time, knowledge);
             }
         }
 
-        changed
+        metadata
     }
 
     // returns true iff the knowledge was changed
     pub fn observe<K: KnowledgeGrid>(&self, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
-                                      entity_store: &EntityStore, time: u64, knowledge: &mut K) -> bool {
+                                      entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
 
-        let mut changed = if let Some(eye_cell) = world.get(eye) {
+        let mut metadata = if let Some(eye_cell) = world.get(eye) {
             knowledge.update_cell(eye, eye_cell, entity_store, time)
         } else {
-            false
+            Default::default()
         };
 
         for octant in &self.octants {
             let args = OctantArgs::new(octant, world, eye, distance, 0.0, 1.0);
-            changed = self.detect_visible_area_octant(&args, entity_store, time, knowledge) || changed;
+            metadata |= self.detect_visible_area_octant(&args, entity_store, time, knowledge);
         }
 
-        changed
+        metadata
     }
 }

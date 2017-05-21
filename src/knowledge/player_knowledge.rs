@@ -1,8 +1,9 @@
-use entity_store::EntityStore;
+use entity_store::{EntityId, EntityStore};
 use spatial_hash::SpatialHashCell;
 use grid::{StaticGrid, StaticGridIdx};
 use content::{ComplexTile, OverlayType};
 use knowledge::KnowledgeGrid;
+use observation::ObservationMetadata;
 
 #[derive(Debug)]
 pub struct PlayerKnowledgeTile {
@@ -18,6 +19,7 @@ pub struct PlayerKnowledgeCell {
     pub overlay: Option<OverlayType>,
     pub wall: bool,
     pub solid: bool,
+    pub door: Option<EntityId>,
 }
 
 #[derive(Debug)]
@@ -34,12 +36,13 @@ impl Default for PlayerKnowledgeCell {
             overlay: None,
             wall: false,
             solid: false,
+            door: None,
         }
     }
 }
 
 impl PlayerKnowledgeCell {
-    fn update(&mut self, spatial_hash_cell: &SpatialHashCell, entity_store: &EntityStore, time: u64) -> bool {
+    fn update(&mut self, spatial_hash_cell: &SpatialHashCell, entity_store: &EntityStore, time: u64) -> ObservationMetadata {
 
         let mut changed = false;
 
@@ -62,15 +65,25 @@ impl PlayerKnowledgeCell {
                         }
                     }
                 }
-                self.solid = entity_store.solid.contains(entity_id);
             }
+            self.solid = spatial_hash_cell.solid_count > 0;
+            self.door = spatial_hash_cell.door_set.iter().next().cloned();
 
             changed = true;
         }
 
+        let md = ObservationMetadata {
+            changed: changed,
+            new: self.last_updated == 0,
+        };
+
         self.last_updated = time;
 
-        changed
+        md
+    }
+
+    pub fn is_visible(&self, time: u64) -> bool {
+        self.last_updated == time
     }
 }
 
@@ -85,15 +98,19 @@ impl PlayerKnowledgeGrid {
     pub fn get<I: StaticGridIdx>(&self, coord: I) -> Option<&PlayerKnowledgeCell> {
         self.grid.get(coord)
     }
+
+    pub fn is_visible<I: StaticGridIdx>(&self, coord: I, time: u64) -> bool {
+        self.get(coord).map(|c| c.is_visible(time)).unwrap_or(false)
+    }
 }
 
 impl KnowledgeGrid for PlayerKnowledgeGrid {
     fn update_cell<I: StaticGridIdx>(&mut self, coord: I, spatial_hash_cell: &SpatialHashCell,
-                                         entity_store: &EntityStore, time: u64) -> bool {
+                                         entity_store: &EntityStore, time: u64) -> ObservationMetadata {
 
         if let Some(knowledge_cell) = self.grid.get_mut(coord) {
             if knowledge_cell.last_updated == time {
-                return false;
+                return Default::default();
             }
 
             if self.last_updated != time {
@@ -102,7 +119,7 @@ impl KnowledgeGrid for PlayerKnowledgeGrid {
 
             knowledge_cell.update(spatial_hash_cell, entity_store, time)
         } else {
-            false
+            Default::default()
         }
     }
 }

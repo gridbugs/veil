@@ -16,10 +16,15 @@ use knowledge::*;
 use observation::*;
 use policy::GamePolicy;
 use direction::Direction;
-
+use behaviour::*;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
+
+enum State {
+    ValidPath,
+    NoPath,
+}
 
 pub fn launch() {
 
@@ -33,13 +38,13 @@ pub fn launch() {
 "#,,,,,,,,,,,######+#####...........###########",
 "#,,,,,,,,,,,#................................#",
 "#,,,,,,,,,,,#................................#",
-"#####+#######................@...............#",
+"#####+#######..........@.....................#",
 "#............................................#",
 "#................##########+#########........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................+,,,,,+,,,,,,,,,,,,+........#",
+"#................#######,,,,,,,,,,,,#........#",
+"#................#,,,,,#,,,,,,,,,,,,+........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
@@ -115,10 +120,14 @@ pub fn launch() {
 
     let mut reactions = Vec::new();
 
+    let mut behaviour_state = BehaviourState::new();
+    let mut behaviour_env = BehaviourEnv::new(spatial_hash.width(), spatial_hash.height());
+
     'outer: loop {
 
-        shadowcast.observe(
-            *entity_store.position.get(&pc).unwrap(),
+        let position = *entity_store.position.get(&pc).unwrap();
+        let metadata = shadowcast.observe(
+            position,
             &spatial_hash,
             10,
             &entity_store,
@@ -134,11 +143,51 @@ pub fn launch() {
             match event_pump.wait_event_timeout(128) {
                 Some(Event::Quit { .. }) => break 'outer,
                 Some(Event::KeyDown { keycode: Some(keycode), .. }) => {
+
+                    /*
+                    let should_search = match state {
+                        State::ValidPath => {
+                            if knowledge.is_visible(path.destination(), time) {
+                                true
+                            } else {
+                                let mut should_search = false;
+                                for step in path.iter_from(path_idx) {
+                                    if let Some(cell) = knowledge.get(step.to_coord()) {
+                                        if cell.solid {
+                                            should_search = true;
+                                            break;
+                                        }
+                                        if !cell.is_visible(time) {
+                                            break;
+                                        }
+                                    }
+                                }
+                                should_search
+                            }
+                        }
+                        State::NoPath => true,
+                    };
+
+                    if should_search {
+                        bfs(&mut search_env, &knowledge, position, DirectionsCardinal, &mut path).expect("failed to search");
+                        state = State::ValidPath;
+                        path_idx = 0;
+                    }
+
+                    let step = path.get(path_idx).unwrap();
+*/
                     let action = match keycode {
                         Keycode::Up => ActionType::Walk(pc, Direction::North),
                         Keycode::Down => ActionType::Walk(pc, Direction::South),
                         Keycode::Left => ActionType::Walk(pc, Direction::West),
                         Keycode::Right => ActionType::Walk(pc, Direction::East),
+                        Keycode::Space => {
+                            /*
+                            path_idx += 1;
+                            ActionType::Walk(pc, step.direction())
+                            */
+                            patrol::patrol(pc, &entity_store, &knowledge, metadata, time, &mut behaviour_env, &mut behaviour_state)
+                        }
                         _ => continue 'inner,
                     };
 
