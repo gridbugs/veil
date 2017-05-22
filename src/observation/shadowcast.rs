@@ -465,7 +465,7 @@ impl Shadowcast {
 
     // returns true iff the knowledge was changed
     pub fn observe<K: KnowledgeGrid>(&self, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
-                                      entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
+                                     entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
 
         let mut metadata = if let Some(eye_cell) = world.get(eye) {
             knowledge.update_cell(eye, eye_cell, entity_store, time)

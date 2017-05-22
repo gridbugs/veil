@@ -3,7 +3,7 @@
 #![allow(unused_variables)]
 use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, FlagChangeType};
-use grid::{StaticGridIdx, StaticGrid};
+use grid::{static_grid, StaticGridIdx, StaticGrid};
 
 #[macro_use] mod generated_component_list_macros;
 
@@ -83,4 +83,15 @@ impl SpatialHashTable {
 
         update_component_loops!(self, store, change, time);
     }
+
+    pub fn iter(&self) -> Iter {
+        self.grid.iter()
+    }
+
+    pub fn coord_iter(&self) -> CoordIter {
+        self.grid.coord_iter()
+    }
 }
+
+pub type Iter<'a> = static_grid::Iter<'a, SpatialHashCell>;
+pub type CoordIter = static_grid::CoordIter;

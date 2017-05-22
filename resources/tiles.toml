@@ -20,6 +20,9 @@ PreEldrich = [3, 4]
 [tiles.Player]
 1 = [0, 2]
 
+[tiles.Undead]
+1 = [1, 2]
+
 [tiles.Rain]
 3 = [0, 3]
 

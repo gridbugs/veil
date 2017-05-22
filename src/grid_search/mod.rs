@@ -10,7 +10,9 @@ use coord::LookupCoord;
 #[derive(Debug)]
 pub enum Error {
     InvalidGridSize,
-    AlreadyAtDestination,
+    NoPath,
+    CantEnterDestination,
+    DestinationOutsideKnowledge,
 }
 
 pub type Result<T> = result::Result<T, Error>;
@@ -132,7 +134,6 @@ impl SearchEnv {
 
     fn construct_path(&self, mut idx: Vector2<i32>, path: &mut Path) -> Result<()> {
         path.steps.clear();
-
         loop {
             let cell = self.node_grid.get(idx).ok_or(Error::InvalidGridSize)?;
 
@@ -152,13 +153,13 @@ impl SearchEnv {
 }
 
 pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
-                               env: &mut SearchEnv,
-                               knowledge: &Grid,
-                               start: Vector2<i32>,
-                               directions: Dirs,
-                               score: ScoreFn,
-                               can_enter: CanEnterFn,
-                               path: &mut Path) -> Result<()>
+        env: &mut SearchEnv,
+        knowledge: &Grid,
+        start: Vector2<i32>,
+        directions: Dirs,
+        score: ScoreFn,
+        can_enter: CanEnterFn,
+        path: &mut Path) -> Result<()>
     where Dirs: Copy + IntoIterator<Item=Direction>,
           Grid: LookupCoord<Item=Cell>,
           Score: Ord,
@@ -200,10 +201,104 @@ pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
         }
     }
 
-    let dest = best.into_value();
-    if dest == start {
-        return Err(Error::AlreadyAtDestination);
+    env.construct_path(best.into_value(), path)
+}
+
+pub fn bfs_coord<Dirs, Grid, Cell, CanEnterFn>(
+        env: &mut SearchEnv,
+        knowledge: &Grid,
+        start: Vector2<i32>,
+        directions: Dirs,
+        dest: Vector2<i32>,
+        can_enter: CanEnterFn,
+        path: &mut Path) -> Result<()>
+    where Dirs: Copy + IntoIterator<Item=Direction>,
+          Grid: LookupCoord<Item=Cell>,
+          CanEnterFn: Fn(&Cell) -> bool,
+{
+    env.clear();
+
+    env.queue.push_back(start);
+    env.see_first(start)?;
+
+    while let Some(current_coord) = env.queue.pop_front() {
+        for (direction, coord) in izip!(directions, env.node_grid.neighbour_coord_iter(current_coord, directions)) {
+            if env.is_seen(coord)? {
+                continue;
+            }
+
+            env.see(coord, direction)?;
+
+            if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
+
+                if can_enter(knowledge_cell) {
+                    if coord == dest {
+                        return env.construct_path(dest, path);
+                    }
+                } else {
+                    if coord == dest {
+                        return Err(Error::CantEnterDestination);
+                    }
+                    continue;
+                }
+
+            } else {
+                if coord == dest {
+                    return Err(Error::DestinationOutsideKnowledge);
+                }
+                continue;
+            }
+
+            env.queue.push_back(coord);
+        }
     }
 
-    env.construct_path(dest, path)
+    Err(Error::NoPath)
+}
+
+pub fn bfs_predicate<Dirs, Grid, Cell, PredFn, CanEnterFn>(
+        env: &mut SearchEnv,
+        knowledge: &Grid,
+        start: Vector2<i32>,
+        directions: Dirs,
+        pred: PredFn,
+        can_enter: CanEnterFn,
+        path: &mut Path) -> Result<()>
+    where Dirs: Copy + IntoIterator<Item=Direction>,
+          Grid: LookupCoord<Item=Cell>,
+          PredFn: Fn(&Cell) -> bool,
+          CanEnterFn: Fn(&Cell) -> bool,
+{
+    env.clear();
+
+    env.queue.push_back(start);
+    env.see_first(start)?;
+
+    while let Some(current_coord) = env.queue.pop_front() {
+        for (direction, coord) in izip!(directions, env.node_grid.neighbour_coord_iter(current_coord, directions)) {
+            if env.is_seen(coord)? {
+                continue;
+            }
+
+            env.see(coord, direction)?;
+
+            if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
+
+                if can_enter(knowledge_cell) {
+                    if pred(knowledge_cell) {
+                        return env.construct_path(coord, path);
+                    }
+                } else {
+                    continue;
+                }
+
+            } else {
+                continue;
+            }
+
+            env.queue.push_back(coord);
+        }
+    }
+
+    Err(Error::NoPath)
 }

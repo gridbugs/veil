@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(unused_macros)]
 #![feature(inclusive_range_syntax)]
 
 extern crate cgmath;

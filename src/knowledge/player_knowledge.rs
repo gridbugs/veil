@@ -22,6 +22,8 @@ pub struct PlayerKnowledgeCell {
     pub wall: bool,
     pub solid: bool,
     pub door: Option<EntityId>,
+    pub enemy: Option<EntityId>,
+    pub player: bool,
 }
 
 #[derive(Debug)]
@@ -39,6 +41,8 @@ impl Default for PlayerKnowledgeCell {
             wall: false,
             solid: false,
             door: None,
+            enemy: None,
+            player: false,
         }
     }
 }
@@ -70,6 +74,8 @@ impl PlayerKnowledgeCell {
             }
             self.solid = spatial_hash_cell.solid_count > 0;
             self.door = spatial_hash_cell.door_set.iter().next().cloned();
+            self.enemy = spatial_hash_cell.enemy_set.iter().next().cloned();
+            self.player = spatial_hash_cell.player_count > 0;
 
             changed = true;
         }

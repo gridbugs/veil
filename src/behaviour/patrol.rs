@@ -75,7 +75,7 @@ pub fn patrol(id: EntityId,
               observation_metadata: ObservationMetadata,
               time: u64,
               env: &mut BehaviourEnv,
-              state: &mut BehaviourState) -> ActionType {
+              state: &mut BehaviourState) -> Option<ActionType> {
 
     let position = *entity_store.position.get(&id).expect("Missing position");
 
@@ -86,7 +86,7 @@ pub fn patrol(id: EntityId,
             if let Some(prev_kcell) = knowledge.get(prev_step.from_coord()) {
                 if let Some(door_id) = prev_kcell.door {
                     if state.opened_doors.remove(&door_id) {
-                        return ActionType::CloseDoor(door_id);
+                        return Some(ActionType::CloseDoor(door_id));
                     }
                 }
             }
@@ -97,14 +97,14 @@ pub fn patrol(id: EntityId,
         if let Some(door_id) = dest_kcell.door {
             if let Some(&DoorState::Closed) = entity_store.door_state.get(&door_id) {
                 state.opened_doors.insert(door_id);
-                return ActionType::OpenDoor(door_id);
+                return Some(ActionType::OpenDoor(door_id));
             }
         }
 
         state.path_idx += 1;
         state.prev_step = Some(step);
-        return ActionType::Walk(id, step.direction())
+        return Some(ActionType::Walk(id, step.direction()));
     }
 
-    ActionType::Null
+    None
 }

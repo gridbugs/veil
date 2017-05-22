@@ -37,16 +37,16 @@ pub fn launch() {
 "#,,,,,,,,,,,#,,,,,,,,,,#...........#,,,,,,,,,#",
 "#,,,,,,,,,,,######+#####...........###########",
 "#,,,,,,,,,,,#................................#",
-"#,,,,,,,,,,,#................................#",
-"#####+#######..........@.....................#",
+"#,,,,,,,,,,,#.......@........................#",
+"#####+#######................................#",
 "#............................................#",
 "#................##########+#########........#",
+"#................#,,z,,#,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................#######,,,,,,,,,,,,#........#",
+"#................###+###,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,+........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,#........#",
+"#................+,,,,,+,,,,,,,,,,,,#........#",
 "#................#,,,,,#,,,,,,,,,,,,#........#",
 "##############################################",
     ];
@@ -59,6 +59,7 @@ pub fn launch() {
     let mut rng = StdRng::new().unwrap();
 
     let mut pc = 0;
+    let mut zombie = 0;
     let mut y = 0;
     for row in level_str.iter() {
         let mut x = 0;
@@ -79,6 +80,11 @@ pub fn launch() {
                 '@' => {
                     pc = allocator.allocate();
                     prototypes::player(&mut change, pc, Vector2::new(x, y));
+                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
+                }
+                'z' => {
+                    zombie = allocator.allocate();
+                    prototypes::undead(&mut change, zombie, Vector2::new(x, y));
                     prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
                 }
                 '+' => {
@@ -102,6 +108,7 @@ pub fn launch() {
     entity_store.commit_change(&mut change);
 
     let mut knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
+    let mut zknowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
     let policy = GamePolicy;
 
@@ -135,59 +142,22 @@ pub fn launch() {
             &mut knowledge
         );
 
-        renderer.update(&knowledge, time);
-        renderer.draw();
-        renderer.publish();
+        if metadata.changed {
+            renderer.update(&knowledge, time);
+            renderer.draw();
+            renderer.publish();
+        }
 
         'inner: loop {
             match event_pump.wait_event_timeout(128) {
                 Some(Event::Quit { .. }) => break 'outer,
                 Some(Event::KeyDown { keycode: Some(keycode), .. }) => {
 
-                    /*
-                    let should_search = match state {
-                        State::ValidPath => {
-                            if knowledge.is_visible(path.destination(), time) {
-                                true
-                            } else {
-                                let mut should_search = false;
-                                for step in path.iter_from(path_idx) {
-                                    if let Some(cell) = knowledge.get(step.to_coord()) {
-                                        if cell.solid {
-                                            should_search = true;
-                                            break;
-                                        }
-                                        if !cell.is_visible(time) {
-                                            break;
-                                        }
-                                    }
-                                }
-                                should_search
-                            }
-                        }
-                        State::NoPath => true,
-                    };
-
-                    if should_search {
-                        bfs(&mut search_env, &knowledge, position, DirectionsCardinal, &mut path).expect("failed to search");
-                        state = State::ValidPath;
-                        path_idx = 0;
-                    }
-
-                    let step = path.get(path_idx).unwrap();
-*/
                     let action = match keycode {
                         Keycode::Up => ActionType::Walk(pc, Direction::North),
                         Keycode::Down => ActionType::Walk(pc, Direction::South),
                         Keycode::Left => ActionType::Walk(pc, Direction::West),
                         Keycode::Right => ActionType::Walk(pc, Direction::East),
-                        Keycode::Space => {
-                            /*
-                            path_idx += 1;
-                            ActionType::Walk(pc, step.direction())
-                            */
-                            patrol::patrol(pc, &entity_store, &knowledge, metadata, time, &mut behaviour_env, &mut behaviour_state)
-                        }
                         _ => continue 'inner,
                     };
 
@@ -213,8 +183,36 @@ pub fn launch() {
                     time += 1;
                     spatial_hash.update(&entity_store, &change, time);
                     entity_store.commit_change(&mut change);
-                    break 'inner;
+                    continue 'outer;
                 }
+            }
+        }
+
+        let position = *entity_store.position.get(&zombie).unwrap();
+        let metadata = shadowcast.observe(
+            position,
+            &spatial_hash,
+            10,
+            &entity_store,
+            time,
+            &mut zknowledge
+        );
+
+        let action = attack::attack(zombie, &entity_store, &zknowledge, &mut behaviour_env, &mut behaviour_state).or_else(|| {
+            patrol::patrol(zombie, &entity_store, &zknowledge, metadata, time, &mut behaviour_env, &mut behaviour_state)
+        }).unwrap_or(ActionType::Null);
+
+        reactions.push(action);
+
+        while let Some(action) = reactions.pop() {
+            action.populate(&mut change, &entity_store);
+
+            if policy.on_action(&change, &entity_store, &spatial_hash, &mut reactions) {
+                time += 1;
+                spatial_hash.update(&entity_store, &change, time);
+                entity_store.commit_change(&mut change);
+            } else {
+                change.clear();
             }
         }
     }
