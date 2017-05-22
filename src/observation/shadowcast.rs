@@ -1,4 +1,3 @@
-use std::cell::UnsafeCell;
 use std::cmp;
 use cgmath::Vector2;
 
@@ -319,14 +318,14 @@ impl<'a> OctantArgs<'a> {
     }
 }
 
-pub struct Shadowcast {
+pub struct ShadowcastEnv {
     octants: [Octant; NUM_OCTANTS],
-    stack: UnsafeCell<Vec<Frame>>,
+    stack: Vec<Frame>,
 }
 
-impl Shadowcast {
+impl ShadowcastEnv {
     pub fn new() -> Self {
-        Shadowcast {
+        ShadowcastEnv {
             // The order octants appear is the order one would visit
             // each octant if they started at -PI radians and moved
             // in the positive (anticlockwise) direction.
@@ -338,146 +337,139 @@ impl Shadowcast {
                       Octant::new(CardinalDirection::North, CardinalDirection::East),
                       Octant::new(CardinalDirection::North, CardinalDirection::West),
                       Octant::new(CardinalDirection::West, CardinalDirection::North),],
-            stack: UnsafeCell::new(Vec::new()),
+            stack: Vec::new(),
         }
-    }
-
-    fn pop(&self) -> Option<Frame> {
-        unsafe { &mut *self.stack.get() }.pop()
-    }
-
-    fn push(&self, frame: Frame) {
-        unsafe { &mut *self.stack.get() }.push(frame);
-    }
-
-    // returns true iff knowledge changed as a result of the scan
-    fn scan<K: KnowledgeGrid>(&self, args: &OctantArgs, scan: &Scan,
-                              entity_store: &EntityStore, time: u64,
-                              knowledge: &mut K) -> ObservationMetadata {
-        let mut coord = args.octant.depth_idx.create_coord(scan.depth_idx);
-
-        let mut first_iteration = true;
-        let mut previous_opaque = false;
-        let mut previous_visibility = -1.0;
-        let mut idx = scan.start_lateral_idx;
-        let mut min_slope = scan.frame.min_slope;
-        let mut metadata = Default::default();
-
-        let final_idx = scan.end_lateral_idx + args.octant.lateral_step;
-
-        while idx != final_idx {
-
-            let last_iteration = idx == scan.end_lateral_idx;
-
-            // update the coord to the current grid position
-            args.octant.lateral_idx.set(&mut coord, idx);
-
-            // look up spatial hash cell
-            let cell = match args.world.get(coord) {
-                Some(c) => c,
-                None => {
-                    idx += args.octant.lateral_step;
-                    continue;
-                }
-            };
-
-            // report the cell as visible
-            let between = coord - args.eye;
-            let distance_squared = between.x * between.x + between.y * between.y;
-            if distance_squared < args.distance_squared {
-                metadata |= knowledge.update_cell(coord, cell, entity_store, time);
-            }
-
-            // compute current visibility
-            let current_visibility = (scan.frame.visibility - cell.opacity_total).max(0.0);
-            let current_opaque = current_visibility == 0.0;
-
-            // process changes in visibility
-            if !first_iteration {
-                // determine corner of current cell we'll be looking through
-                let corner = if current_visibility > previous_visibility {
-                    Some(args.octant.opacity_decrease_corner)
-                } else if current_visibility < previous_visibility {
-                    Some(args.octant.opacity_increase_corner)
-                } else {
-                    // no change in visibility - nothing happens
-                    None
-                };
-
-                if let Some(corner) = corner {
-                    let corner_coord = cell_corner(coord, corner);
-                    let slope = args.octant.compute_slope(scan.limits.eye_centre, corner_coord);
-                    assert!(slope >= 0.0);
-                    assert!(slope <= 1.0);
-
-                    if !previous_opaque {
-                        // unless this marks the end of an opaque region, push
-                        // the just-completed region onto the stack so it can
-                        // be expanded in a future scan
-                        self.push(Frame::new(scan.frame.depth + 1,
-                                             min_slope,
-                                             slope,
-                                             previous_visibility));
-                    }
-
-                    min_slope = slope;
-                }
-            }
-
-            if last_iteration && !current_opaque {
-                // push the final region of the scan to the stack
-                self.push(Frame::new(scan.frame.depth + 1,
-                                     min_slope,
-                                     scan.frame.max_slope,
-                                     current_visibility));
-            }
-
-            previous_opaque = current_opaque;
-            previous_visibility = current_visibility;
-            first_iteration = false;
-
-            idx += args.octant.lateral_step;
-        }
-
-        metadata
-    }
-
-    // returns true iff the knowledge was changed
-    fn detect_visible_area_octant<K: KnowledgeGrid>(&self, args: &OctantArgs,
-                                                    entity_store: &EntityStore, time: u64,
-                                                    knowledge: &mut K) -> ObservationMetadata {
-        let mut metadata = Default::default();
-        let limits = Limits::new(args.eye, args.world, args.octant);
-
-        // Initial stack frame
-        self.push(Frame::new(1, args.initial_min_slope, args.initial_max_slope, 1.0));
-
-        while let Some(frame) = self.pop() {
-            if let Some(scan) = Scan::new(&limits, &frame, args.octant, args.distance) {
-                // Scan::new can yield None if the scan would be entirely off the grid
-                // outside the view distance.
-                metadata |= self.scan(args, &scan, entity_store, time, knowledge);
-            }
-        }
-
-        metadata
-    }
-
-    // returns true iff the knowledge was changed
-    pub fn observe<K: KnowledgeGrid>(&self, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
-                                     entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
-
-        let mut metadata = if let Some(eye_cell) = world.get(eye) {
-            knowledge.update_cell(eye, eye_cell, entity_store, time)
-        } else {
-            Default::default()
-        };
-
-        for octant in &self.octants {
-            let args = OctantArgs::new(octant, world, eye, distance, 0.0, 1.0);
-            metadata |= self.detect_visible_area_octant(&args, entity_store, time, knowledge);
-        }
-
-        metadata
     }
 }
+
+// returns true iff knowledge changed as a result of the scan
+fn scan<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs, scan: &Scan,
+                          entity_store: &EntityStore, time: u64,
+                          knowledge: &mut K) -> ObservationMetadata {
+    let mut coord = args.octant.depth_idx.create_coord(scan.depth_idx);
+
+    let mut first_iteration = true;
+    let mut previous_opaque = false;
+    let mut previous_visibility = -1.0;
+    let mut idx = scan.start_lateral_idx;
+    let mut min_slope = scan.frame.min_slope;
+    let mut metadata = Default::default();
+
+    let final_idx = scan.end_lateral_idx + args.octant.lateral_step;
+
+    while idx != final_idx {
+
+        let last_iteration = idx == scan.end_lateral_idx;
+
+        // update the coord to the current grid position
+        args.octant.lateral_idx.set(&mut coord, idx);
+
+        // look up spatial hash cell
+        let cell = match args.world.get(coord) {
+            Some(c) => c,
+            None => {
+                idx += args.octant.lateral_step;
+                continue;
+            }
+        };
+
+        // report the cell as visible
+        let between = coord - args.eye;
+        let distance_squared = between.x * between.x + between.y * between.y;
+        if distance_squared < args.distance_squared {
+            metadata |= knowledge.update_cell(coord, cell, entity_store, time);
+        }
+
+        // compute current visibility
+        let current_visibility = (scan.frame.visibility - cell.opacity_total).max(0.0);
+        let current_opaque = current_visibility == 0.0;
+
+        // process changes in visibility
+        if !first_iteration {
+            // determine corner of current cell we'll be looking through
+            let corner = if current_visibility > previous_visibility {
+                Some(args.octant.opacity_decrease_corner)
+            } else if current_visibility < previous_visibility {
+                Some(args.octant.opacity_increase_corner)
+            } else {
+                // no change in visibility - nothing happens
+                None
+            };
+
+            if let Some(corner) = corner {
+                let corner_coord = cell_corner(coord, corner);
+                let slope = args.octant.compute_slope(scan.limits.eye_centre, corner_coord);
+                assert!(slope >= 0.0);
+                assert!(slope <= 1.0);
+
+                if !previous_opaque {
+                    // unless this marks the end of an opaque region, push
+                    // the just-completed region onto the stack so it can
+                    // be expanded in a future scan
+                    stack.push(Frame::new(scan.frame.depth + 1,
+                                         min_slope,
+                                         slope,
+                                         previous_visibility));
+                }
+
+                min_slope = slope;
+            }
+        }
+
+        if last_iteration && !current_opaque {
+            // push the final region of the scan to the stack
+            stack.push(Frame::new(scan.frame.depth + 1,
+                                 min_slope,
+                                 scan.frame.max_slope,
+                                 current_visibility));
+        }
+
+        previous_opaque = current_opaque;
+        previous_visibility = current_visibility;
+        first_iteration = false;
+
+        idx += args.octant.lateral_step;
+    }
+
+    metadata
+}
+
+// returns true iff the knowledge was changed
+fn detect_visible_area_octant<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs,
+                                                entity_store: &EntityStore, time: u64,
+                                                knowledge: &mut K) -> ObservationMetadata {
+    let mut metadata = Default::default();
+    let limits = Limits::new(args.eye, args.world, args.octant);
+
+    // Initial stack frame
+    stack.push(Frame::new(1, args.initial_min_slope, args.initial_max_slope, 1.0));
+
+    while let Some(frame) = stack.pop() {
+        if let Some(scan_desc) = Scan::new(&limits, &frame, args.octant, args.distance) {
+            // Scan::new can yield None if the scan would be entirely off the grid
+            // outside the view distance.
+            metadata |= scan(stack, args, &scan_desc, entity_store, time, knowledge);
+        }
+    }
+
+    metadata
+}
+
+// returns true iff the knowledge was changed
+pub fn observe<K: KnowledgeGrid>(env: &mut ShadowcastEnv, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
+                                 entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
+
+    let mut metadata = if let Some(eye_cell) = world.get(eye) {
+        knowledge.update_cell(eye, eye_cell, entity_store, time)
+    } else {
+        Default::default()
+    };
+
+    for octant in env.octants.iter() {
+        let args = OctantArgs::new(octant, world, eye, distance, 0.0, 1.0);
+        metadata |= detect_visible_area_octant(&mut env.stack, &args, entity_store, time, knowledge);
+    }
+
+    metadata
+}
+

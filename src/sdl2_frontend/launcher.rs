@@ -112,7 +112,7 @@ pub fn launch() {
 
     let policy = GamePolicy;
 
-    let shadowcast = shadowcast::Shadowcast::new();
+    let mut shadowcast = shadowcast::ShadowcastEnv::new();
     let sdl = sdl2::init().expect("SDL2 initialization failed");
     let video = sdl.video().expect("Failed to connect to video subsystem");
     let mut renderer_env = RendererEnv::new(WIDTH_PX, HEIGHT_PX, &video);
@@ -133,7 +133,8 @@ pub fn launch() {
     'outer: loop {
 
         let position = *entity_store.position.get(&pc).unwrap();
-        let metadata = shadowcast.observe(
+        let metadata = shadowcast::observe(
+            &mut shadowcast,
             position,
             &spatial_hash,
             10,
@@ -189,7 +190,8 @@ pub fn launch() {
         }
 
         let position = *entity_store.position.get(&zombie).unwrap();
-        let metadata = shadowcast.observe(
+        let metadata = shadowcast::observe(
+            &mut shadowcast,
             position,
             &spatial_hash,
             10,
