@@ -1,5 +1,5 @@
 use std::slice;
-use into_coord::IntoCoord;
+use coord::IntoCoord;
 use cgmath::Vector2;
 
 #[derive(Debug, Serialize, Deserialize)]

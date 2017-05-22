@@ -9,8 +9,6 @@ use grid::{StaticGridIdx, StaticGrid};
 
 spatial_hash_imports!{}
 
-mod coord;
-
 type Position = position_type!();
 
 spatial_hash_cell_decl!{SpatialHashCell}

@@ -1,12 +1,11 @@
 use std::collections::VecDeque;
 use std::result;
 use std::slice;
-use knowledge::PlayerKnowledgeGrid;
 use grid:: StaticGrid;
 use direction::Direction;
 use cgmath::Vector2;
 use best::BestMapNonEmpty;
-use invert_ord::InvertOrd;
+use coord::LookupCoord;
 
 #[derive(Debug)]
 pub enum Error {
@@ -152,16 +151,27 @@ impl SearchEnv {
     }
 }
 
-pub fn bfs<D>(env: &mut SearchEnv, knowledge: &PlayerKnowledgeGrid, start: Vector2<i32>, directions: D, path: &mut Path) -> Result<()>
-    where D: Copy + IntoIterator<Item=Direction>
+pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
+                               env: &mut SearchEnv,
+                               knowledge: &Grid,
+                               start: Vector2<i32>,
+                               directions: Dirs,
+                               score: ScoreFn,
+                               can_enter: CanEnterFn,
+                               path: &mut Path) -> Result<()>
+    where Dirs: Copy + IntoIterator<Item=Direction>,
+          Grid: LookupCoord<Item=Cell>,
+          Score: Ord,
+          ScoreFn: Fn(&Cell) -> Score,
+          CanEnterFn: Fn(&Cell) -> bool,
 {
     env.clear();
 
     env.queue.push_back(start);
     env.see_first(start)?;
 
-    let mut best = if let Some(knowledge_cell) = knowledge.get(start) {
-        BestMapNonEmpty::new(InvertOrd::new(knowledge_cell.last_updated), start)
+    let mut best = if let Some(c) = knowledge.lookup_coord(start) {
+        BestMapNonEmpty::new(score(c), start)
     } else {
         return Err(Error::InvalidGridSize);
     };
@@ -174,12 +184,14 @@ pub fn bfs<D>(env: &mut SearchEnv, knowledge: &PlayerKnowledgeGrid, start: Vecto
 
             env.see(coord, direction)?;
 
-            if let Some(knowledge_cell) = knowledge.get(coord) {
-                if knowledge_cell.solid && knowledge_cell.door.is_none() {
+            if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
+
+                if can_enter(knowledge_cell) {
+                    best.insert(score(knowledge_cell), coord);
+                } else {
                     continue;
                 }
 
-                best.insert(InvertOrd::new(knowledge_cell.last_updated), coord);
             } else {
                 continue;
             }

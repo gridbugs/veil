@@ -1,6 +1,6 @@
 use cgmath::Vector2;
 use enum_primitive::FromPrimitive;
-use into_coord::IntoCoord;
+use coord::IntoCoord;
 
 enum_from_primitive! {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

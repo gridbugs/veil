@@ -1,10 +1,11 @@
 use behaviour::{BehaviourEnv, BehaviourState};
-use knowledge::PlayerKnowledgeGrid;
+use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeCell};
 use observation::ObservationMetadata;
 use content::{ActionType, DoorState};
 use direction::DirectionsCardinal;
 use entity_store::{EntityId, EntityStore};
-use grid_search::{bfs, SearchEnv, Step};
+use grid_search::{bfs_best, SearchEnv, Step};
+use invert_ord::InvertOrd;
 use cgmath::Vector2;
 
 fn maybe_make_step(position: Vector2<i32>,
@@ -43,6 +44,13 @@ fn maybe_make_step(position: Vector2<i32>,
     })
 }
 
+fn search_score(cell: &PlayerKnowledgeCell) -> InvertOrd<u64> {
+    InvertOrd::new(cell.last_updated)
+}
+
+fn search_can_enter(cell: &PlayerKnowledgeCell) -> bool {
+    !cell.solid || cell.door.is_some()
+}
 
 fn make_step(position: Vector2<i32>,
              knowledge: &PlayerKnowledgeGrid,
@@ -54,7 +62,8 @@ fn make_step(position: Vector2<i32>,
     if let Some(step) = maybe_make_step(position, knowledge, observation_metadata, time, state) {
         step
     } else {
-        bfs(search_env, knowledge, position, DirectionsCardinal, &mut state.path).expect("Failed to search");
+        bfs_best(search_env, knowledge, position, DirectionsCardinal, search_score, search_can_enter, &mut state.path)
+            .expect("Failed to search");
         state.path_idx = 0;
         state.path.first().expect("Empty path")
     }

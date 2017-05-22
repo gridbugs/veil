@@ -4,6 +4,8 @@ use grid::{StaticGrid, StaticGridIdx};
 use content::{ComplexTile, OverlayType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
+use coord::LookupCoord;
+use cgmath::Vector2;
 
 #[derive(Debug)]
 pub struct PlayerKnowledgeTile {
@@ -121,5 +123,12 @@ impl KnowledgeGrid for PlayerKnowledgeGrid {
         } else {
             Default::default()
         }
+    }
+}
+
+impl LookupCoord for PlayerKnowledgeGrid {
+    type Item = PlayerKnowledgeCell;
+    fn lookup_coord(&self, coord: Vector2<i32>) -> Option<&Self::Item> {
+        self.get(coord)
     }
 }
