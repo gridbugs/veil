@@ -10,6 +10,7 @@ pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.collider.insert(entity_id);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Player));
     change.tile_priority.insert(entity_id, 4);
+    change.forgetable.insert(entity_id);
 }
 
 pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -18,6 +19,7 @@ pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.collider.insert(entity_id);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Undead));
     change.tile_priority.insert(entity_id, 4);
+    change.forgetable.insert(entity_id);
 }
 
 pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
