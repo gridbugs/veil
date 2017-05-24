@@ -6,6 +6,8 @@ pub enum OverlayType {
     PostEldrich,
     Eldrich,
     PreEldrich,
+    AimLineMid,
+    AimLineEnd,
 }
 }
 
@@ -17,8 +19,10 @@ impl OverlayType {
             OverlayType::PostEldrich => "PostEldrich",
             OverlayType::Eldrich => "Eldrich",
             OverlayType::PreEldrich => "PreEldrich",
+            OverlayType::AimLineMid => "AimLineMid",
+            OverlayType::AimLineEnd => "AimLineEnd",
         }
     }
 }
 
-pub const NUM_OVERLAYS: usize = 5;
+pub const NUM_OVERLAYS: usize = 7;

@@ -6,6 +6,8 @@ Death = [1, 4]
 PostEldrich = [1, 4]
 Eldrich = [2, 4]
 PreEldrich = [3, 4]
+AimLineMid = [0, 6]
+AimLineEnd = [1, 6]
 
 [tiles.StoneFloor]
 0 = [0, 0]
