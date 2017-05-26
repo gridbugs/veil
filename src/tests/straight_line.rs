@@ -26,3 +26,25 @@ fn finite_absolute_exclude_end() {
     assert_eq!(traverse.next(), Some(Vector2::new(1, 1)));
     assert_eq!(traverse.next(), None);
 }
+
+#[test]
+fn unit_line() {
+    let mut traverse = FiniteAbsoluteLineTraverse::new_between(
+        Vector2::new(1, 1),
+        Vector2::new(1, 1),
+    );
+
+    assert_eq!(traverse.next(), Some(Vector2::new(1, 1)));
+    assert_eq!(traverse.next(), None);
+}
+
+#[test]
+fn empty_line() {
+    let (mut traverse, end) = FiniteAbsoluteLineTraverse::new_between(
+        Vector2::new(1, 1),
+        Vector2::new(1, 1),
+    ).split_end();
+
+    assert_eq!(end, Vector2::new(1, 1));
+    assert_eq!(traverse.next(), None);
+}
