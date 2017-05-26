@@ -12,3 +12,6 @@ mod static_grid;
 
 #[cfg(test)]
 mod limits;
+
+#[cfg(test)]
+mod schedule;

@@ -33,6 +33,7 @@ mod behaviour;
 mod coord;
 mod render_overlay;
 mod limits;
+mod schedule;
 
 mod tests;
 
