@@ -20,6 +20,7 @@ use direction::Direction;
 use behaviour::*;
 use straight_line::*;
 use render_overlay::RenderOverlay;
+use limits::LimitsRect;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -58,6 +59,7 @@ pub fn launch() {
     let mut change = EntityStoreChange::new();
     let mut allocator = EntityIdAllocator::new();
     let mut spatial_hash = SpatialHashTable::new(level_str[0].len(), level_str.len());
+    let limits = LimitsRect::new_rect(0, 0, spatial_hash.width() as u32, spatial_hash.height() as u32);
 
     let mut rng = StdRng::new().unwrap();
 
@@ -163,7 +165,7 @@ pub fn launch() {
                         Keycode::Right => ActionType::Walk(pc, Direction::East),
                         Keycode::F => {
                             let start = entity_store.position.get(&pc).expect("Missing position");
-                            aim(&mut renderer, &mut event_pump, *start);
+                            aim(&mut renderer, &mut event_pump, &limits, *start);
                             continue 'inner;
                         }
                         _ => continue 'inner,
@@ -228,7 +230,7 @@ pub fn launch() {
 }
 
 fn aim(renderer: &mut GameRenderer, event_pump: &mut EventPump,
-       start: Vector2<i32>) -> Option<InfiniteAbsoluteLineTraverse> {
+       limits: &LimitsRect, start: Vector2<i32>) -> Option<InfiniteAbsoluteLineTraverse> {
     let mut end = start;
     loop {
         let line = FiniteAbsoluteLineTraverse::new_between(start, end);
@@ -255,6 +257,6 @@ fn aim(renderer: &mut GameRenderer, event_pump: &mut EventPump,
             _ => continue,
         };
 
-        end += change;
+        end = limits.saturate(end + change);
     }
 }

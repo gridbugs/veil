@@ -9,3 +9,6 @@ mod straight_line;
 
 #[cfg(test)]
 mod static_grid;
+
+#[cfg(test)]
+mod limits;
