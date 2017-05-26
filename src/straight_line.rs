@@ -91,25 +91,19 @@ impl Iterator for InfiniteRelativeLineTraverse {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct FiniteRelativeLineTraverse {
     infinite: InfiniteRelativeLineTraverse,
-    count: u32,
-    length: u32,
+    count: i32,
 }
 
 impl FiniteRelativeLineTraverse {
     pub fn new(delta: Vector2<i32>) -> Self {
-        let infinite = InfiniteRelativeLineTraverse::new(delta);
-        assert!(infinite.major_delta_abs >= 0, "Illegal negative absolute delta");
-
         FiniteRelativeLineTraverse {
-            infinite: infinite,
+            infinite: InfiniteRelativeLineTraverse::new(delta),
             count: 0,
-            // add 1 as lines are inclusive
-            length: (infinite.major_delta_abs as u32) + 1,
         }
     }
 
     pub fn is_complete(&self) -> bool {
-        self.count == self.length
+        self.count > self.infinite.major_delta_abs
     }
 
     pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
@@ -140,11 +134,9 @@ impl FiniteRelativeLineTraverse {
         self
     }
 
-    pub fn exclude_end(self) -> Self {
-        FiniteRelativeLineTraverse {
-            infinite: self.infinite,
-            count: self.count,
-            length: self.length.saturating_sub(1),
+    pub fn exclude_end(self) -> FiniteRelativeLineTraverseExcludeEnd {
+        FiniteRelativeLineTraverseExcludeEnd {
+            include_end: self,
         }
     }
 
@@ -160,12 +152,55 @@ impl FiniteRelativeLineTraverse {
         ret
     }
 
-    pub fn split_end(self) -> (Self, Vector2<i32>) {
+    pub fn split_end(self) -> (FiniteRelativeLineTraverseExcludeEnd, Vector2<i32>) {
         (self.exclude_end(), self.end())
     }
 }
 
 impl Iterator for FiniteRelativeLineTraverse {
+    type Item = Vector2<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.step_in_place()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct FiniteRelativeLineTraverseExcludeEnd {
+    include_end: FiniteRelativeLineTraverse,
+}
+
+impl FiniteRelativeLineTraverseExcludeEnd {
+    pub fn is_complete(&self) -> bool {
+        self.include_end.count == self.include_end.infinite.major_delta_abs
+    }
+
+    pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
+        if self.is_complete() {
+            None
+        } else {
+            self.include_end.step_in_place()
+        }
+    }
+
+    pub fn step(mut self) -> Option<(Vector2<i32>, Self)> {
+        if let Some(coord) = self.step_in_place() {
+            Some((coord, self))
+        } else {
+            None
+        }
+    }
+
+    pub fn reset_in_place(&mut self) {
+        self.include_end.reset_in_place();
+    }
+
+    pub fn reset(mut self) -> Self {
+        self.reset_in_place();
+        self
+    }
+}
+
+impl Iterator for FiniteRelativeLineTraverseExcludeEnd {
     type Item = Vector2<i32>;
     fn next(&mut self) -> Option<Self::Item> {
         self.step_in_place()
@@ -286,8 +321,8 @@ impl FiniteAbsoluteLineTraverse {
         self
     }
 
-    pub fn exclude_end(self) -> Self {
-        FiniteAbsoluteLineTraverse {
+    pub fn exclude_end(self) -> FiniteAbsoluteLineTraverseExcludeEnd {
+        FiniteAbsoluteLineTraverseExcludeEnd {
             relative: self.relative.exclude_end(),
             current: self.current,
         }
@@ -297,12 +332,53 @@ impl FiniteAbsoluteLineTraverse {
         self.current + self.relative.end()
     }
 
-    pub fn split_end(self) -> (Self, Vector2<i32>) {
+    pub fn split_end(self) -> (FiniteAbsoluteLineTraverseExcludeEnd, Vector2<i32>) {
         (self.exclude_end(), self.end())
     }
 }
 
 impl Iterator for FiniteAbsoluteLineTraverse {
+    type Item = Vector2<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.step_in_place()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct FiniteAbsoluteLineTraverseExcludeEnd {
+    relative: FiniteRelativeLineTraverseExcludeEnd,
+    current: Vector2<i32>,
+}
+
+impl FiniteAbsoluteLineTraverseExcludeEnd {
+    pub fn is_complete(&self) -> bool {
+        self.relative.is_complete()
+    }
+
+    pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
+        if let Some(delta) = self.relative.step_in_place() {
+            let ret = self.current;
+            self.current += delta;
+            Some(ret)
+        } else {
+            None
+        }
+    }
+
+    pub fn step(mut self) -> Option<(Vector2<i32>, Self)> {
+        if let Some(coord) = self.step_in_place() {
+            Some((coord, self))
+        } else {
+            None
+        }
+    }
+
+    pub fn current(&self) -> Vector2<i32> {
+        self.current
+    }
+}
+
+impl Iterator for FiniteAbsoluteLineTraverseExcludeEnd {
     type Item = Vector2<i32>;
     fn next(&mut self) -> Option<Self::Item> {
         self.step_in_place()
