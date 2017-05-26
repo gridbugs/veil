@@ -133,9 +133,74 @@ impl FiniteRelativeLineTraverse {
         self.reset_in_place();
         self
     }
+
+    pub fn exclude_end(self) -> FiniteRelativeLineTraverseExcludeEnd {
+        FiniteRelativeLineTraverseExcludeEnd {
+            include_end: self,
+        }
+    }
+
+    pub fn end(self) -> Vector2<i32> {
+        let mut ret = Vector2::new(0, 0);
+
+        let minor = self.infinite.minor_delta_abs * self.infinite.octant.minor_sign as i32;
+        self.infinite.octant.minor_axis.set(&mut ret, minor);
+
+        let major = self.infinite.major_delta_abs * self.infinite.octant.major_sign as i32;
+        self.infinite.octant.major_axis.set(&mut ret, major);
+
+        ret
+    }
+
+    pub fn split_end(self) -> (FiniteRelativeLineTraverseExcludeEnd, Vector2<i32>) {
+        (self.exclude_end(), self.end())
+    }
 }
 
 impl Iterator for FiniteRelativeLineTraverse {
+    type Item = Vector2<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.step_in_place()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct FiniteRelativeLineTraverseExcludeEnd {
+    include_end: FiniteRelativeLineTraverse,
+}
+
+impl FiniteRelativeLineTraverseExcludeEnd {
+    pub fn is_complete(&self) -> bool {
+        self.include_end.count == self.include_end.infinite.major_delta_abs
+    }
+
+    pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
+        if self.is_complete() {
+            None
+        } else {
+            self.include_end.step_in_place()
+        }
+    }
+
+    pub fn step(mut self) -> Option<(Vector2<i32>, Self)> {
+        if let Some(coord) = self.step_in_place() {
+            Some((coord, self))
+        } else {
+            None
+        }
+    }
+
+    pub fn reset_in_place(&mut self) {
+        self.include_end.reset_in_place();
+    }
+
+    pub fn reset(mut self) -> Self {
+        self.reset_in_place();
+        self
+    }
+}
+
+impl Iterator for FiniteRelativeLineTraverseExcludeEnd {
     type Item = Vector2<i32>;
     fn next(&mut self) -> Option<Self::Item> {
         self.step_in_place()
@@ -255,9 +320,65 @@ impl FiniteAbsoluteLineTraverse {
         self.reset_position_in_place(start);
         self
     }
+
+    pub fn exclude_end(self) -> FiniteAbsoluteLineTraverseExcludeEnd {
+        FiniteAbsoluteLineTraverseExcludeEnd {
+            relative: self.relative.exclude_end(),
+            current: self.current,
+        }
+    }
+
+    pub fn end(self) -> Vector2<i32> {
+        self.current + self.relative.end()
+    }
+
+    pub fn split_end(self) -> (FiniteAbsoluteLineTraverseExcludeEnd, Vector2<i32>) {
+        (self.exclude_end(), self.end())
+    }
 }
 
 impl Iterator for FiniteAbsoluteLineTraverse {
+    type Item = Vector2<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.step_in_place()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct FiniteAbsoluteLineTraverseExcludeEnd {
+    relative: FiniteRelativeLineTraverseExcludeEnd,
+    current: Vector2<i32>,
+}
+
+impl FiniteAbsoluteLineTraverseExcludeEnd {
+    pub fn is_complete(&self) -> bool {
+        self.relative.is_complete()
+    }
+
+    pub fn step_in_place(&mut self) -> Option<Vector2<i32>> {
+        if let Some(delta) = self.relative.step_in_place() {
+            let ret = self.current;
+            self.current += delta;
+            Some(ret)
+        } else {
+            None
+        }
+    }
+
+    pub fn step(mut self) -> Option<(Vector2<i32>, Self)> {
+        if let Some(coord) = self.step_in_place() {
+            Some((coord, self))
+        } else {
+            None
+        }
+    }
+
+    pub fn current(&self) -> Vector2<i32> {
+        self.current
+    }
+}
+
+impl Iterator for FiniteAbsoluteLineTraverseExcludeEnd {
     type Item = Vector2<i32>;
     fn next(&mut self) -> Option<Self::Item> {
         self.step_in_place()

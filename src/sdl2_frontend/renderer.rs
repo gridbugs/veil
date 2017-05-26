@@ -5,6 +5,7 @@ use sdl2_frontend::textures::GameTextures;
 use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::renderer_internal::GameRendererInternal;
 use knowledge::PlayerKnowledgeGrid;
+use render_overlay::RenderOverlay;
 
 pub struct GameRenderer<'a> {
     buffer: TileBuffer,
@@ -36,6 +37,10 @@ impl<'a> GameRenderer<'a> {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.internal.clear();
+    }
+
     pub fn update(&mut self, knowledge: &PlayerKnowledgeGrid, time: u64) {
         self.buffer.update(knowledge, &self.internal.tile_resolver, time);
     }
@@ -44,6 +49,10 @@ impl<'a> GameRenderer<'a> {
         for (cell, coord) in izip!(self.buffer.iter(), self.buffer.coord_iter()) {
             self.internal.draw_cell(cell, coord, &self.dimensions, &self.textures);
         }
+    }
+
+    pub fn draw_overlay(&mut self, overlay: RenderOverlay) {
+        self.internal.draw_overlay(&self.dimensions, &self.textures, overlay);
     }
 
     pub fn publish(&mut self) {

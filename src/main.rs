@@ -31,6 +31,7 @@ mod best;
 mod invert_ord;
 mod behaviour;
 mod coord;
+mod render_overlay;
 
 mod tests;
 

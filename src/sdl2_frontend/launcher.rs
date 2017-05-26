@@ -1,6 +1,7 @@
 use sdl2;
 use sdl2::image::INIT_PNG;
 use sdl2::event::Event;
+use sdl2::EventPump;
 use sdl2::keyboard::Keycode;
 use cgmath::Vector2;
 use rand::{Rng, StdRng};
@@ -17,6 +18,8 @@ use observation::*;
 use policy::GamePolicy;
 use direction::Direction;
 use behaviour::*;
+use straight_line::*;
+use render_overlay::RenderOverlay;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -124,7 +127,6 @@ pub fn launch() {
                                          "resources/tiles.png",
                                          "resources/tiles.toml");
     let mut event_pump = sdl.event_pump().expect("Failed to initialize event pump");
-
     let mut reactions = Vec::new();
 
     let mut behaviour_state = BehaviourState::new();
@@ -159,6 +161,11 @@ pub fn launch() {
                         Keycode::Down => ActionType::Walk(pc, Direction::South),
                         Keycode::Left => ActionType::Walk(pc, Direction::West),
                         Keycode::Right => ActionType::Walk(pc, Direction::East),
+                        Keycode::F => {
+                            let start = entity_store.position.get(&pc).expect("Missing position");
+                            aim(&mut renderer, &mut event_pump, *start);
+                            continue 'inner;
+                        }
                         _ => continue 'inner,
                     };
 
@@ -217,5 +224,37 @@ pub fn launch() {
                 change.clear();
             }
         }
+    }
+}
+
+fn aim(renderer: &mut GameRenderer, event_pump: &mut EventPump,
+       start: Vector2<i32>) -> Option<InfiniteAbsoluteLineTraverse> {
+    let mut end = start;
+    loop {
+        let line = FiniteAbsoluteLineTraverse::new_between(start, end);
+        let overlay = RenderOverlay {
+            aim_line: line,
+        };
+        renderer.clear();
+        renderer.draw();
+        renderer.draw_overlay(overlay);
+        renderer.publish();
+        let change = match event_pump.wait_event() {
+            Event::KeyDown { keycode: Some(keycode), .. } => {
+                match keycode {
+                    Keycode::Up => Vector2::new(0, -1),
+                    Keycode::Down => Vector2::new(0, 1),
+                    Keycode::Left => Vector2::new(-1, 0),
+                    Keycode::Right => Vector2::new(1, 0),
+                    Keycode::Return => {
+                        return Some(InfiniteAbsoluteLineTraverse::new_between(start, end));
+                    }
+                    _ => return None,
+                }
+            }
+            _ => continue,
+        };
+
+        end += change;
     }
 }
