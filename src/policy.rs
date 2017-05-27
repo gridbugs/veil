@@ -4,6 +4,8 @@ use entity_store::*;
 use spatial_hash::*;
 use straight_line::*;
 use content::*;
+use frame::FrameId;
+use reaction::Reaction;
 
 pub struct GamePolicy;
 
@@ -36,7 +38,8 @@ impl GamePolicy {
         None
     }
 
-    pub fn on_tick<R: Rng>(&self, entity_store: &EntityStore, spatial_hash: &SpatialHashTable, rng: &mut R, change: &mut EntityStoreChange) {
+    pub fn on_frame<R: Rng>(&self, _id: FrameId, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                            rng: &mut R, change: &mut EntityStoreChange) {
         for id in entity_store.rain.iter() {
             if let Some(update) = self.update_finite_trajectory(*id, entity_store, spatial_hash) {
                 match update {
@@ -86,8 +89,8 @@ impl GamePolicy {
         }
     }
 
-    pub fn on_action(&self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
-                     reactions: &mut Vec<ActionType>) -> bool {
+    pub fn on_change(&self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                     reactions: &mut Vec<Reaction>) -> bool {
         for (id, position_change) in change.position.iter() {
             if let &DataChangeType::Insert(position) = position_change {
                 if !entity_store.collider.contains(id) {
@@ -97,7 +100,7 @@ impl GamePolicy {
                 if let Some(cell) = spatial_hash.get(position) {
                     if let Some(door_id) = cell.door_set.iter().next() {
                         if cell.solid_count > 0 {
-                            reactions.push(ActionType::OpenDoor(*door_id));
+                            reactions.push(Reaction::immediate(ActionType::OpenDoor(*door_id)));
                             return false;
                         }
                     } else if cell.solid_count > 0 {

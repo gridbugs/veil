@@ -21,6 +21,7 @@ use behaviour::*;
 use straight_line::*;
 use render_overlay::RenderOverlay;
 use limits::LimitsRect;
+use reaction::Reaction;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -171,12 +172,12 @@ pub fn launch() {
                         _ => continue 'inner,
                     };
 
-                    reactions.push(action);
+                    reactions.push(Reaction::immediate(action));
 
-                    while let Some(action) = reactions.pop() {
-                        action.populate(&mut change, &entity_store);
+                    while let Some(reaction) = reactions.pop() {
+                        reaction.action.populate(&mut change, &entity_store);
 
-                        if policy.on_action(&change, &entity_store, &spatial_hash, &mut reactions) {
+                        if policy.on_change(&change, &entity_store, &spatial_hash, &mut reactions) {
                             time += 1;
                             spatial_hash.update(&entity_store, &change, time);
                             entity_store.commit_change(&mut change);
@@ -189,7 +190,7 @@ pub fn launch() {
                 }
                 Some(_) => {}
                 None => {
-                    policy.on_tick(&entity_store, &spatial_hash, &mut rng, &mut change);
+                    policy.on_frame(0, &entity_store, &spatial_hash, &mut rng, &mut change);
                     time += 1;
                     spatial_hash.update(&entity_store, &change, time);
                     entity_store.commit_change(&mut change);
@@ -213,12 +214,12 @@ pub fn launch() {
             patrol::patrol(zombie, &entity_store, &zknowledge, metadata, time, &mut behaviour_env, &mut behaviour_state)
         }).unwrap_or(ActionType::Null);
 
-        reactions.push(action);
+        reactions.push(Reaction::immediate(action));
 
-        while let Some(action) = reactions.pop() {
-            action.populate(&mut change, &entity_store);
+        while let Some(reaction) = reactions.pop() {
+            reaction.action.populate(&mut change, &entity_store);
 
-            if policy.on_action(&change, &entity_store, &spatial_hash, &mut reactions) {
+            if policy.on_change(&change, &entity_store, &spatial_hash, &mut reactions) {
                 time += 1;
                 spatial_hash.update(&entity_store, &change, time);
                 entity_store.commit_change(&mut change);
