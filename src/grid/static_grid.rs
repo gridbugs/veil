@@ -1,6 +1,7 @@
 use std::slice;
 use coord::IntoCoord;
 use cgmath::Vector2;
+use limits::LimitsRect;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StaticGrid<T> {
@@ -207,3 +208,12 @@ impl<IC: IntoCoord, Iter: Iterator<Item=IC>> Iterator for NeighbourCoordIter<IC,
         None
     }
 }
+
+impl<T> LimitsRect for StaticGrid<T> {
+    fn x_min(&self) -> i32 { 0 }
+    fn x_max(&self) -> i32 { self.width as i32 - 1 }
+    fn y_min(&self) -> i32 { 0 }
+    fn y_max(&self) -> i32 { self.height as i32 - 1 }
+}
+
+

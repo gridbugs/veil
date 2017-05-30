@@ -4,6 +4,7 @@
 use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, FlagChangeType};
 use grid::{static_grid, StaticGridIdx, StaticGrid};
+use limits::LimitsRect;
 
 #[macro_use] mod generated_component_list_macros;
 
@@ -95,3 +96,10 @@ impl SpatialHashTable {
 
 pub type Iter<'a> = static_grid::Iter<'a, SpatialHashCell>;
 pub type CoordIter = static_grid::CoordIter;
+
+impl LimitsRect for SpatialHashTable {
+    fn x_min(&self) -> i32 { self.grid.x_min() }
+    fn x_max(&self) -> i32 { self.grid.x_max() }
+    fn y_min(&self) -> i32 { self.grid.y_min() }
+    fn y_max(&self) -> i32 { self.grid.y_max() }
+}

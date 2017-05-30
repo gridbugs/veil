@@ -36,6 +36,8 @@ mod limits;
 mod schedule;
 mod frame;
 mod reaction;
+mod entity_observe;
+mod meta_action;
 
 mod tests;
 

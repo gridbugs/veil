@@ -2,7 +2,9 @@ imports = [
     'cgmath::Vector2',
     'content::ComplexTile',
     'content::DoorState',
+    'content::BehaviourType',
     'straight_line::FiniteAbsoluteLineTraverse',
+    'schedule::ScheduleTicket',
 ]
 
 [components]
@@ -22,3 +24,8 @@ forgetable = {}
 invisible = {}
 inside = {}
 splash = {}
+turn_period = { type = 'u64' }
+turn_ticket = { type = 'ScheduleTicket' }
+behaviour_type = { type = 'BehaviourType' }
+realtime = {}
+vision_distance = { type = 'u32' }
