@@ -11,4 +11,5 @@ mod player_act;
 mod npc_act;
 mod player_render;
 mod commit;
+mod input;
 pub use self::launcher::*;

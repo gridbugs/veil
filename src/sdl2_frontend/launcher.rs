@@ -6,6 +6,7 @@ use rand::{Rng, StdRng};
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
 use sdl2_frontend::turn::*;
+use sdl2_frontend::input::*;
 use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
@@ -131,7 +132,8 @@ pub fn launch() {
                                          &mut renderer_env,
                                          "resources/tiles.png",
                                          "resources/tiles.toml");
-    let mut event_pump = sdl.event_pump().expect("Failed to initialize event pump");
+    let event_pump = sdl.event_pump().expect("Failed to initialize event pump");
+    let mut input = SdlGameInput::new(event_pump, 60);
     let mut reactions = Vec::new();
 
     let mut behaviour_env = BehaviourEnv::new(spatial_hash.width(), spatial_hash.height());
@@ -142,7 +144,7 @@ pub fn launch() {
 
         let resolution = TurnEnv {
             renderer: &mut renderer,
-            input: &mut event_pump,
+            input: &mut input,
             reactions: &mut reactions,
             change: &mut change,
             entity_store: &mut entity_store,

@@ -38,6 +38,8 @@ mod frame;
 mod reaction;
 mod entity_observe;
 mod meta_action;
+mod renderer;
+mod input;
 
 mod tests;
 

@@ -1,10 +1,9 @@
 use std::result;
 use std::collections::HashMap;
 use rand::Rng;
-use sdl2_frontend::renderer::GameRenderer;
 use sdl2_frontend::player_act::PlayerActEnv;
 use sdl2_frontend::npc_act::NpcActEnv;
-use sdl2::EventPump;
+use sdl2_frontend::input::SdlGameInput;
 use knowledge::PlayerKnowledgeGrid;
 use reaction::Reaction;
 use behaviour::*;
@@ -15,6 +14,7 @@ use observation::shadowcast::ShadowcastEnv;
 use meta_action::*;
 use policy::*;
 use sdl2_frontend::commit::CommitEnv;
+use renderer::GameRendererGen;
 
 #[derive(Debug)]
 pub enum Error {
@@ -30,9 +30,9 @@ pub enum TurnResolution {
     External(External),
 }
 
-pub struct TurnEnv<'a, 'renderer: 'a, R: 'a + Rng> {
-    pub renderer: &'a mut GameRenderer<'renderer>,
-    pub input: &'a mut EventPump,
+pub struct TurnEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen> {
+    pub renderer: &'a mut Rdr,
+    pub input: &'a mut SdlGameInput,
     pub reactions: &'a mut Vec<Reaction>,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
@@ -50,7 +50,7 @@ pub struct TurnEnv<'a, 'renderer: 'a, R: 'a + Rng> {
     pub rng: &'a mut R,
 }
 
-impl<'a, 'renderer: 'a, R: Rng> TurnEnv<'a, 'renderer, R> {
+impl<'a, R: Rng, Rdr: GameRendererGen> TurnEnv<'a, R, Rdr> {
     pub fn take_turn(self) -> Result<TurnResolution> {
 
         let initial_action = if self.entity_store.player.contains(&self.entity_id) {

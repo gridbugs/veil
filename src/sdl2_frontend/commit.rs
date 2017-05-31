@@ -1,4 +1,3 @@
-use sdl2_frontend::renderer::GameRenderer;
 use knowledge::PlayerKnowledgeGrid;
 use reaction::Reaction;
 use entity_store::*;
@@ -7,9 +6,10 @@ use entity_id_allocator::*;
 use content::ActionType;
 use observation::shadowcast::ShadowcastEnv;
 use policy::*;
+use renderer::GameRendererGen;
 
-pub struct CommitEnv<'a, 'renderer: 'a> {
-    pub renderer: &'a mut GameRenderer<'renderer>,
+pub struct CommitEnv<'a, Rdr: 'a + GameRendererGen> {
+    pub renderer: &'a mut Rdr,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
     pub spatial_hash: &'a mut SpatialHashTable,
@@ -21,7 +21,7 @@ pub struct CommitEnv<'a, 'renderer: 'a> {
     pub policy: &'a GamePolicy,
 }
 
-impl<'a, 'renderer: 'a> CommitEnv<'a, 'renderer> {
+impl<'a, Rdr: GameRendererGen> CommitEnv<'a, Rdr> {
     pub fn commit(self, initial_action: ActionType) {
         self.reactions.clear();
         self.reactions.push(Reaction::immediate(initial_action));

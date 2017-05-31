@@ -38,8 +38,11 @@ impl GamePolicy {
         None
     }
 
-    pub fn on_frame<R: Rng>(&self, _id: FrameId, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+    pub fn on_frame<R: Rng>(&self, id: FrameId, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                             rng: &mut R, change: &mut EntityStoreChange) {
+        if id % 8 != 0 {
+            return;
+        }
         for id in entity_store.rain.iter() {
             if let Some(update) = self.update_finite_trajectory(*id, entity_store, spatial_hash) {
                 match update {

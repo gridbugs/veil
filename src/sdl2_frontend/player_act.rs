@@ -1,8 +1,5 @@
 use std::result;
 use rand::Rng;
-use sdl2::EventPump;
-use sdl2::keyboard::Keycode;
-use sdl2::event::Event;
 use content::ActionType;
 use meta_action::*;
 use direction::Direction;
@@ -11,12 +8,16 @@ use straight_line::*;
 use render_overlay::RenderOverlay;
 use limits::LimitsRect;
 use sdl2_frontend::player_render;
+use sdl2_frontend::input::SdlGameInput;
 use policy::*;
 use entity_store::*;
 use observation::shadowcast::ShadowcastEnv;
-use sdl2_frontend::renderer::GameRenderer;
 use knowledge::PlayerKnowledgeGrid;
 use spatial_hash::*;
+use renderer::GameRendererGen;
+use input::*;
+use entity_observe;
+use observation::ObservationMetadata;
 
 #[derive(Debug)]
 pub enum Error {
@@ -24,9 +25,9 @@ pub enum Error {
 }
 pub type Result<T> = result::Result<T, Error>;
 
-pub struct PlayerActEnv<'a, 'renderer: 'a, R: 'a + Rng> {
-    pub renderer: &'a mut GameRenderer<'renderer>,
-    pub input: &'a mut EventPump,
+pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen> {
+    pub renderer: &'a mut Rdr,
+    pub input: &'a mut SdlGameInput,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
     pub spatial_hash: &'a mut SpatialHashTable,
@@ -38,7 +39,7 @@ pub struct PlayerActEnv<'a, 'renderer: 'a, R: 'a + Rng> {
     pub rng: &'a mut R,
 }
 
-impl<'a, 'renderer: 'a, R: Rng> PlayerActEnv<'a, 'renderer, R> {
+impl<'a, R: Rng, Rdr: GameRendererGen> PlayerActEnv<'a, R, Rdr> {
     pub fn render(&mut self) -> player_render::Result<()>{
         player_render::player_render(
             self.entity_id,
@@ -51,42 +52,83 @@ impl<'a, 'renderer: 'a, R: Rng> PlayerActEnv<'a, 'renderer, R> {
         )
     }
 
+    fn input_to_action(&mut self, input: InputEvent) -> Result<Option<ActionType>> {
+        match input {
+            InputEvent::Up => return Ok(Some(ActionType::Walk(self.entity_id, Direction::North))),
+            InputEvent::Down => return Ok(Some(ActionType::Walk(self.entity_id, Direction::South))),
+            InputEvent::Left => return Ok(Some(ActionType::Walk(self.entity_id, Direction::West))),
+            InputEvent::Right => return Ok(Some(ActionType::Walk(self.entity_id, Direction::East))),
+            InputEvent::Char('f') => {
+                let start = *self.entity_store.position.get(&self.entity_id).expect("Missing position");
+                self.aim(start)?;
+
+                self.renderer.clear();
+                self.renderer.draw();
+                self.renderer.publish();
+
+                return Ok(Some(ActionType::Null));
+            }
+            _ => return Ok(None),
+        }
+    }
+
+    fn input_to_external(&mut self, input: InputEvent) -> Option<External> {
+        match input {
+            InputEvent::Quit => return Some(External::Quit),
+            _ => return None,
+        }
+    }
+
     pub fn act(&mut self) -> Result<MetaAction> {
 
         self.render().map_err(|_| Error::RenderingFailed)?;
 
         loop {
-            match self.input.wait_event_timeout(128) {
-                Some(Event::Quit { .. }) => return Ok(MetaAction::External(External::Quit)),
-                Some(Event::KeyDown { keycode: Some(keycode), .. }) => {
-                    let action = match keycode {
-                        Keycode::Up => ActionType::Walk(self.entity_id, Direction::North),
-                        Keycode::Down => ActionType::Walk(self.entity_id, Direction::South),
-                        Keycode::Left => ActionType::Walk(self.entity_id, Direction::West),
-                        Keycode::Right => ActionType::Walk(self.entity_id, Direction::East),
-                        Keycode::F => {
-                            let start = *self.entity_store.position.get(&self.entity_id).expect("Missing position");
-                            self.aim(start);
-                            ActionType::Null
-                        }
-                        _ => continue,
-                    };
-
-                    return Ok(MetaAction::Action(action));
-                }
-                None => {
-                    self.policy.on_frame(0, self.entity_store, self.spatial_hash, self.rng, self.change);
+            match self.input.next_external() {
+                ExternalEvent::Frame(frame) => {
+                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
                     self.render().map_err(|_| Error::RenderingFailed)?;
                 }
-                _ => continue,
+                ExternalEvent::Input(input) => {
+                    let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
+                        .or_else(|| self.input_to_external(input).map(MetaAction::External));
+
+                    if let Some(meta_action) = maybe_meta_action {
+                        return Ok(meta_action);
+                    }
+                }
+                ExternalEvent::InputAndFrame(input, frame) => {
+                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    *self.time += 1;
+                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
+                    self.entity_store.commit_change(self.change);
+                    self.render().map_err(|_| Error::RenderingFailed)?;
+                    let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
+                        .or_else(|| self.input_to_external(input).map(MetaAction::External));
+
+                    if let Some(meta_action) = maybe_meta_action {
+                        return Ok(meta_action);
+                    }
+                }
             }
         }
     }
 
-    fn aim(&mut self, start: Vector2<i32>) -> Option<InfiniteAbsoluteLineTraverse> {
+    fn observe(&mut self) -> Result<ObservationMetadata> {
+        entity_observe::entity_observe(
+            self.entity_id,
+            self.entity_store,
+            self.spatial_hash,
+            *self.time,
+            self.knowledge,
+            self.shadowcast
+        ).map_err(|_| Error::RenderingFailed)
+    }
+
+    fn aim(&mut self, start: Vector2<i32>) -> Result<Option<InfiniteAbsoluteLineTraverse>> {
         let mut end = start;
         loop {
             let line = FiniteAbsoluteLineTraverse::new_between(start, end);
@@ -94,23 +136,50 @@ impl<'a, 'renderer: 'a, R: Rng> PlayerActEnv<'a, 'renderer, R> {
                 aim_line: line,
             };
             self.renderer.clear();
+            self.renderer.update(self.knowledge, *self.time);
             self.renderer.draw();
             self.renderer.draw_overlay(overlay);
             self.renderer.publish();
-            let change = match self.input.wait_event() {
-                Event::KeyDown { keycode: Some(keycode), .. } => {
-                    match keycode {
-                        Keycode::Up => Vector2::new(0, -1),
-                        Keycode::Down => Vector2::new(0, 1),
-                        Keycode::Left => Vector2::new(-1, 0),
-                        Keycode::Right => Vector2::new(1, 0),
-                        Keycode::Return => {
-                            return Some(InfiniteAbsoluteLineTraverse::new_between(start, end));
+            let change = match self.input.next_external() {
+                ExternalEvent::Input(input) => {
+                    match input {
+                        InputEvent::Up => Vector2::new(0, -1),
+                        InputEvent::Down => Vector2::new(0, 1),
+                        InputEvent::Left => Vector2::new(-1, 0),
+                        InputEvent::Right => Vector2::new(1, 0),
+                        InputEvent::Return => {
+                            return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
                         }
-                        _ => return None,
+                        _ => return Ok(None),
                     }
                 }
-                _ => continue,
+                ExternalEvent::Frame(frame) => {
+                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    *self.time += 1;
+                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
+                    self.entity_store.commit_change(self.change);
+                    self.observe()?;
+                    continue;
+                }
+                ExternalEvent::InputAndFrame(input, frame) => {
+
+                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    *self.time += 1;
+                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
+                    self.entity_store.commit_change(self.change);
+                    self.observe()?;
+
+                    match input {
+                        InputEvent::Up => Vector2::new(0, -1),
+                        InputEvent::Down => Vector2::new(0, 1),
+                        InputEvent::Left => Vector2::new(-1, 0),
+                        InputEvent::Right => Vector2::new(1, 0),
+                        InputEvent::Return => {
+                            return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
+                        }
+                        _ => return Ok(None),
+                    }
+                }
             };
 
             end = self.spatial_hash.saturate(end + change);
