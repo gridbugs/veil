@@ -7,7 +7,7 @@ use cgmath::Vector2;
 use straight_line::*;
 use render_overlay::RenderOverlay;
 use limits::LimitsRect;
-use sdl2_frontend::player_render;
+use player_render;
 use policy::*;
 use entity_store::*;
 use observation::shadowcast::ShadowcastEnv;

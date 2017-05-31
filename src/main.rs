@@ -40,6 +40,11 @@ mod entity_observe;
 mod meta_action;
 mod renderer;
 mod input;
+mod turn;
+mod player_act;
+mod npc_act;
+mod player_render;
+mod commit;
 
 mod tests;
 

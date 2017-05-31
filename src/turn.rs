@@ -1,8 +1,8 @@
 use std::result;
 use std::collections::HashMap;
 use rand::Rng;
-use sdl2_frontend::player_act::PlayerActEnv;
-use sdl2_frontend::npc_act::NpcActEnv;
+use player_act::PlayerActEnv;
+use npc_act::NpcActEnv;
 use knowledge::PlayerKnowledgeGrid;
 use reaction::Reaction;
 use behaviour::*;
@@ -12,7 +12,7 @@ use entity_id_allocator::*;
 use observation::shadowcast::ShadowcastEnv;
 use meta_action::*;
 use policy::*;
-use sdl2_frontend::commit::CommitEnv;
+use commit::CommitEnv;
 use renderer::GameRendererGen;
 use input::GameInput;
 
