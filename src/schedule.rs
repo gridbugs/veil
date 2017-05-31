@@ -18,7 +18,7 @@ pub struct ScheduleEntry<T> {
     pub duration: u64,
 }
 
-#[derive(PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 enum Status {
     Inserted,
     Removed,
@@ -110,8 +110,56 @@ impl<T> Schedule<T> {
         None
     }
 
+    fn normalise_top(&mut self) {
+        while let Some(ticket) = self.entries.peek().map(|e| e.ticket) {
+            if let Some(status) = self.entry_status.get(&ticket).map(Clone::clone) {
+                if status == Status::Removed {
+                    self.entry_status.remove(&ticket);
+                    self.entries.pop();
+                }
+            } else {
+                panic!("Missing status for schedule entry {}", ticket);
+            }
+        }
+    }
+
+    pub fn peek(&mut self) -> Option<&ScheduleEntry<T>> {
+        self.normalise_top();
+        self.entries.peek()
+    }
+
+    pub fn is_empty(&mut self) -> bool {
+        self.normalise_top();
+        self.entries.is_empty()
+    }
+
     pub fn next_value(&mut self) -> Option<T> {
         self.next().map(|e| e.value)
+    }
+
+    pub fn all_next(&mut self, result: &mut Vec<ScheduleEntry<T>>) -> usize {
+        if let Some(first) = self.next() {
+
+            let min_release_time = first.release_time;
+
+            result.push(first);
+            let mut count = 1;
+
+            while let Some(release_time) = self.peek().map(|e| e.release_time) {
+                if release_time != min_release_time {
+                    break;
+                }
+
+                // the peek above means at this point the top element of the
+                // heap is definitely not removed, and the heap is not empty
+                result.push(self.entries.pop().unwrap());
+                count += 1;
+            }
+
+            count
+        } else {
+            0
+        }
     }
 }
 
