@@ -17,6 +17,7 @@ use observation::*;
 use policy::GamePolicy;
 use behaviour::*;
 use schedule::Schedule;
+use frame::AnimationMode;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -133,7 +134,7 @@ pub fn launch() {
                                          "resources/tiles.png",
                                          "resources/tiles.toml");
     let event_pump = sdl.event_pump().expect("Failed to initialize event pump");
-    let mut input = SdlGameInput::new(event_pump, 60);
+    let mut input = SdlGameInput::new(event_pump, 60, AnimationMode::RealTime);
     let mut reactions = Vec::new();
 
     let mut behaviour_env = BehaviourEnv::new(spatial_hash.width(), spatial_hash.height());

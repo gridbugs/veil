@@ -4,7 +4,7 @@ use sdl2::EventPump;
 use sdl2::keyboard::{self, Keycode, Mod};
 use sdl2::event::Event;
 use input::{GameInput, InputEvent, ExternalEvent};
-use frame::{Frame, FrameId};
+use frame::{Frame, FrameId, AnimationMode};
 
 const MILLIS_PER_SEC: u32 = 1_000;
 const NANOS_PER_MILLI: u32 = 1_000_000;
@@ -16,15 +16,17 @@ pub struct SdlGameInput {
     frame_duration: Duration,
     previous_frame_instant: Instant,
     next_frame_id: FrameId,
+    animation_mode: AnimationMode,
 }
 
 impl SdlGameInput {
-    pub fn new(event_pump: EventPump, fps: u32) -> Self {
+    pub fn new(event_pump: EventPump, fps: u32, animation_mode: AnimationMode) -> Self {
         SdlGameInput {
             event_pump: event_pump,
             frame_duration: Duration::from_millis((MILLIS_PER_SEC / fps) as u64),
             previous_frame_instant: Instant::now(),
             next_frame_id: 0,
+            animation_mode: animation_mode,
         }
     }
 
@@ -141,10 +143,17 @@ impl GameInput for SdlGameInput {
         }
 
         self.previous_frame_instant = now;
-        Frame::new(self.next_frame_id(), now)
+        Frame::new(self.next_frame_id(), self.animation_mode, now)
     }
 
     fn next_external(&mut self) -> ExternalEvent {
+        if self.animation_mode == AnimationMode::TurnBased {
+            let input = self.next_input();
+            let frame = Frame::new(self.next_frame_id(),
+                                   AnimationMode::TurnBased,
+                                   Instant::now());
+            return ExternalEvent::InputAndFrame(input, frame);
+        }
         loop {
             let now = Instant::now();
             let since_last_frame = now - self.previous_frame_instant;
@@ -158,18 +167,25 @@ impl GameInput for SdlGameInput {
                 } else {
                     let now = Instant::now();
                     self.previous_frame_instant = now;
-                    return ExternalEvent::Frame(Frame::new(self.next_frame_id(), now));
+                    return ExternalEvent::Frame(Frame::new(self.next_frame_id(),
+                                                           AnimationMode::RealTime,
+                                                           now));
                 }
             } else {
                 self.previous_frame_instant = now;
 
                 if let Some(event) = self.event_pump.poll_event() {
                     if let Some(input_event) = convert_event(event) {
-                        return ExternalEvent::InputAndFrame(input_event, Frame::new(self.next_frame_id(), now));
+                        return ExternalEvent::InputAndFrame(input_event,
+                                                            Frame::new(self.next_frame_id(),
+                                                                       self.animation_mode,
+                                                                       now));
                     }
                 }
 
-                return ExternalEvent::Frame(Frame::new(self.next_frame_id(), now));
+                return ExternalEvent::Frame(Frame::new(self.next_frame_id(),
+                                                       self.animation_mode,
+                                                       now));
             }
         }
     }

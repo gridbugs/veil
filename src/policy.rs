@@ -4,7 +4,7 @@ use entity_store::*;
 use spatial_hash::*;
 use straight_line::*;
 use content::*;
-use frame::FrameId;
+use frame::*;
 use reaction::Reaction;
 
 pub struct GamePolicy;
@@ -38,9 +38,9 @@ impl GamePolicy {
         None
     }
 
-    pub fn on_frame<R: Rng>(&self, id: FrameId, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+    pub fn on_frame<R: Rng>(&self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                             rng: &mut R, change: &mut EntityStoreChange) {
-        if id % 8 != 0 {
+        if frame.animation_mode() == AnimationMode::RealTime && frame.id() % 8 != 0 {
             return;
         }
         for id in entity_store.rain.iter() {

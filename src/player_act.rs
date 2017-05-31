@@ -86,7 +86,7 @@ impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, 
         loop {
             match self.input.next_external() {
                 ExternalEvent::Frame(frame) => {
-                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
@@ -101,7 +101,7 @@ impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, 
                     }
                 }
                 ExternalEvent::InputAndFrame(input, frame) => {
-                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
@@ -154,7 +154,7 @@ impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, 
                     }
                 }
                 ExternalEvent::Frame(frame) => {
-                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
@@ -163,7 +163,7 @@ impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, 
                 }
                 ExternalEvent::InputAndFrame(input, frame) => {
 
-                    self.policy.on_frame(frame.id(), self.entity_store, self.spatial_hash, self.rng, self.change);
+                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
