@@ -5,7 +5,7 @@ use entity_store::EntityStore;
 use observation::shadowcast;
 use knowledge::PlayerKnowledgeGrid;
 use entity_observe;
-use renderer::GameRendererGen;
+use renderer::GameRenderer;
 
 #[derive(Debug)]
 pub enum Error {
@@ -13,14 +13,14 @@ pub enum Error {
 }
 pub type Result<T> = result::Result<T, Error>;
 
-pub fn player_render<Rdr: GameRendererGen>(
+pub fn player_render<Ren: GameRenderer>(
     id: EntityId,
     entity_store: &EntityStore,
     spatial_hash: &SpatialHashTable,
     time: u64,
     knowledge: &mut PlayerKnowledgeGrid,
     shadowcast: &mut shadowcast::ShadowcastEnv,
-    renderer: &mut Rdr) -> Result<()> {
+    renderer: &mut Ren) -> Result<()> {
 
     let metadata = entity_observe::entity_observe(
         id,

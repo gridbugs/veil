@@ -128,7 +128,7 @@ pub fn launch() {
     let mut renderer_env = RendererEnv::new(WIDTH_PX, HEIGHT_PX, &video);
     sdl2::image::init(INIT_PNG).expect("Failed to connect to image subsystem");
 
-    let mut renderer = GameRenderer::new(spatial_hash.width(),
+    let mut renderer = SdlGameRenderer::new(spatial_hash.width(),
                                          spatial_hash.height(),
                                          &mut renderer_env,
                                          "resources/tiles.png",

@@ -1,7 +1,7 @@
 use knowledge::PlayerKnowledgeGrid;
 use render_overlay::RenderOverlay;
 
-pub trait GameRendererGen {
+pub trait GameRenderer {
     fn clear(&mut self);
     fn update(&mut self, knowledge: &PlayerKnowledgeGrid, time: u64);
     fn draw(&mut self);

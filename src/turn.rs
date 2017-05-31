@@ -13,7 +13,7 @@ use observation::shadowcast::ShadowcastEnv;
 use meta_action::*;
 use policy::*;
 use commit::CommitEnv;
-use renderer::GameRendererGen;
+use renderer::GameRenderer;
 use input::GameInput;
 
 #[derive(Debug)]
@@ -30,8 +30,8 @@ pub enum TurnResolution {
     External(External),
 }
 
-pub struct TurnEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen, Inp: 'a + GameInput> {
-    pub renderer: &'a mut Rdr,
+pub struct TurnEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput> {
+    pub renderer: &'a mut Ren,
     pub input: &'a mut Inp,
     pub reactions: &'a mut Vec<Reaction>,
     pub change: &'a mut EntityStoreChange,
@@ -50,7 +50,7 @@ pub struct TurnEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen, Inp: 'a + GameInp
     pub rng: &'a mut R,
 }
 
-impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> TurnEnv<'a, R, Rdr, Inp> {
+impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
     pub fn take_turn(self) -> Result<TurnResolution> {
 
         let initial_action = if self.entity_store.player.contains(&self.entity_id) {

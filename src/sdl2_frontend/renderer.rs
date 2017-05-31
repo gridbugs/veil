@@ -6,16 +6,16 @@ use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::renderer_internal::GameRendererInternal;
 use knowledge::PlayerKnowledgeGrid;
 use render_overlay::RenderOverlay;
-use renderer::GameRendererGen;
+use renderer::GameRenderer;
 
-pub struct GameRenderer<'a> {
+pub struct SdlGameRenderer<'a> {
     buffer: TileBuffer,
     internal: GameRendererInternal<'a>,
     textures: GameTextures<'a>,
     dimensions: RendererDimensions,
 }
 
-impl<'a> GameRenderer<'a> {
+impl<'a> SdlGameRenderer<'a> {
     pub fn new<P: AsRef<Path>, Q: AsRef<Path>>(width: usize, height: usize, env: &'a mut RendererEnv,
                                                tile_path: P, tile_desc_path: Q) -> Self {
 
@@ -30,7 +30,7 @@ impl<'a> GameRenderer<'a> {
             width as u32,
             height as u32);
 
-        GameRenderer {
+        SdlGameRenderer {
             buffer: buffer,
             internal: internal,
             textures: textures,
@@ -39,7 +39,7 @@ impl<'a> GameRenderer<'a> {
     }
 }
 
-impl<'a> GameRendererGen for GameRenderer<'a> {
+impl<'a> GameRenderer for SdlGameRenderer<'a> {
     fn clear(&mut self) {
         self.internal.clear();
     }

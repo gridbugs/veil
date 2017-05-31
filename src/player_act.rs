@@ -13,7 +13,7 @@ use entity_store::*;
 use observation::shadowcast::ShadowcastEnv;
 use knowledge::PlayerKnowledgeGrid;
 use spatial_hash::*;
-use renderer::GameRendererGen;
+use renderer::GameRenderer;
 use input::*;
 use entity_observe;
 use observation::ObservationMetadata;
@@ -25,8 +25,8 @@ pub enum Error {
 }
 pub type Result<T> = result::Result<T, Error>;
 
-pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen, Inp: 'a + GameInput> {
-    pub renderer: &'a mut Rdr,
+pub struct PlayerActEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput> {
+    pub renderer: &'a mut Ren,
     pub input: &'a mut Inp,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
@@ -39,7 +39,7 @@ pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen, Inp: 'a + Ga
     pub rng: &'a mut R,
 }
 
-impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, Inp> {
+impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp> {
     pub fn render(&mut self) -> player_render::Result<()>{
         player_render::player_render(
             self.entity_id,

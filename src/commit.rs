@@ -6,10 +6,10 @@ use entity_id_allocator::*;
 use content::ActionType;
 use observation::shadowcast::ShadowcastEnv;
 use policy::*;
-use renderer::GameRendererGen;
+use renderer::GameRenderer;
 
-pub struct CommitEnv<'a, Rdr: 'a + GameRendererGen> {
-    pub renderer: &'a mut Rdr,
+pub struct CommitEnv<'a, Ren: 'a + GameRenderer> {
+    pub renderer: &'a mut Ren,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
     pub spatial_hash: &'a mut SpatialHashTable,
@@ -21,7 +21,7 @@ pub struct CommitEnv<'a, Rdr: 'a + GameRendererGen> {
     pub policy: &'a GamePolicy,
 }
 
-impl<'a, Rdr: GameRendererGen> CommitEnv<'a, Rdr> {
+impl<'a, Ren: GameRenderer> CommitEnv<'a, Ren> {
     pub fn commit(self, initial_action: ActionType) {
         self.reactions.clear();
         self.reactions.push(Reaction::immediate(initial_action));
