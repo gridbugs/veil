@@ -8,7 +8,6 @@ use straight_line::*;
 use render_overlay::RenderOverlay;
 use limits::LimitsRect;
 use sdl2_frontend::player_render;
-use sdl2_frontend::input::SdlGameInput;
 use policy::*;
 use entity_store::*;
 use observation::shadowcast::ShadowcastEnv;
@@ -18,6 +17,7 @@ use renderer::GameRendererGen;
 use input::*;
 use entity_observe;
 use observation::ObservationMetadata;
+use input::GameInput;
 
 #[derive(Debug)]
 pub enum Error {
@@ -25,9 +25,9 @@ pub enum Error {
 }
 pub type Result<T> = result::Result<T, Error>;
 
-pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen> {
+pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen, Inp: 'a + GameInput> {
     pub renderer: &'a mut Rdr,
-    pub input: &'a mut SdlGameInput,
+    pub input: &'a mut Inp,
     pub change: &'a mut EntityStoreChange,
     pub entity_store: &'a mut EntityStore,
     pub spatial_hash: &'a mut SpatialHashTable,
@@ -39,7 +39,7 @@ pub struct PlayerActEnv<'a, R: 'a + Rng, Rdr: 'a + GameRendererGen> {
     pub rng: &'a mut R,
 }
 
-impl<'a, R: Rng, Rdr: GameRendererGen> PlayerActEnv<'a, R, Rdr> {
+impl<'a, R: Rng, Rdr: GameRendererGen, Inp: GameInput> PlayerActEnv<'a, R, Rdr, Inp> {
     pub fn render(&mut self) -> player_render::Result<()>{
         player_render::player_render(
             self.entity_id,
