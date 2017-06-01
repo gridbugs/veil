@@ -48,7 +48,7 @@ pub struct TurnEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput>
     pub behaviour: &'a mut HashMap<EntityId, BehaviourState>,
     pub shadowcast: &'a mut ShadowcastEnv,
     pub time: &'a mut u64,
-    pub policy: &'a GamePolicy,
+    pub policy: &'a mut GamePolicy,
     pub rng: &'a mut R,
     pub schedule: &'a mut Schedule<ActionType>,
 }

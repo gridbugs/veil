@@ -38,8 +38,8 @@ impl GamePolicy {
         None
     }
 
-    pub fn on_frame<R: Rng>(&self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
-                            rng: &mut R, change: &mut EntityStoreChange) {
+    pub fn on_frame_animate<R: Rng>(&mut self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                                    rng: &mut R, change: &mut EntityStoreChange) {
         if frame.animation_mode() == AnimationMode::RealTime && frame.id() % 8 != 0 {
             return;
         }
@@ -92,7 +92,7 @@ impl GamePolicy {
         }
     }
 
-    pub fn on_change(&self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+    pub fn on_change(&mut self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                      reactions: &mut Vec<Reaction>) -> bool {
         for (id, position_change) in change.position.iter() {
             if let &DataChangeType::Insert(position) = position_change {

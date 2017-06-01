@@ -35,7 +35,7 @@ pub struct PlayerActEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameI
     pub knowledge: &'a mut PlayerKnowledgeGrid,
     pub shadowcast: &'a mut ShadowcastEnv,
     pub time: &'a mut u64,
-    pub policy: &'a GamePolicy,
+    pub policy: &'a mut GamePolicy,
     pub rng: &'a mut R,
 }
 
@@ -88,7 +88,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             let event = self.input.next_external();
 
             if let Some(frame) = event.frame() {
-                self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
+                self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                 *self.time += 1;
                 self.spatial_hash.update(self.entity_store, self.change, *self.time);
                 self.entity_store.commit_change(self.change);
@@ -133,7 +133,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             let event = self.input.next_external();
 
             if let Some(frame) = event.frame() {
-                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
+                    self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);

@@ -19,7 +19,7 @@ pub struct CommitEnv<'a, Ren: 'a + GameRenderer> {
     pub time: &'a mut u64,
     pub reactions: &'a mut Vec<Reaction>,
     pub id_allocator: &'a mut EntityIdAllocator,
-    pub policy: &'a GamePolicy,
+    pub policy: &'a mut GamePolicy,
     pub schedule: &'a mut Schedule<ActionType>,
 }
 

@@ -122,7 +122,7 @@ pub fn launch() {
 
     let mut player_knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
-    let policy = GamePolicy;
+    let mut policy = GamePolicy;
 
     let mut shadowcast = shadowcast::ShadowcastEnv::new();
     let sdl = sdl2::init().expect("SDL2 initialization failed");
@@ -161,7 +161,7 @@ pub fn launch() {
             behaviour: &mut behaviour,
             shadowcast: &mut shadowcast,
             time: &mut time,
-            policy: &policy,
+            policy: &mut policy,
             rng: &mut rng,
             schedule: &mut action_schedule,
         }.take_turn().unwrap();
