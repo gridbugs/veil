@@ -35,6 +35,12 @@ impl SdlGameInput {
         self.next_frame_id += 1;
         frame_id
     }
+
+    fn next_frame(&mut self, instant: Instant) -> Frame {
+        let id = self.next_frame_id();
+        self.previous_frame_instant = instant;
+        Frame::new(id, self.animation_mode, instant)
+    }
 }
 
 fn is_shift_pressed(keymod: &Mod) -> bool {
@@ -142,16 +148,13 @@ impl GameInput for SdlGameInput {
             now = Instant::now();
         }
 
-        self.previous_frame_instant = now;
-        Frame::new(self.next_frame_id(), self.animation_mode, now)
+        self.next_frame(now)
     }
 
     fn next_external(&mut self) -> ExternalEvent {
         if self.animation_mode == AnimationMode::TurnBased {
             let input = self.next_input();
-            let frame = Frame::new(self.next_frame_id(),
-                                   AnimationMode::TurnBased,
-                                   Instant::now());
+            let frame = self.next_frame(Instant::now());
             return ExternalEvent::new(input, frame);
         }
         loop {
@@ -165,27 +168,19 @@ impl GameInput for SdlGameInput {
                         return ExternalEvent::with_input(input_event);
                     }
                 } else {
-                    let now = Instant::now();
-                    self.previous_frame_instant = now;
-                    return ExternalEvent::with_frame(Frame::new(self.next_frame_id(),
-                                                           AnimationMode::RealTime,
-                                                           now));
+                    let frame = self.next_frame(Instant::now());
+                    return ExternalEvent::with_frame(frame);
                 }
             } else {
-                self.previous_frame_instant = now;
+                let frame = self.next_frame(now);
 
                 if let Some(event) = self.event_pump.poll_event() {
                     if let Some(input_event) = convert_event(event) {
-                        return ExternalEvent::new(input_event,
-                                                            Frame::new(self.next_frame_id(),
-                                                                       self.animation_mode,
-                                                                       now));
+                        return ExternalEvent::new(input_event, frame);
                     }
                 }
 
-                return ExternalEvent::with_frame(Frame::new(self.next_frame_id(),
-                                                       self.animation_mode,
-                                                       now));
+                return ExternalEvent::with_frame(frame);
             }
         }
     }

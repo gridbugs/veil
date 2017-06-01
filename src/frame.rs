@@ -1,4 +1,4 @@
-use std::time;
+use std::time::Instant;
 
 pub type FrameId = u64;
 
@@ -11,16 +11,16 @@ pub enum AnimationMode {
 #[derive(Debug, Clone, Copy)]
 pub struct Frame {
     id: FrameId,
-    instant: time::Instant,
+    instant: Instant,
     animation_mode: AnimationMode,
 }
 
 impl Frame {
     pub fn id(&self) -> FrameId { self.id }
-    pub fn instant(&self) -> time::Instant { self.instant }
+    pub fn instant(&self) -> Instant { self.instant }
     pub fn animation_mode(&self) -> AnimationMode { self.animation_mode }
 
-    pub fn new(id: FrameId, animation_mode: AnimationMode, instant: time::Instant) -> Self {
+    pub fn new(id: FrameId, animation_mode: AnimationMode, instant: Instant) -> Self {
         Frame {
             id: id,
             instant: instant,
