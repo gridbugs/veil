@@ -152,7 +152,7 @@ impl GameInput for SdlGameInput {
             let frame = Frame::new(self.next_frame_id(),
                                    AnimationMode::TurnBased,
                                    Instant::now());
-            return ExternalEvent::InputAndFrame(input, frame);
+            return ExternalEvent::new(input, frame);
         }
         loop {
             let now = Instant::now();
@@ -162,12 +162,12 @@ impl GameInput for SdlGameInput {
                     remaining.subsec_nanos() / NANOS_PER_MILLI;
                 if let Some(event) = self.event_pump.wait_event_timeout(timeout_ms) {
                     if let Some(input_event) = convert_event(event) {
-                        return ExternalEvent::Input(input_event);
+                        return ExternalEvent::with_input(input_event);
                     }
                 } else {
                     let now = Instant::now();
                     self.previous_frame_instant = now;
-                    return ExternalEvent::Frame(Frame::new(self.next_frame_id(),
+                    return ExternalEvent::with_frame(Frame::new(self.next_frame_id(),
                                                            AnimationMode::RealTime,
                                                            now));
                 }
@@ -176,14 +176,14 @@ impl GameInput for SdlGameInput {
 
                 if let Some(event) = self.event_pump.poll_event() {
                     if let Some(input_event) = convert_event(event) {
-                        return ExternalEvent::InputAndFrame(input_event,
+                        return ExternalEvent::new(input_event,
                                                             Frame::new(self.next_frame_id(),
                                                                        self.animation_mode,
                                                                        now));
                     }
                 }
 
-                return ExternalEvent::Frame(Frame::new(self.next_frame_id(),
+                return ExternalEvent::with_frame(Frame::new(self.next_frame_id(),
                                                        self.animation_mode,
                                                        now));
             }

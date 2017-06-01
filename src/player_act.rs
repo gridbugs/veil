@@ -84,34 +84,23 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
         self.render().map_err(|_| Error::RenderingFailed)?;
 
         loop {
-            match self.input.next_external() {
-                ExternalEvent::Frame(frame) => {
-                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
-                    *self.time += 1;
-                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
-                    self.entity_store.commit_change(self.change);
-                    self.render().map_err(|_| Error::RenderingFailed)?;
-                }
-                ExternalEvent::Input(input) => {
-                    let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
-                        .or_else(|| self.input_to_external(input).map(MetaAction::External));
 
-                    if let Some(meta_action) = maybe_meta_action {
-                        return Ok(meta_action);
-                    }
-                }
-                ExternalEvent::InputAndFrame(input, frame) => {
-                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
-                    *self.time += 1;
-                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
-                    self.entity_store.commit_change(self.change);
-                    self.render().map_err(|_| Error::RenderingFailed)?;
-                    let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
-                        .or_else(|| self.input_to_external(input).map(MetaAction::External));
+            let event = self.input.next_external();
 
-                    if let Some(meta_action) = maybe_meta_action {
-                        return Ok(meta_action);
-                    }
+            if let Some(frame) = event.frame() {
+                self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
+                *self.time += 1;
+                self.spatial_hash.update(self.entity_store, self.change, *self.time);
+                self.entity_store.commit_change(self.change);
+                self.render().map_err(|_| Error::RenderingFailed)?;
+            }
+
+            if let Some(input) = event.input() {
+                let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
+                    .or_else(|| self.input_to_external(input).map(MetaAction::External));
+
+                if let Some(meta_action) = maybe_meta_action {
+                    return Ok(meta_action);
                 }
             }
         }
@@ -140,46 +129,30 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             self.renderer.draw();
             self.renderer.draw_overlay(overlay);
             self.renderer.publish();
-            let change = match self.input.next_external() {
-                ExternalEvent::Input(input) => {
-                    match input {
-                        InputEvent::Up => Vector2::new(0, -1),
-                        InputEvent::Down => Vector2::new(0, 1),
-                        InputEvent::Left => Vector2::new(-1, 0),
-                        InputEvent::Right => Vector2::new(1, 0),
-                        InputEvent::Return => {
-                            return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
-                        }
-                        _ => return Ok(None),
-                    }
-                }
-                ExternalEvent::Frame(frame) => {
+
+            let event = self.input.next_external();
+
+            if let Some(frame) = event.frame() {
                     self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
                     *self.time += 1;
                     self.spatial_hash.update(self.entity_store, self.change, *self.time);
                     self.entity_store.commit_change(self.change);
                     self.observe()?;
-                    continue;
-                }
-                ExternalEvent::InputAndFrame(input, frame) => {
+            }
 
-                    self.policy.on_frame(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
-                    *self.time += 1;
-                    self.spatial_hash.update(self.entity_store, self.change, *self.time);
-                    self.entity_store.commit_change(self.change);
-                    self.observe()?;
-
-                    match input {
-                        InputEvent::Up => Vector2::new(0, -1),
-                        InputEvent::Down => Vector2::new(0, 1),
-                        InputEvent::Left => Vector2::new(-1, 0),
-                        InputEvent::Right => Vector2::new(1, 0),
-                        InputEvent::Return => {
-                            return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
-                        }
-                        _ => return Ok(None),
+            let change = if let Some(input) = event.input() {
+                match input {
+                    InputEvent::Up => Vector2::new(0, -1),
+                    InputEvent::Down => Vector2::new(0, 1),
+                    InputEvent::Left => Vector2::new(-1, 0),
+                    InputEvent::Right => Vector2::new(1, 0),
+                    InputEvent::Return => {
+                        return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
                     }
+                    _ => return Ok(None),
                 }
+            } else {
+                continue;
             };
 
             end = self.spatial_hash.saturate(end + change);
