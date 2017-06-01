@@ -110,6 +110,8 @@ pub fn launch() {
     let mut knowledge = HashMap::new();
     let mut behaviour = HashMap::new();
 
+    let mut action_schedule = Schedule::new();
+
     for (id, period) in entity_store.turn_period.iter() {
         turn_schedule.insert(*id, *period);
         if *id != pc {
@@ -161,6 +163,7 @@ pub fn launch() {
             time: &mut time,
             policy: &policy,
             rng: &mut rng,
+            schedule: &mut action_schedule,
         }.take_turn().unwrap();
 
         match resolution {

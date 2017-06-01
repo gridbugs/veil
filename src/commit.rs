@@ -7,6 +7,7 @@ use content::ActionType;
 use observation::shadowcast::ShadowcastEnv;
 use policy::*;
 use renderer::GameRenderer;
+use schedule::Schedule;
 
 pub struct CommitEnv<'a, Ren: 'a + GameRenderer> {
     pub renderer: &'a mut Ren,
@@ -19,6 +20,7 @@ pub struct CommitEnv<'a, Ren: 'a + GameRenderer> {
     pub reactions: &'a mut Vec<Reaction>,
     pub id_allocator: &'a mut EntityIdAllocator,
     pub policy: &'a GamePolicy,
+    pub schedule: &'a mut Schedule<ActionType>,
 }
 
 impl<'a, Ren: GameRenderer> CommitEnv<'a, Ren> {

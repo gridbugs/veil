@@ -15,6 +15,8 @@ use policy::*;
 use commit::CommitEnv;
 use renderer::GameRenderer;
 use input::GameInput;
+use schedule::Schedule;
+use content::ActionType;
 
 #[derive(Debug)]
 pub enum Error {
@@ -48,6 +50,7 @@ pub struct TurnEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput>
     pub time: &'a mut u64,
     pub policy: &'a GamePolicy,
     pub rng: &'a mut R,
+    pub schedule: &'a mut Schedule<ActionType>,
 }
 
 impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
@@ -96,6 +99,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
             reactions: self.reactions,
             id_allocator: self.id_allocator,
             policy: self.policy,
+            schedule: self.schedule,
         }.commit(initial_action);
 
         Ok(TurnResolution::Reschedule)
