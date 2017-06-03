@@ -61,6 +61,9 @@ impl<T> DataComponentChange<T> {
     pub fn remove(&mut self, id: EntityId) {
         self.0.insert(id, DataChangeType::Remove);
     }
+    pub fn cancel(&mut self, id: EntityId) -> Option<DataChangeType<T>> {
+        self.0.remove(&id)
+    }
 }
 impl FlagComponentChange {
     pub fn iter(&self) -> FlagComponentChangeIter {
@@ -71,6 +74,9 @@ impl FlagComponentChange {
     }
     pub fn remove(&mut self, id: EntityId) {
         self.0.insert(id, FlagChangeType::Remove);
+    }
+    pub fn cancel(&mut self, id: EntityId) -> Option<FlagChangeType> {
+        self.0.remove(&id)
     }
 }
 

@@ -7,7 +7,9 @@ use content::*;
 use frame::*;
 use reaction::Reaction;
 
-pub struct GamePolicy;
+pub struct GamePolicy {
+    to_cancel: Vec<EntityId>,
+}
 
 enum RainUpdate {
     Fall(Vector2<i32>, FiniteAbsoluteLineTraverse),
@@ -15,6 +17,12 @@ enum RainUpdate {
 }
 
 impl GamePolicy {
+
+    pub fn new() -> Self {
+        GamePolicy {
+            to_cancel: Vec::new(),
+        }
+    }
 
     fn update_finite_trajectory(&self, id: EntityId, entity_store: &EntityStore,
                                     spatial_hash: &SpatialHashTable) -> Option<RainUpdate> {
@@ -92,8 +100,12 @@ impl GamePolicy {
         }
     }
 
-    pub fn on_change(&mut self, change: &EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
-                     reactions: &mut Vec<Reaction>) -> bool {
+    pub fn has_unresolved_realtime_frames(&mut self) -> bool {
+        false
+    }
+
+    pub fn on_change(&mut self, change: &mut EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                     reactions: &mut Vec<Reaction>) {
         for (id, position_change) in change.position.iter() {
             if let &DataChangeType::Insert(position) = position_change {
                 if !entity_store.collider.contains(id) {
@@ -104,16 +116,17 @@ impl GamePolicy {
                     if let Some(door_id) = cell.door_set.iter().next() {
                         if cell.solid_count > 0 {
                             reactions.push(Reaction::immediate(ActionType::OpenDoor(*door_id)));
-                            return false;
+                            self.to_cancel.push(*id);
                         }
                     } else if cell.solid_count > 0 {
-                        return false;
+                        self.to_cancel.push(*id);
                     }
-
                 }
             }
         }
 
-        true
+        for id in self.to_cancel.drain(..) {
+            change.position.cancel(id);
+        }
     }
 }

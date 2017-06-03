@@ -122,7 +122,7 @@ pub fn launch() {
 
     let mut player_knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
-    let mut policy = GamePolicy;
+    let mut policy = GamePolicy::new();
 
     let mut shadowcast = shadowcast::ShadowcastEnv::new();
     let sdl = sdl2::init().expect("SDL2 initialization failed");
@@ -138,6 +138,7 @@ pub fn launch() {
     let event_pump = sdl.event_pump().expect("Failed to initialize event pump");
     let mut input = SdlGameInput::new(event_pump, 60, AnimationMode::RealTime);
     let mut reactions = Vec::new();
+    let mut action_schedule_entries = Vec::new();
 
     let mut behaviour_env = BehaviourEnv::new(spatial_hash.width(), spatial_hash.height());
 
@@ -148,6 +149,7 @@ pub fn launch() {
         let resolution = TurnEnv {
             renderer: &mut renderer,
             input: &mut input,
+            action_schedule_entries: &mut action_schedule_entries,
             reactions: &mut reactions,
             change: &mut change,
             entity_store: &mut entity_store,

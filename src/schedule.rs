@@ -116,6 +116,8 @@ impl<T> Schedule<T> {
                 if status == Status::Removed {
                     self.entry_status.remove(&ticket);
                     self.entries.pop();
+                } else {
+                    break;
                 }
             } else {
                 panic!("Missing status for schedule entry {}", ticket);

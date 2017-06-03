@@ -9,7 +9,7 @@ use renderer::GameRenderer;
 
 #[derive(Debug)]
 pub enum Error {
-    ObservationFailed,
+    ObservationFailed(entity_observe::Error),
 }
 pub type Result<T> = result::Result<T, Error>;
 
@@ -29,7 +29,7 @@ pub fn player_render<Ren: GameRenderer>(
         time,
         knowledge,
         shadowcast
-    ).map_err(|_| Error::ObservationFailed)?;
+    ).map_err(Error::ObservationFailed)?;
 
     if metadata.changed {
         renderer.update(knowledge, time);

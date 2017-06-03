@@ -21,9 +21,22 @@ use input::GameInput;
 
 #[derive(Debug)]
 pub enum Error {
-    RenderingFailed,
+    RenderingFailed(player_render::Error),
+    ObservationFailed(entity_observe::Error),
 }
 pub type Result<T> = result::Result<T, Error>;
+
+impl From<player_render::Error> for Error {
+    fn from(e: player_render::Error) -> Self {
+        Error::RenderingFailed(e)
+    }
+}
+
+impl From<entity_observe::Error> for Error {
+    fn from(e: entity_observe::Error) -> Self {
+        Error::ObservationFailed(e)
+    }
+}
 
 pub struct PlayerActEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput> {
     pub renderer: &'a mut Ren,
@@ -81,7 +94,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
 
     pub fn act(&mut self) -> Result<MetaAction> {
 
-        self.render().map_err(|_| Error::RenderingFailed)?;
+        self.render()?;
 
         loop {
 
@@ -92,7 +105,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
                 *self.time += 1;
                 self.spatial_hash.update(self.entity_store, self.change, *self.time);
                 self.entity_store.commit_change(self.change);
-                self.render().map_err(|_| Error::RenderingFailed)?;
+                self.render()?;
             }
 
             if let Some(input) = event.input() {
@@ -114,7 +127,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             *self.time,
             self.knowledge,
             self.shadowcast
-        ).map_err(|_| Error::RenderingFailed)
+        ).map_err(Error::ObservationFailed)
     }
 
     fn aim(&mut self, start: Vector2<i32>) -> Result<Option<InfiniteAbsoluteLineTraverse>> {
