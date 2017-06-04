@@ -17,8 +17,11 @@ pub struct NpcActEnv<'a> {
     pub time: &'a mut u64,
 }
 
+pub type Error = entity_observe::Error;
+pub type Result<T> = entity_observe::Result<T>;
+
 impl<'a> NpcActEnv<'a> {
-    pub fn act(&mut self) -> entity_observe::Result<ActionType> {
+    pub fn act(&mut self) -> Result<ActionType> {
 
         let metadata = entity_observe::entity_observe(self.entity_id,
                                                       self.entity_store,

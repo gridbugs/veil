@@ -12,6 +12,7 @@ pub enum TileType {
     ClosedDoorFront,
     OpenDoorTop,
     ClosedDoorTop,
+    Bullet,
 }
 }
 
@@ -29,8 +30,9 @@ impl TileType {
             TileType::ClosedDoorFront => "ClosedDoorFront",
             TileType::OpenDoorTop => "OpenDoorTop",
             TileType::ClosedDoorTop => "ClosedDoorTop",
+            TileType::Bullet => "Bullet",
         }
     }
 }
 
-pub const NUM_TILES: usize = 11;
+pub const NUM_TILES: usize = 12;

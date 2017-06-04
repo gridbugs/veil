@@ -73,13 +73,17 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             InputEvent::Right => return Ok(Some(ActionType::Walk(self.entity_id, Direction::East))),
             InputEvent::Char('f') => {
                 let start = *self.entity_store.position.get(&self.entity_id).expect("Missing position");
-                self.aim(start)?;
+                let action = if let Some(traverse) = self.aim(start)? {
+                    ActionType::FireBullet(traverse)
+                } else {
+                    ActionType::Null
+                };
 
                 self.renderer.clear();
                 self.renderer.draw();
                 self.renderer.publish();
 
-                return Ok(Some(ActionType::Null));
+                return Ok(Some(action));
             }
             _ => return Ok(None),
         }
@@ -159,7 +163,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
                     InputEvent::Down => Vector2::new(0, 1),
                     InputEvent::Left => Vector2::new(-1, 0),
                     InputEvent::Right => Vector2::new(1, 0),
-                    InputEvent::Return => {
+                    InputEvent::Return | InputEvent::Char('f') => {
                         return Ok(Some(InfiniteAbsoluteLineTraverse::new_between(start, end)));
                     }
                     _ => return Ok(None),

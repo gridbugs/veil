@@ -36,7 +36,7 @@ impl SdlGameInput {
         frame_id
     }
 
-    fn next_frame(&mut self, instant: Instant) -> Frame {
+    fn next_frame_internal(&mut self, instant: Instant) -> Frame {
         let id = self.next_frame_id();
         self.previous_frame_instant = instant;
         Frame::new(id, self.animation_mode, instant)
@@ -148,13 +148,16 @@ impl GameInput for SdlGameInput {
             now = Instant::now();
         }
 
-        self.next_frame(now)
+        // drain pending input
+        while let Some(_) = self.event_pump.poll_event() {}
+
+        self.next_frame_internal(now)
     }
 
     fn next_external(&mut self) -> ExternalEvent {
         if self.animation_mode == AnimationMode::TurnBased {
             let input = self.next_input();
-            let frame = self.next_frame(Instant::now());
+            let frame = self.next_frame_internal(Instant::now());
             return ExternalEvent::new(input, frame);
         }
         loop {
@@ -168,11 +171,11 @@ impl GameInput for SdlGameInput {
                         return ExternalEvent::with_input(input_event);
                     }
                 } else {
-                    let frame = self.next_frame(Instant::now());
+                    let frame = self.next_frame_internal(Instant::now());
                     return ExternalEvent::with_frame(frame);
                 }
             } else {
-                let frame = self.next_frame(now);
+                let frame = self.next_frame_internal(now);
 
                 if let Some(event) = self.event_pump.poll_event() {
                     if let Some(input_event) = convert_event(event) {

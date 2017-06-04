@@ -177,6 +177,7 @@ pub fn launch() {
             TurnResolution::External(_) => {
                 return;
             }
+            TurnResolution::NoEntity => (),
         }
     }
 

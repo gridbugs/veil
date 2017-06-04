@@ -43,3 +43,5 @@ AimLineEnd = [0, 6]
 [tiles.ClosedDoorFront]
 2 = [2, 5]
 
+[tiles.Bullet]
+2 = [0, 7]

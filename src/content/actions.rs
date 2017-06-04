@@ -1,6 +1,8 @@
 use entity_store::*;
+use entity_id_allocator::EntityIdAllocator;
 use content::*;
 use direction::Direction;
+use straight_line::InfiniteAbsoluteLineTraverse;
 
 pub fn walk(change: &mut EntityStoreChange, entity_store: &EntityStore,
             id: EntityId, direction: Direction) {
@@ -23,4 +25,13 @@ pub fn close_door(change: &mut EntityStoreChange, id: EntityId) {
     change.solid.insert(id);
     change.opacity.insert(id, 1.0);
     change.tile.insert(id, ComplexTile::Wall { front: TileType::ClosedDoorFront, top: TileType::ClosedDoorTop });
+}
+
+pub fn fire_bullet(change: &mut EntityStoreChange, traverse: InfiniteAbsoluteLineTraverse, ids: &mut EntityIdAllocator) {
+    let bullet_id = ids.allocate();
+    prototypes::bullet(change, bullet_id, traverse);
+}
+
+pub fn remove(change: &mut EntityStoreChange, id: EntityId, entity_store: &EntityStore) {
+    change.remove_entity(id, entity_store);
 }

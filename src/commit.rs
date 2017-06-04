@@ -96,7 +96,8 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> CommitEnv<'a, R, Ren, Inp> {
 
     pub fn commit(&mut self, initial_action: ActionType) -> Result<()> {
 
-        let frame = self.input.next_frame();
+        let mut frame = self.input.next_frame();
+        let first_frame = frame;
         self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
         *self.time += 1;
         self.spatial_hash.update(self.entity_store, self.change, *self.time);
@@ -112,27 +113,29 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> CommitEnv<'a, R, Ren, Inp> {
 
             let description = self.next_frame_description(prev_abs_time);
 
-            if description.actions_occur {
-                self.schedule.all_next(self.action_schedule_entries);
-
-                for entry in self.action_schedule_entries.drain(..) {
-                    entry.value.populate(self.change, self.entity_store);
-                }
-
-                self.policy.on_change(self.change, self.entity_store, self.spatial_hash, self.reactions);
-
-                for Reaction { action, delay } in self.reactions.drain(..) {
-                    self.schedule.insert(action, delay);
-                }
-            } else if description.schedule_empty {
-                if !self.policy.has_unresolved_realtime_frames() {
+            if description.schedule_empty {
+                if !self.policy.has_unresolved_realtime_frames(self.entity_store) {
                     break;
                 }
             }
 
+            if description.actions_occur {
+                self.schedule.all_next(self.action_schedule_entries);
+
+                for entry in self.action_schedule_entries.drain(..) {
+                    entry.value.populate(self.change, self.entity_store, self.id_allocator);
+                }
+            }
+
+            self.policy.on_change(first_frame, frame, self.change, self.entity_store, self.spatial_hash, self.reactions);
+
+            for Reaction { action, delay } in self.reactions.drain(..) {
+                self.schedule.insert(action, delay);
+            }
+
             if description.real_time_passes {
                 prev_abs_time += 1;
-                let frame = self.input.next_frame();
+                frame = self.input.next_frame();
                 self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
             }
 

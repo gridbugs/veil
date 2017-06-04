@@ -16,4 +16,4 @@ door_set = { component = 'door_state', aggregate = 'set' }
 tile_change = { component = 'tile', aggregate = 'void' }
 inside_count = { component = 'inside', aggregate = 'count' }
 player_count = { component = 'player', aggregate = 'count' }
-
+shootable_set = { component = 'shootable', aggregate = 'set' }

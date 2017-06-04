@@ -14,11 +14,13 @@ pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.turn_period.insert(entity_id, 1);
     change.behaviour_type.insert(entity_id, BehaviourType::Player);
     change.vision_distance.insert(entity_id, 10);
+    change.door_opener.insert(entity_id);
 }
 
 pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
     change.position.insert(entity_id, position);
     change.enemy.insert(entity_id);
+    change.npc.insert(entity_id);
     change.collider.insert(entity_id);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Undead));
     change.tile_priority.insert(entity_id, 4);
@@ -26,6 +28,8 @@ pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.turn_period.insert(entity_id, 2);
     change.behaviour_type.insert(entity_id, BehaviourType::Undead);
     change.vision_distance.insert(entity_id, 10);
+    change.door_opener.insert(entity_id);
+    change.shootable.insert(entity_id);
 }
 
 pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -71,4 +75,16 @@ pub fn rain<R: Rng>(change: &mut EntityStoreChange, entity_id: EntityId, positio
         trajectory.step_in_place();
     }
     change.finite_trajectory.insert(entity_id, trajectory);
+}
+
+pub fn bullet(change: &mut EntityStoreChange, entity_id: EntityId, mut traverse: InfiniteAbsoluteLineTraverse) {
+    change.position.insert(entity_id, traverse.step_in_place());
+    change.infinite_trajectory.insert(entity_id, traverse);
+    change.tile_priority.insert(entity_id, 2);
+    change.tile.insert(entity_id, ComplexTile::Simple(TileType::Bullet));
+    change.forgetable.insert(entity_id);
+    change.realtime.insert(entity_id);
+    change.bullet.insert(entity_id);
+    change.collider.insert(entity_id);
+    change.realtime_period.insert(entity_id, 2);
 }

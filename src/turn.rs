@@ -1,8 +1,6 @@
 use std::result;
 use std::collections::HashMap;
 use rand::Rng;
-use player_act::PlayerActEnv;
-use npc_act::NpcActEnv;
 use knowledge::PlayerKnowledgeGrid;
 use reaction::Reaction;
 use behaviour::*;
@@ -18,13 +16,14 @@ use input::GameInput;
 use schedule::{Schedule, ScheduleEntry};
 use content::ActionType;
 use player_act;
+use npc_act;
 
 #[derive(Debug)]
 pub enum Error {
     MissingNpcKnowledge,
     MissingNpcBehaviour,
     PlayerTurnError(player_act::Error),
-    NpcTurnError,
+    NpcTurnError(npc_act::Error),
     CommitFailed(commit::Error),
 }
 pub type Result<T> = result::Result<T, Error>;
@@ -41,8 +40,15 @@ impl From<commit::Error> for Error {
     }
 }
 
+impl From<npc_act::Error> for Error {
+    fn from(e: npc_act::Error) -> Self {
+        Error::NpcTurnError(e)
+    }
+}
+
 pub enum TurnResolution {
     Reschedule,
+    NoEntity,
     External(External),
 }
 
@@ -72,7 +78,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
     pub fn take_turn(self) -> Result<TurnResolution> {
 
         let initial_action = if self.entity_store.player.contains(&self.entity_id) {
-            let meta_action = PlayerActEnv {
+            let meta_action = player_act::PlayerActEnv {
                 renderer: self.renderer,
                 input: self.input,
                 change: self.change,
@@ -90,8 +96,8 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
                 MetaAction::Action(action) => action,
                 MetaAction::External(external) => return Ok(TurnResolution::External(external)),
             }
-        } else {
-            NpcActEnv {
+        } else if self.entity_store.npc.contains(&self.entity_id) {
+            npc_act::NpcActEnv {
                 entity_store: self.entity_store,
                 spatial_hash: self.spatial_hash,
                 entity_id: self.entity_id,
@@ -100,7 +106,9 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
                 behaviour_env: self.behaviour_env,
                 shadowcast: self.shadowcast,
                 time: self.time,
-            }.act().map_err(|_| Error::NpcTurnError)?
+            }.act()?
+        } else {
+            return Ok(TurnResolution::NoEntity);
         };
 
         CommitEnv {

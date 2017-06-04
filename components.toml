@@ -4,12 +4,14 @@ imports = [
     'content::DoorState',
     'content::BehaviourType',
     'straight_line::FiniteAbsoluteLineTraverse',
+    'straight_line::InfiniteAbsoluteLineTraverse',
     'schedule::ScheduleTicket',
 ]
 
 [components]
 position = { type = 'Vector2<i32>' }
 player = {}
+npc = {}
 floor = {}
 collider = {}
 solid = {}
@@ -28,4 +30,9 @@ turn_period = { type = 'u64' }
 turn_ticket = { type = 'ScheduleTicket' }
 behaviour_type = { type = 'BehaviourType' }
 realtime = {}
+realtime_period = { type = 'u64' }
 vision_distance = { type = 'u32' }
+infinite_trajectory = { type = 'InfiniteAbsoluteLineTraverse' }
+door_opener = {}
+bullet = {}
+shootable = {}
