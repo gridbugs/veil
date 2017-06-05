@@ -96,13 +96,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> CommitEnv<'a, R, Ren, Inp> {
 
     pub fn commit(&mut self, initial_action: ActionType) -> Result<()> {
 
-        let mut frame = self.input.next_frame();
-        let first_frame = frame;
-        self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
-        *self.time += 1;
-        self.spatial_hash.update(self.entity_store, self.change, *self.time);
-        self.entity_store.commit_change(self.change);
-        self.render()?;
+        let mut maybe_first_frame = None;
 
         self.reactions.clear();
 
@@ -127,16 +121,24 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> CommitEnv<'a, R, Ren, Inp> {
                 }
             }
 
-            self.policy.on_change(first_frame, frame, self.change, self.entity_store, self.spatial_hash, self.reactions);
+            if description.real_time_passes {
+                prev_abs_time += 1;
+                let frame = self.input.next_frame();
+                let first_frame = if let Some(f) = maybe_first_frame {
+                    f
+                } else {
+                    maybe_first_frame = Some(frame);
+                    frame
+                };
+
+                self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
+                self.policy.on_realtime_change(first_frame, frame, self.change, self.entity_store);
+            }
+
+            self.policy.on_change(self.change, self.entity_store, self.spatial_hash, self.reactions);
 
             for Reaction { action, delay } in self.reactions.drain(..) {
                 self.schedule.insert(action, delay);
-            }
-
-            if description.real_time_passes {
-                prev_abs_time += 1;
-                frame = self.input.next_frame();
-                self.policy.on_frame_animate(frame, self.entity_store, self.spatial_hash, self.rng, self.change);
             }
 
             *self.time += 1;

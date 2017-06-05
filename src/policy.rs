@@ -106,7 +106,7 @@ impl GamePolicy {
         !entity_store.realtime.is_empty()
     }
 
-    fn handle_realtime(&mut self, first_frame: Frame, frame: Frame,
+    pub fn on_realtime_change(&mut self, first_frame: Frame, frame: Frame,
                        change: &mut EntityStoreChange, entity_store: &EntityStore) {
 
         let relative_frame_diff = frame.id() - first_frame.id();
@@ -162,11 +162,9 @@ impl GamePolicy {
         }
     }
 
-    pub fn on_change(&mut self, first_frame: Frame, frame: Frame,
+    pub fn on_change(&mut self,
                      change: &mut EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                      reactions: &mut Vec<Reaction>) {
-
-        self.handle_realtime(first_frame, frame, change, entity_store);
 
         for (id, position_change) in change.position.iter() {
             if let &DataChangeType::Insert(position) = position_change {
