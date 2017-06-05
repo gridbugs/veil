@@ -71,6 +71,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             InputEvent::Down => return Ok(Some(ActionType::Walk(self.entity_id, Direction::South))),
             InputEvent::Left => return Ok(Some(ActionType::Walk(self.entity_id, Direction::West))),
             InputEvent::Right => return Ok(Some(ActionType::Walk(self.entity_id, Direction::East))),
+            InputEvent::Space => return Ok(Some(ActionType::Null)),
             InputEvent::Char('f') => {
                 let start = *self.entity_store.position.get(&self.entity_id).expect("Missing position");
                 let action = if let Some(traverse) = self.aim(start)? {
