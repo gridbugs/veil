@@ -149,7 +149,7 @@ impl GameInput for SdlGameInput {
         }
 
         // drain pending input
-        while let Some(_) = self.event_pump.poll_event() {}
+        while self.event_pump.poll_event().is_some() {}
 
         self.next_frame_internal(now)
     }
