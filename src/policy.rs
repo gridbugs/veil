@@ -146,7 +146,13 @@ impl GamePolicy {
                 if entity_store.bullet.contains(&id) {
                     self.entities_to_remove.push(*shootable_id);
                     self.entities_to_remove.push(id);
+                    return;
                 }
+            }
+
+            if !cell.npc_set.is_empty() {
+                self.to_cancel.push(id);
+                return;
             }
 
             if cell.solid_count > 0 {
