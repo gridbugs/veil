@@ -118,18 +118,20 @@ impl SearchEnv {
         }
     }
 
-    fn see(&mut self, idx: Vector2<i32>, direction: Direction) -> Result<()> {
-        if let Some(c) = self.node_grid.get_mut(idx) {
-            c.seen_seq = self.seq;
-            c.entry_direction = Some(direction);
-            Ok(())
+    // sees the given index if it wasn't already seen, returning true iff it
+    // was already seen or invalid
+    fn see_unless_seen_or_invalid(&mut self, idx: Vector2<i32>, direction: Direction) -> bool {
+        if let Some(cell) = self.node_grid.get_mut(idx) {
+            if cell.seen_seq == self.seq {
+                true
+            } else {
+                cell.seen_seq = self.seq;
+                cell.entry_direction = Some(direction);
+                false
+            }
         } else {
-            Err(Error::InvalidGridSize)
+            true
         }
-    }
-
-    fn is_seen(&self, idx: Vector2<i32>) -> Result<bool> {
-        self.node_grid.get(idx).map(|n| n.seen_seq == self.seq).ok_or(Error::InvalidGridSize)
     }
 
     fn construct_path(&self, mut idx: Vector2<i32>, path: &mut Path) -> Result<()> {
@@ -162,7 +164,7 @@ pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
         path: &mut Path) -> Result<()>
     where Dirs: Copy + IntoIterator<Item=Direction>,
           Grid: LookupCoord<Item=Cell>,
-          Score: Ord,
+          Score: Ord + ::std::fmt::Debug,
           ScoreFn: Fn(&Cell) -> Score,
           CanEnterFn: Fn(&Cell) -> bool,
 {
@@ -178,17 +180,17 @@ pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
     };
 
     while let Some(current_coord) = env.queue.pop_front() {
-        for (direction, coord) in izip!(directions, env.node_grid.neighbour_coord_iter(current_coord, directions)) {
-            if env.is_seen(coord)? {
+        for direction in directions {
+            let coord = current_coord + direction.vector();
+
+            if env.see_unless_seen_or_invalid(coord, direction) {
                 continue;
             }
-
-            env.see(coord, direction)?;
 
             if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
 
                 if can_enter(knowledge_cell) {
-                    best.insert(score(knowledge_cell), coord);
+                    best.insert_gt(score(knowledge_cell), coord);
                 } else {
                     continue;
                 }
@@ -222,12 +224,12 @@ pub fn bfs_coord<Dirs, Grid, Cell, CanEnterFn>(
     env.see_first(start)?;
 
     while let Some(current_coord) = env.queue.pop_front() {
-        for (direction, coord) in izip!(directions, env.node_grid.neighbour_coord_iter(current_coord, directions)) {
-            if env.is_seen(coord)? {
+        for direction in directions {
+            let coord = current_coord + direction.vector();
+
+            if env.see_unless_seen_or_invalid(coord, direction) {
                 continue;
             }
-
-            env.see(coord, direction)?;
 
             if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
 
@@ -275,12 +277,12 @@ pub fn bfs_predicate<Dirs, Grid, Cell, PredFn, CanEnterFn>(
     env.see_first(start)?;
 
     while let Some(current_coord) = env.queue.pop_front() {
-        for (direction, coord) in izip!(directions, env.node_grid.neighbour_coord_iter(current_coord, directions)) {
-            if env.is_seen(coord)? {
+        for direction in directions {
+            let coord = current_coord + direction.vector();
+
+            if env.see_unless_seen_or_invalid(coord, direction) {
                 continue;
             }
-
-            env.see(coord, direction)?;
 
             if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
 

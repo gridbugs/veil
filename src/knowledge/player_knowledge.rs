@@ -1,6 +1,6 @@
 use entity_store::{EntityId, EntityStore};
 use spatial_hash::SpatialHashCell;
-use grid::{StaticGrid, StaticGridIdx};
+use grid::StaticGrid;
 use content::{ComplexTile, OverlayType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
@@ -29,6 +29,9 @@ pub struct PlayerKnowledgeCell {
 #[derive(Debug)]
 pub struct PlayerKnowledgeGrid {
     last_updated: u64,
+    current_time: u64,
+    player_coord: Option<Vector2<i32>>,
+    last_player_coord: Option<Vector2<i32>>,
     grid: StaticGrid<PlayerKnowledgeCell>,
 }
 
@@ -99,36 +102,65 @@ impl PlayerKnowledgeGrid {
     pub fn new(width: usize, height: usize) -> Self {
         PlayerKnowledgeGrid {
             last_updated: 0,
+            current_time: 0,
+            player_coord: None,
+            last_player_coord: None,
             grid: StaticGrid::new_default(width, height),
         }
     }
 
-    pub fn get<I: StaticGridIdx>(&self, coord: I) -> Option<&PlayerKnowledgeCell> {
+    pub fn get(&self, coord: Vector2<i32>) -> Option<&PlayerKnowledgeCell> {
         self.grid.get(coord)
     }
 
-    pub fn is_visible<I: StaticGridIdx>(&self, coord: I, time: u64) -> bool {
+    pub fn is_visible(&self, coord: Vector2<i32>, time: u64) -> bool {
         self.get(coord).map(|c| c.is_visible(time)).unwrap_or(false)
+    }
+
+    pub fn player_coord(&self) -> Option<Vector2<i32>> {
+        self.player_coord
+    }
+
+    pub fn last_player_coord(&self) -> Option<Vector2<i32>> {
+        self.last_player_coord
+    }
+
+    pub fn clear_last_player_coord(&mut self) {
+        self.last_player_coord = None;
     }
 }
 
 impl KnowledgeGrid for PlayerKnowledgeGrid {
-    fn update_cell<I: StaticGridIdx>(&mut self, coord: I, spatial_hash_cell: &SpatialHashCell,
-                                         entity_store: &EntityStore, time: u64) -> ObservationMetadata {
+    fn update_cell(&mut self, coord: Vector2<i32>, spatial_hash_cell: &SpatialHashCell,
+                   entity_store: &EntityStore) -> ObservationMetadata {
 
         if let Some(knowledge_cell) = self.grid.get_mut(coord) {
-            if knowledge_cell.last_updated == time {
+            if knowledge_cell.last_updated == self.current_time {
                 return Default::default();
             }
 
-            if self.last_updated != time {
-                self.last_updated = time;
+            if self.last_updated != self.current_time {
+                self.last_updated = self.current_time;
             }
 
-            knowledge_cell.update(spatial_hash_cell, entity_store, time)
+            if spatial_hash_cell.player_count > 0 {
+                self.player_coord = Some(coord);
+                self.last_player_coord = Some(coord);
+            } else if let Some(player_coord) = self.player_coord {
+                if player_coord == coord {
+                    // there's no player here, but we previously saw the player here
+                    self.player_coord = None;
+                }
+            }
+
+            knowledge_cell.update(spatial_hash_cell, entity_store, self.current_time)
         } else {
             Default::default()
         }
+    }
+
+    fn set_time(&mut self, time: u64) {
+        self.current_time = time;
     }
 }
 

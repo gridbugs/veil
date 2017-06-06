@@ -36,3 +36,4 @@ infinite_trajectory = { type = 'InfiniteAbsoluteLineTraverse' }
 door_opener = {}
 bullet = {}
 shootable = {}
+omniscient = {}

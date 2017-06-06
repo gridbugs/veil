@@ -1,6 +1,7 @@
 use std::path::Path;
 use sdl2::render::WindowCanvas;
 use sdl2::pixels::Color;
+use cgmath::Vector2;
 use sdl2_frontend::tile::TileResolver;
 use sdl2_frontend::tile_buffer::TileBufferCell;
 use sdl2_frontend::renderer_dimensions::RendererDimensions;
@@ -32,7 +33,7 @@ impl<'a> GameRendererInternal<'a> {
         self.canvas.clear();
     }
 
-    pub fn draw_cell(&mut self, cell: &TileBufferCell, (x, y): (usize, usize),
+    pub fn draw_cell(&mut self, cell: &TileBufferCell, coord: Vector2<i32>,
                      dimensions: &RendererDimensions, textures: &GameTextures) {
 
         let texture = if cell.visible {
@@ -41,7 +42,7 @@ impl<'a> GameRendererInternal<'a> {
             &textures.greyscale
         };
 
-        let dest_rect = dimensions.dest_rect(x as u32, y as u32);
+        let dest_rect = dimensions.dest_rect(coord.x as u32, coord.y as u32);
 
         for channel in cell.channels.iter() {
             if let &Some(source) = channel {

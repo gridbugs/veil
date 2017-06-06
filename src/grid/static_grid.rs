@@ -170,13 +170,13 @@ impl CoordIter {
 }
 
 impl Iterator for CoordIter {
-    type Item = (usize, usize);
+    type Item = Vector2<i32>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.y == self.height {
             return None
         }
 
-        let ret = Some((self.x, self.y));
+        let ret = Some(Vector2::new(self.x as i32, self.y as i32));
 
         self.x += 1;
         if self.x == self.width {

@@ -3,15 +3,7 @@ use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeCell};
 use content::ActionType;
 use direction::DirectionsCardinal;
 use entity_store::{EntityId, EntityStore};
-use grid_search::bfs_predicate;
-
-fn search_can_enter(cell: &PlayerKnowledgeCell) -> bool {
-    !cell.solid || cell.door.is_some()
-}
-
-fn search_predicate(cell: &PlayerKnowledgeCell) -> bool {
-    cell.player
-}
+use grid_search::bfs_coord;
 
 pub fn attack(id: EntityId,
               entity_store: &EntityStore,
@@ -21,8 +13,18 @@ pub fn attack(id: EntityId,
 
     let position = *entity_store.position.get(&id).expect("Missing position");
 
-    if let Err(_) = bfs_predicate(&mut env.search_env, knowledge, position, DirectionsCardinal,
-                                  search_predicate, search_can_enter, &mut state.path) {
+    let dest = if let Some(dest) = knowledge.player_coord() {
+        dest
+    } else {
+        return None;
+    };
+
+    let can_enter = |cell: &PlayerKnowledgeCell| {
+        return !cell.solid || cell.door.is_some();
+    };
+
+    if let Err(_) = bfs_coord(&mut env.search_env, knowledge, position, DirectionsCardinal,
+                              dest, can_enter, &mut state.path) {
         return None;
     }
 

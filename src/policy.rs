@@ -155,6 +155,11 @@ impl GamePolicy {
                 return;
             }
 
+            if cell.player_count > 0 {
+                self.to_cancel.push(id);
+                return;
+            }
+
             if cell.solid_count > 0 {
                 // we hit a solid cell
                 if entity_store.bullet.contains(&id) {

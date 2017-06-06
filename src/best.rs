@@ -2,6 +2,7 @@
 pub struct BestMapNonEmpty<K: Ord, V> {
     key: K,
     value: V,
+    len: usize,
 }
 
 impl<K: Ord, V> BestMapNonEmpty<K, V> {
@@ -9,14 +10,24 @@ impl<K: Ord, V> BestMapNonEmpty<K, V> {
         BestMapNonEmpty {
             key: key,
             value: value,
+            len: 0,
         }
     }
 
-    pub fn insert(&mut self, key: K, value: V) {
+    pub fn insert_gt(&mut self, key: K, value: V) {
         if key > self.key {
             self.key = key;
             self.value = value;
         }
+        self.len += 1;
+    }
+
+    pub fn insert_ge(&mut self, key: K, value: V) {
+        if key >= self.key {
+            self.key = key;
+            self.value = value;
+        }
+        self.len += 1;
     }
 
     pub fn get(&self) -> (&K, &V) { (&self.key, &self.value) }
@@ -26,6 +37,6 @@ impl<K: Ord, V> BestMapNonEmpty<K, V> {
     pub fn into(self) -> (K, V) { (self.key, self.value) }
     pub fn into_key(self) -> K { self.key }
     pub fn into_value(self) -> V { self.value }
+
+    pub fn len(&self) -> usize { self.len }
 }
-
-

@@ -344,7 +344,7 @@ impl ShadowcastEnv {
 
 // returns true iff knowledge changed as a result of the scan
 fn scan<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs, scan: &Scan,
-                          entity_store: &EntityStore, time: u64,
+                          entity_store: &EntityStore,
                           knowledge: &mut K) -> ObservationMetadata {
     let mut coord = args.octant.depth_idx.create_coord(scan.depth_idx);
 
@@ -377,7 +377,7 @@ fn scan<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs, scan: &Scan
         let between = coord - args.eye;
         let distance_squared = between.x * between.x + between.y * between.y;
         if distance_squared < args.distance_squared {
-            metadata |= knowledge.update_cell(coord, cell, entity_store, time);
+            metadata |= knowledge.update_cell(coord, cell, entity_store);
         }
 
         // compute current visibility
@@ -436,7 +436,7 @@ fn scan<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs, scan: &Scan
 
 // returns true iff the knowledge was changed
 fn detect_visible_area_octant<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &OctantArgs,
-                                                entity_store: &EntityStore, time: u64,
+                                                entity_store: &EntityStore,
                                                 knowledge: &mut K) -> ObservationMetadata {
     let mut metadata = Default::default();
     let limits = Limits::new(args.eye, args.world, args.octant);
@@ -448,7 +448,7 @@ fn detect_visible_area_octant<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &O
         if let Some(scan_desc) = Scan::new(&limits, &frame, args.octant, args.distance) {
             // Scan::new can yield None if the scan would be entirely off the grid
             // outside the view distance.
-            metadata |= scan(stack, args, &scan_desc, entity_store, time, knowledge);
+            metadata |= scan(stack, args, &scan_desc, entity_store, knowledge);
         }
     }
 
@@ -459,15 +459,17 @@ fn detect_visible_area_octant<K: KnowledgeGrid>(stack: &mut Vec<Frame>, args: &O
 pub fn observe<K: KnowledgeGrid>(env: &mut ShadowcastEnv, eye: Vector2<i32>, world: &SpatialHashTable, distance: u32,
                                  entity_store: &EntityStore, time: u64, knowledge: &mut K) -> ObservationMetadata {
 
+    knowledge.set_time(time);
+
     let mut metadata = if let Some(eye_cell) = world.get(eye) {
-        knowledge.update_cell(eye, eye_cell, entity_store, time)
+        knowledge.update_cell(eye, eye_cell, entity_store)
     } else {
         Default::default()
     };
 
     for octant in env.octants.iter() {
         let args = OctantArgs::new(octant, world, eye, distance, 0.0, 1.0);
-        metadata |= detect_visible_area_octant(&mut env.stack, &args, entity_store, time, knowledge);
+        metadata |= detect_visible_area_octant(&mut env.stack, &args, entity_store, knowledge);
     }
 
     metadata

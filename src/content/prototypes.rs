@@ -15,6 +15,7 @@ pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.behaviour_type.insert(entity_id, BehaviourType::Player);
     change.vision_distance.insert(entity_id, 10);
     change.door_opener.insert(entity_id);
+    change.omniscient.insert(entity_id);
 }
 
 pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {

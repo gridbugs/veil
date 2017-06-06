@@ -26,7 +26,7 @@ fn maybe_make_step(position: Vector2<i32>,
 
     for step in state.path_iter() {
         if let Some(cell) = knowledge.get(step.to_coord()) {
-            if cell.solid {
+            if cell.solid && cell.door.is_none() {
                 return None;
             }
             if !cell.is_visible(time) {
@@ -48,24 +48,32 @@ fn search_score(cell: &PlayerKnowledgeCell) -> InvertOrd<u64> {
     InvertOrd::new(cell.last_updated)
 }
 
-fn search_can_enter(cell: &PlayerKnowledgeCell) -> bool {
-    !cell.solid || cell.door.is_some()
-}
-
-fn make_step(position: Vector2<i32>,
+fn make_step(id: EntityId,
+             position: Vector2<i32>,
              knowledge: &PlayerKnowledgeGrid,
              observation_metadata: ObservationMetadata,
              time: u64,
              state: &mut BehaviourState,
-             search_env: &mut SearchEnv) -> Step {
+             search_env: &mut SearchEnv) -> Option<Step> {
 
     if let Some(step) = maybe_make_step(position, knowledge, observation_metadata, time, state) {
-        step
+        Some(step)
     } else {
-        bfs_best(search_env, knowledge, position, DirectionsCardinal, search_score, search_can_enter, &mut state.path)
+        let can_enter = |cell: &PlayerKnowledgeCell| {
+            if cell.last_updated == 0 {
+                return true;
+            }
+            if let Some(enemy_id) = cell.enemy {
+                if enemy_id != id && cell.last_updated == time {
+                    return false;
+                }
+            }
+            return !cell.solid || cell.door.is_some();
+        };
+        bfs_best(search_env, knowledge, position, DirectionsCardinal, search_score, can_enter, &mut state.path)
             .expect("Failed to search");
         state.path_idx = 0;
-        state.path.first().expect("Empty path")
+        state.path.first()
     }
 }
 
@@ -79,7 +87,11 @@ pub fn patrol(id: EntityId,
 
     let position = *entity_store.position.get(&id).expect("Missing position");
 
-    let step = make_step(position, knowledge, observation_metadata, time, state, &mut env.search_env);
+    let step = if let Some(step) = make_step(id, position, knowledge, observation_metadata, time, state, &mut env.search_env) {
+        step
+    } else {
+        return None;
+    };
 
     if let Some(prev_step) = state.prev_step {
         if prev_step.from_coord() != step.to_coord() {

@@ -69,8 +69,7 @@ impl TileBuffer {
     pub fn update(&mut self, knowledge: &PlayerKnowledgeGrid, resolver: &tile::TileResolver, time: u64) {
         for (coord, mut cell) in izip!(self.grid.coord_iter(), self.grid.iter_mut()) {
             cell.clear();
-            let world_coord = Vector2::new(coord.0 as i32, coord.1 as i32);
-            if let Some(knowledge_cell) = knowledge.get(world_coord) {
+            if let Some(knowledge_cell) = knowledge.get(coord) {
                 cell.visible = knowledge_cell.last_updated == time;
                 for &PlayerKnowledgeTile { priority, tile, forgetable } in knowledge_cell.tiles.iter() {
                     if !cell.visible && forgetable {
@@ -78,7 +77,7 @@ impl TileBuffer {
                     }
                     let simple_tile = match tile {
                         ComplexTile::Wall { front, top } => {
-                            let south_coord = world_coord + Vector2::new(0, 1);
+                            let south_coord = coord + Vector2::new(0, 1);
                             if let Some(south_cell) = knowledge.get(south_coord) {
                                 if south_cell.wall {
                                     top

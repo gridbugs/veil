@@ -2,7 +2,7 @@ use std::result;
 use entity_store::{EntityId, EntityStore};
 use spatial_hash::SpatialHashTable;
 use knowledge::KnowledgeGrid;
-use observation::{shadowcast, ObservationMetadata};
+use observation::{shadowcast, omniscient, ObservationMetadata};
 
 #[derive(Debug)]
 pub enum Error {
@@ -21,6 +21,10 @@ pub fn entity_observe<K: KnowledgeGrid>(
 
     let position = entity_store.position.get(&id).ok_or(Error::MissingPosition)?;
     let vision_distance = entity_store.vision_distance.get(&id).ok_or(Error::MissingVisionDistance)?;
+
+    if entity_store.omniscient.contains(&id) {
+        return Ok(omniscient::observe(spatial_hash, entity_store, time, knowledge));
+    }
 
     Ok(shadowcast::observe(
         shadowcast,
