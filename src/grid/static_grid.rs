@@ -3,7 +3,7 @@ use coord::IntoCoord;
 use cgmath::Vector2;
 use limits::LimitsRect;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StaticGrid<T> {
     items: Vec<T>,
     width: usize,
@@ -56,6 +56,20 @@ impl<T> StaticGrid<T> {
             height: height,
             size: size,
         }
+    }
+
+    pub fn new_call<F>(width: usize, height: usize, mut f: F) -> Self
+        where F: FnMut(isize, isize) -> T
+    {
+        let mut grid = StaticGrid::new_with_capacity(width, height);
+
+        for y in 0..height as isize {
+            for x in 0..width as isize {
+                grid.items.push(f(x, y));
+            }
+        }
+
+        grid
     }
 }
 

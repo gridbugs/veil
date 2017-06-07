@@ -15,3 +15,6 @@ mod limits;
 
 #[cfg(test)]
 mod schedule;
+
+#[cfg(test)]
+mod perlin;
