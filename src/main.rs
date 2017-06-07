@@ -46,6 +46,7 @@ mod npc_act;
 mod player_render;
 mod commit;
 mod perlin;
+mod veil_state;
 
 mod tests;
 

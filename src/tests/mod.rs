@@ -18,3 +18,6 @@ mod schedule;
 
 #[cfg(test)]
 mod perlin;
+
+#[cfg(test)]
+mod veil_state;

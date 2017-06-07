@@ -140,6 +140,10 @@ impl<T> StaticGrid<T> {
         self.items.get_unchecked_mut(wrapped_idx)
     }
 
+    pub fn rows(&self) -> Rows<T> {
+        self.items.chunks(self.width)
+    }
+
     pub fn iter(&self) -> Iter<T> {
         self.items.iter()
     }
@@ -165,6 +169,9 @@ impl<T> StaticGrid<T> {
 
 pub type Iter<'a, T> = slice::Iter<'a, T>;
 pub type IterMut<'a, T> = slice::IterMut<'a, T>;
+
+pub type Rows<'a, T> = slice::Chunks<'a, T>;
+
 pub struct CoordIter {
     width: usize,
     height: usize,
