@@ -18,3 +18,6 @@ tile_change = { component = 'tile', aggregate = 'void' }
 inside_count = { component = 'inside', aggregate = 'count' }
 player_count = { component = 'player', aggregate = 'count' }
 shootable_set = { component = 'shootable', aggregate = 'set' }
+veil_slot_set = { component = 'veil_slot', aggregate = 'set' }
+veil_current_count = { component = 'veil_current', aggregate = 'count' }
+veil_next_count = { component = 'veil_next', aggregate = 'count' }

@@ -3,11 +3,11 @@ enum_from_primitive! {
 pub enum OverlayType {
     Blank,
     Death,
-    PostEldrich,
-    Eldrich,
-    PreEldrich,
     AimLineMid,
     AimLineEnd,
+    Veil,
+    VeilCurrent,
+    VeilNext,
 }
 }
 
@@ -16,11 +16,11 @@ impl OverlayType {
         match self {
             OverlayType::Blank => "Blank",
             OverlayType::Death => "Death",
-            OverlayType::PostEldrich => "PostEldrich",
-            OverlayType::Eldrich => "Eldrich",
-            OverlayType::PreEldrich => "PreEldrich",
             OverlayType::AimLineMid => "AimLineMid",
             OverlayType::AimLineEnd => "AimLineEnd",
+            OverlayType::Veil => "Veil",
+            OverlayType::VeilCurrent => "VeilCurrent",
+            OverlayType::VeilNext => "VeilNext",
         }
     }
 }

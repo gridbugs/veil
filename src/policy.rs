@@ -6,6 +6,7 @@ use straight_line::*;
 use content::*;
 use frame::*;
 use reaction::Reaction;
+use veil_state::VeilState;
 
 pub struct GamePolicy {
     to_cancel: Vec<EntityId>,
@@ -150,6 +151,12 @@ impl GamePolicy {
                 }
             }
 
+            if cell.solid_count > 0 && entity_store.bullet.contains(&id) {
+                // bullet hit something solid
+                self.entities_to_remove.push(id);
+                return;
+            }
+
             if !cell.npc_set.is_empty() {
                 self.to_cancel.push(id);
                 return;
@@ -161,14 +168,8 @@ impl GamePolicy {
             }
 
             if cell.solid_count > 0 {
-                // we hit a solid cell
-                if entity_store.bullet.contains(&id) {
-                    // bullets get removed completely
-                    self.entities_to_remove.push(id);
-                } else {
-                    // everything else just gets stopped
-                    self.to_cancel.push(id);
-                }
+                // everything else just gets stopped
+                self.to_cancel.push(id);
             }
         }
     }
@@ -191,6 +192,43 @@ impl GamePolicy {
 
         for id in self.entities_to_remove.drain(..) {
             change.remove_entity(id, entity_store);
+        }
+    }
+
+    pub fn veil_update(&mut self,
+                       change: &mut EntityStoreChange, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                       veil_state: &VeilState) {
+        for (sh_cell, veil_cell) in izip!(spatial_hash.iter(), veil_state.iter()) {
+            if let Some(id) = sh_cell.veil_slot_set.iter().next() {
+                if veil_cell.current && !entity_store.veil_current.contains(id) {
+                    change.veil_current.insert(*id);
+                } else if !veil_cell.current && entity_store.veil_current.contains(id) {
+                    change.veil_current.remove(*id);
+                }
+                if veil_cell.next && !entity_store.veil_next.contains(id) {
+                    change.veil_next.insert(*id);
+                } else if !veil_cell.next && entity_store.veil_next.contains(id) {
+                    change.veil_next.remove(*id);
+                }
+            }
+        }
+
+        for id in entity_store.veil_change.iter() {
+            if let Some(position) = entity_store.position.get(id) {
+                if let Some(veil_cell) = veil_state.get(*position) {
+                    if let Some(tile) = entity_store.tile.get(id) {
+                        if veil_cell.current && tile == &ComplexTile::Simple(TileType::Undead) {
+                            change.tile.insert(*id, ComplexTile::Simple(TileType::SuperUndead));
+                            change.shootable.remove(*id);
+                            change.solid.insert(*id);
+                        } else if !veil_cell.current && tile == &ComplexTile::Simple(TileType::SuperUndead) {
+                            change.tile.insert(*id, ComplexTile::Simple(TileType::Undead));
+                            change.shootable.insert(*id);
+                            change.solid.remove(*id);
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -3,9 +3,9 @@ tile_size = 16
 [overlays]
 Blank = [0, 4]
 Death = [1, 4]
-PostEldrich = [1, 4]
-Eldrich = [2, 4]
-PreEldrich = [3, 4]
+VeilCurrent = [1, 4]
+Veil = [2, 4]
+VeilNext = [3, 4]
 AimLineMid = [1, 6]
 AimLineEnd = [0, 6]
 
@@ -24,6 +24,9 @@ AimLineEnd = [0, 6]
 
 [tiles.Undead]
 1 = [1, 2]
+
+[tiles.SuperUndead]
+1 = [2, 2]
 
 [tiles.Rain]
 3 = [0, 3]

@@ -72,10 +72,19 @@ impl<'a> Iterator for Row<'a> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct VeilCell {
     pub current: bool,
     pub next: bool,
+}
+
+impl Default for VeilCell {
+    fn default() -> Self {
+        VeilCell {
+            current: false,
+            next: false,
+        }
+    }
 }
 
 pub struct VeilState {
@@ -154,8 +163,8 @@ fn is_veil(noise: f64) -> bool {
 }
 
 fn mutate<R: Rng>(perlin: &mut PerlinGrid, rng: &mut R) {
-    perlin.scroll(rng, 0.2, 0.1);
-    perlin.mutate(rng, 0.1);
+    perlin.scroll(rng, 0.02, 0.01);
+    perlin.mutate(rng, 0.02);
 }
 
 fn record(dx: f64, dy: f64, perlin: &PerlinGrid, grid: &mut StaticGrid<bool>) {

@@ -37,3 +37,7 @@ door_opener = {}
 bullet = {}
 shootable = {}
 omniscient = {}
+veil_slot = {}
+veil_current = {}
+veil_next = {}
+veil_change = {}

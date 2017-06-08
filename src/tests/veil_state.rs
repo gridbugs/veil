@@ -42,4 +42,15 @@ fn veil_state() {
         }
         print!("\n");
     }
+
+    veil.step(&mut rng);
+
+    println!("----");
+
+    for row in veil.rows() {
+        for cell in row {
+            print!("{}", to_char(cell));
+        }
+        print!("\n");
+    }
 }

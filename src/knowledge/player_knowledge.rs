@@ -5,6 +5,7 @@ use content::{ComplexTile, OverlayType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
 use coord::LookupCoord;
+use veil_state::VeilCell;
 use cgmath::Vector2;
 
 #[derive(Debug)]
@@ -24,6 +25,7 @@ pub struct PlayerKnowledgeCell {
     pub door: Option<EntityId>,
     pub enemy: Option<EntityId>,
     pub player: bool,
+    pub veil_cell: VeilCell,
 }
 
 #[derive(Debug)]
@@ -46,6 +48,7 @@ impl Default for PlayerKnowledgeCell {
             door: None,
             enemy: None,
             player: false,
+            veil_cell: Default::default(),
         }
     }
 }
@@ -79,6 +82,8 @@ impl PlayerKnowledgeCell {
             self.door = spatial_hash_cell.door_set.iter().next().cloned();
             self.enemy = spatial_hash_cell.enemy_set.iter().next().cloned();
             self.player = spatial_hash_cell.player_count > 0;
+            self.veil_cell.current = spatial_hash_cell.veil_current_count > 0;
+            self.veil_cell.next = spatial_hash_cell.veil_next_count > 0;
 
             changed = true;
         }

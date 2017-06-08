@@ -1,7 +1,7 @@
 use sdl2::rect::Rect;
 use cgmath::Vector2;
 use grid::{StaticGrid, StaticGridIdx, static_grid};
-use content::ComplexTile;
+use content::{ComplexTile, OverlayType};
 use sdl2_frontend::tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
 
@@ -71,6 +71,17 @@ impl TileBuffer {
             cell.clear();
             if let Some(knowledge_cell) = knowledge.get(coord) {
                 cell.visible = knowledge_cell.last_updated == time;
+                if cell.visible {
+                    if knowledge_cell.veil_cell.current && knowledge_cell.veil_cell.next {
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::Veil));
+                    } else if knowledge_cell.veil_cell.current {
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::VeilCurrent));
+                    } else if knowledge_cell.veil_cell.next {
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::VeilNext));
+                    } else {
+                        cell.channels[tile::OVERLAY_CHANNEL] = None;
+                    }
+                }
                 for &PlayerKnowledgeTile { priority, tile, forgetable } in knowledge_cell.tiles.iter() {
                     if !cell.visible && forgetable {
                         continue;

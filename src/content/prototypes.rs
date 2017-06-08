@@ -15,7 +15,6 @@ pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.behaviour_type.insert(entity_id, BehaviourType::Player);
     change.vision_distance.insert(entity_id, 10);
     change.door_opener.insert(entity_id);
-    change.omniscient.insert(entity_id);
 }
 
 pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -31,6 +30,7 @@ pub fn undead(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.vision_distance.insert(entity_id, 10);
     change.door_opener.insert(entity_id);
     change.shootable.insert(entity_id);
+    change.veil_change.insert(entity_id);
 }
 
 pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -38,6 +38,7 @@ pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position
     change.floor.insert(entity_id);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::StoneFloor));
     change.tile_priority.insert(entity_id, 1);
+    change.veil_slot.insert(entity_id);
 }
 
 pub fn wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {

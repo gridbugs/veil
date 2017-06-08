@@ -18,14 +18,10 @@ use policy::GamePolicy;
 use behaviour::*;
 use schedule::Schedule;
 use frame::AnimationMode;
+use veil_state::VeilState;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
-
-enum State {
-    ValidPath,
-    NoPath,
-}
 
 pub fn launch() {
 
@@ -111,6 +107,7 @@ pub fn launch() {
     let mut turn_schedule = Schedule::new();
     let mut knowledge = HashMap::new();
     let mut behaviour = HashMap::new();
+    let mut veil_state = VeilState::new(spatial_hash.width(), spatial_hash.height(), &mut rng);
 
     let mut action_schedule = Schedule::new();
 
@@ -147,6 +144,15 @@ pub fn launch() {
     while let Some(entry) = turn_schedule.next() {
 
         let entity_id = entry.value;
+
+        if entity_store.player.contains(&entity_id) {
+            veil_state.step(&mut rng);
+            policy.veil_update(&mut change, &entity_store, &spatial_hash, &veil_state);
+
+            time += 1;
+            spatial_hash.update(&entity_store, &change, time);
+            entity_store.commit_change(&mut change);
+        }
 
         let resolution = TurnEnv {
             renderer: &mut renderer,
