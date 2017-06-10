@@ -20,6 +20,7 @@ use behaviour::*;
 use schedule::Schedule;
 use frame::AnimationMode;
 use veil_state::VeilState;
+use meta_action::*;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -204,6 +205,36 @@ pub fn launch() {
                 return;
             }
             TurnResolution::NoEntity => (),
+            TurnResolution::Debug(debug_action) => {
+                if let Some(info) = entity_store.veil_step_info.get_mut(&pc) {
+                    match debug_action {
+                        DebugAction::ChangeVeilMin(min) => {
+                            info.min += min;
+                        }
+                        DebugAction::ChangeVeilMax(max) => {
+                            info.max += max;
+                        }
+                        DebugAction::ChangeVeilStep(v) => {
+                            info.x += v.x;
+                            info.y += v.y;
+                            info.z += v.z;
+                        }
+                        _ => (),
+                    }
+                    println!("{:?}", info);
+                }
+                match debug_action {
+                    DebugAction::TogglePlayerOmniscient => {
+                        if entity_store.omniscient.contains(&pc) {
+                            entity_store.omniscient.remove(&pc);
+                        } else {
+                            entity_store.omniscient.insert(pc);
+                        }
+                    }
+                    _ => (),
+                }
+                turn_schedule.insert(entity_id, 0);
+            }
         }
     }
 

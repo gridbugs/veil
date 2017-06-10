@@ -50,6 +50,7 @@ pub enum TurnResolution {
     Reschedule,
     NoEntity,
     External(External),
+    Debug(DebugAction),
 }
 
 pub struct TurnEnv<'a, R: 'a + Rng, Ren: 'a + GameRenderer, Inp: 'a + GameInput> {
@@ -95,6 +96,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> TurnEnv<'a, R, Ren, Inp> {
             match meta_action {
                 MetaAction::Action(action) => action,
                 MetaAction::External(external) => return Ok(TurnResolution::External(external)),
+                MetaAction::Debug(debug_action) => return Ok(TurnResolution::Debug(debug_action)),
             }
         } else if self.entity_store.npc.contains(&self.entity_id) {
             npc_act::NpcActEnv {

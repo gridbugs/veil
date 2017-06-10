@@ -48,24 +48,50 @@ fn is_shift_pressed(keymod: &Mod) -> bool {
         keymod.contains(keyboard::RSHIFTMOD)
 }
 
-fn to_char_event(ch: char, keymod: &Mod) -> InputEvent {
-    if is_shift_pressed(keymod) {
-        let chars = ch.to_uppercase().collect::<Vec<char>>();
-        InputEvent::Char(chars[0])
-    } else {
-        // ch must be lowercase
-        InputEvent::Char(ch)
+fn to_char_event(ch: char, keymod: &Mod) -> Option<InputEvent> {
+    if ch.is_alphabetic() {
+        if is_shift_pressed(keymod) {
+            let chars = ch.to_uppercase().collect::<Vec<char>>();
+            return Some(InputEvent::Char(chars[0]));
+        } else {
+            // ch must be lowercase
+            return Some(InputEvent::Char(ch));
+        }
     }
+
+    let translated_ch = if is_shift_pressed(keymod) {
+        match ch {
+            '1' => '!',
+            '2' => '@',
+            '3' => '#',
+            '4' => '$',
+            '5' => '%',
+            '6' => '^',
+            '7' => '&',
+            '8' => '*',
+            '9' => '(',
+            '0' => ')',
+            '.' => '>',
+            ',' => '<',
+            '/' => '?',
+            _ => return None,
+        }
+    } else {
+        ch
+    };
+
+    Some(InputEvent::Char(translated_ch))
 }
+
 fn keycode_to_event(keycode: Keycode, keymod: &Mod) -> Option<InputEvent> {
-    let input_event = match keycode {
-        Keycode::Up => InputEvent::Up,
-        Keycode::Down => InputEvent::Down,
-        Keycode::Left => InputEvent::Left,
-        Keycode::Right => InputEvent::Right,
-        Keycode::Space => InputEvent::Space,
-        Keycode::Escape => InputEvent::Escape,
-        Keycode::Return => InputEvent::Return,
+    match keycode {
+        Keycode::Up => Some(InputEvent::Up),
+        Keycode::Down => Some(InputEvent::Down),
+        Keycode::Left => Some(InputEvent::Left),
+        Keycode::Right => Some(InputEvent::Right),
+        Keycode::Space => Some(InputEvent::Space),
+        Keycode::Escape => Some(InputEvent::Escape),
+        Keycode::Return => Some(InputEvent::Return),
         Keycode::A => to_char_event('a', keymod),
         Keycode::B => to_char_event('b', keymod),
         Keycode::C => to_char_event('c', keymod),
@@ -92,31 +118,21 @@ fn keycode_to_event(keycode: Keycode, keymod: &Mod) -> Option<InputEvent> {
         Keycode::X => to_char_event('x', keymod),
         Keycode::Y => to_char_event('y', keymod),
         Keycode::Z => to_char_event('z', keymod),
-        Keycode::Period => {
-            if is_shift_pressed(keymod) {
-                InputEvent::Char('>')
-            } else {
-                InputEvent::Char('.')
-            }
-        }
-        Keycode::Comma => {
-            if is_shift_pressed(keymod) {
-                InputEvent::Char('<')
-            } else {
-                InputEvent::Char(',')
-            }
-        }
-        Keycode::Slash => {
-            if is_shift_pressed(keymod) {
-                InputEvent::Char('?')
-            } else {
-                InputEvent::Char('/')
-            }
-        }
-        _ => return None,
-    };
-
-    Some(input_event)
+        Keycode::Num0 => to_char_event('0', keymod),
+        Keycode::Num1 => to_char_event('1', keymod),
+        Keycode::Num2 => to_char_event('2', keymod),
+        Keycode::Num3 => to_char_event('3', keymod),
+        Keycode::Num4 => to_char_event('4', keymod),
+        Keycode::Num5 => to_char_event('5', keymod),
+        Keycode::Num6 => to_char_event('6', keymod),
+        Keycode::Num7 => to_char_event('7', keymod),
+        Keycode::Num8 => to_char_event('8', keymod),
+        Keycode::Num9 => to_char_event('9', keymod),
+        Keycode::Period => to_char_event('.', keymod),
+        Keycode::Comma => to_char_event(',', keymod),
+        Keycode::Slash => to_char_event('/', keymod),
+        _ => None,
+    }
 }
 
 fn convert_event(event: Event) -> Option<InputEvent> {

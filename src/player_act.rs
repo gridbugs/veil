@@ -3,7 +3,7 @@ use rand::Rng;
 use content::ActionType;
 use meta_action::*;
 use direction::Direction;
-use cgmath::Vector2;
+use cgmath::{Vector2, Vector3};
 use straight_line::*;
 use render_overlay::RenderOverlay;
 use limits::LimitsRect;
@@ -97,6 +97,24 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
         }
     }
 
+    fn input_to_debug(&mut self, input: InputEvent) -> Option<DebugAction> {
+        match input {
+            InputEvent::Char('1') => return Some(DebugAction::ChangeVeilMin(-0.05)),
+            InputEvent::Char('2') => return Some(DebugAction::ChangeVeilMin(0.05)),
+            InputEvent::Char('3') => return Some(DebugAction::ChangeVeilMax(-0.05)),
+            InputEvent::Char('4') => return Some(DebugAction::ChangeVeilMax(0.05)),
+            InputEvent::Char('9') => return Some(DebugAction::TogglePlayerOmniscient),
+            InputEvent::Char('0') => return Some(DebugAction::Wait),
+            InputEvent::Char('!') => return Some(DebugAction::ChangeVeilStep(Vector3::new(-0.01, 0.0, 0.0))),
+            InputEvent::Char('@') => return Some(DebugAction::ChangeVeilStep(Vector3::new(0.01, 0.0, 0.0))),
+            InputEvent::Char('#') => return Some(DebugAction::ChangeVeilStep(Vector3::new(0.0, -0.01, 0.0))),
+            InputEvent::Char('$') => return Some(DebugAction::ChangeVeilStep(Vector3::new(0.0, 0.01, 0.0))),
+            InputEvent::Char('%') => return Some(DebugAction::ChangeVeilStep(Vector3::new(0.0, 0.0, -0.01))),
+            InputEvent::Char('^') => return Some(DebugAction::ChangeVeilStep(Vector3::new(0.0, 0.0, 0.01))),
+            _ => return None,
+        }
+    }
+
     pub fn act(&mut self) -> Result<MetaAction> {
 
         self.render()?;
@@ -115,7 +133,8 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
 
             if let Some(input) = event.input() {
                 let maybe_meta_action = self.input_to_action(input)?.map(MetaAction::Action)
-                    .or_else(|| self.input_to_external(input).map(MetaAction::External));
+                    .or_else(|| self.input_to_external(input).map(MetaAction::External))
+                    .or_else(|| self.input_to_debug(input).map(MetaAction::Debug));
 
                 if let Some(meta_action) = maybe_meta_action {
                     return Ok(meta_action);
