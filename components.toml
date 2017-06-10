@@ -3,6 +3,7 @@ imports = [
     'content::ComplexTile',
     'content::DoorState',
     'content::BehaviourType',
+    'content::VeilStepInfo',
     'straight_line::FiniteAbsoluteLineTraverse',
     'straight_line::InfiniteAbsoluteLineTraverse',
     'schedule::ScheduleTicket',
@@ -41,3 +42,4 @@ veil_slot = {}
 veil_current = {}
 veil_next = {}
 veil_change = {}
+veil_step_info = { type = 'VeilStepInfo' }

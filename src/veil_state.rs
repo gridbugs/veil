@@ -4,6 +4,7 @@ use rand::Rng;
 use grid::{StaticGrid, static_grid};
 use perlin::{PerlinGrid, PerlinWrapType};
 use cgmath::Vector2;
+use content::VeilStepInfo;
 
 const ZOOM: usize = 10;
 const ZOOM_F: f64 = ZOOM as f64;
@@ -96,7 +97,7 @@ pub struct VeilState {
 }
 
 impl VeilState {
-    pub fn new<R: Rng>(width: usize, height: usize, rng: &mut R) -> Self {
+    pub fn new<R: Rng>(width: usize, height: usize, rng: &mut R, info: &VeilStepInfo) -> Self {
 
         let mut perlin = PerlinGrid::new((width - 1) / ZOOM + 1,
                                          (height - 1) / ZOOM + 1,
@@ -109,9 +110,9 @@ impl VeilState {
         let dx = 1.0 / ZOOM_F;
         let dy = 1.0 / ZOOM_F;
 
-        record(dx, dy, &perlin, &mut current);
-        mutate(&mut perlin, rng);
-        record(dx, dy, &perlin, &mut next);
+        record(info, dx, dy, &perlin, &mut current);
+        mutate(info, &mut perlin, rng);
+        record(info, dx, dy, &perlin, &mut next);
 
         VeilState {
             current: current,
@@ -151,29 +152,33 @@ impl VeilState {
         self.current.coord_iter()
     }
 
-    pub fn step<R: Rng>(&mut self, rng: &mut R) {
+    pub fn step<R: Rng>(&mut self, rng: &mut R, info: &VeilStepInfo) {
         mem::swap(&mut self.current, &mut self.next);
-        mutate(&mut self.perlin, rng);
-        record(self.dx, self.dy, &self.perlin, &mut self.next);
+        mutate(info, &mut self.perlin, rng);
+        record(info, self.dx, self.dy, &self.perlin, &mut self.next);
     }
 }
 
-fn is_veil(noise: f64) -> bool {
-    noise < -0.2 || noise > 0.2
+fn is_veil(info: &VeilStepInfo, noise: f64) -> bool {
+    if info.min < info.max {
+        noise >= info.min && noise <= info.max
+    } else {
+        noise <= info.max || noise >= info.min
+    }
 }
 
-fn mutate<R: Rng>(perlin: &mut PerlinGrid, rng: &mut R) {
-    perlin.scroll(rng, 0.02, 0.01);
-    perlin.mutate(rng, 0.02);
+fn mutate<R: Rng>(info: &VeilStepInfo, perlin: &mut PerlinGrid, rng: &mut R) {
+    perlin.scroll(rng, info.x, info.y);
+    perlin.mutate(rng, info.z);
 }
 
-fn record(dx: f64, dy: f64, perlin: &PerlinGrid, grid: &mut StaticGrid<bool>) {
+fn record(info: &VeilStepInfo, dx: f64, dy: f64, perlin: &PerlinGrid, grid: &mut StaticGrid<bool>) {
     for (coord, cell) in izip!(grid.coord_iter(), grid.iter_mut()) {
         let x = dx * coord.x as f64;
         let y = dy * coord.y as f64;
 
         if let Some(noise) = perlin.noise(x, y) {
-            *cell = is_veil(noise);
+            *cell = is_veil(info, noise);
         }
     }
 }

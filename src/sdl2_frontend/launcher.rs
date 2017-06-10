@@ -11,6 +11,7 @@ use entity_store::*;
 use spatial_hash::*;
 use content::prototypes;
 use content::DoorState;
+use content::VeilStepInfo;
 use entity_id_allocator::*;
 use knowledge::*;
 use observation::*;
@@ -113,7 +114,14 @@ pub fn launch() {
     let mut turn_schedule = Schedule::new();
     let mut knowledge = HashMap::new();
     let mut behaviour = HashMap::new();
-    let mut veil_state = VeilState::new(spatial_hash.width(), spatial_hash.height(), &mut rng);
+    let veil_step_info = VeilStepInfo {
+        x: 0.02,
+        y: 0.01,
+        z: 0.02,
+        min: 0.2,
+        max: -0.2,
+    };
+    let mut veil_state = VeilState::new(spatial_hash.width(), spatial_hash.height(), &mut rng, &veil_step_info);
 
     let mut action_schedule = Schedule::new();
 
@@ -124,6 +132,8 @@ pub fn launch() {
             knowledge.insert(*id, PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height()));
         }
     }
+
+    entity_store.veil_step_info.insert(pc, veil_step_info);
 
     let mut player_knowledge = PlayerKnowledgeGrid::new(spatial_hash.width(), spatial_hash.height());
 
@@ -151,8 +161,10 @@ pub fn launch() {
 
         let entity_id = entry.value;
 
+        if let Some(veil_step_info) = entity_store.veil_step_info.get(&entity_id) {
+            veil_state.step(&mut rng, veil_step_info);
+        }
         if entity_store.player.contains(&entity_id) {
-            veil_state.step(&mut rng);
             policy.veil_update(&mut change, &entity_store, &spatial_hash, &veil_state);
 
             time += 1;
