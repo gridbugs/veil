@@ -6,7 +6,7 @@ use perlin::{PerlinGrid, PerlinWrapType};
 use cgmath::Vector2;
 use content::VeilStepInfo;
 
-const ZOOM: usize = 10;
+const ZOOM: usize = 20;
 const ZOOM_F: f64 = ZOOM as f64;
 
 pub type CoordIter = static_grid::CoordIter;

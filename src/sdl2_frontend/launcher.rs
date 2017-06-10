@@ -119,8 +119,8 @@ pub fn launch() {
         x: 0.02,
         y: 0.01,
         z: 0.02,
-        min: 0.2,
-        max: -0.2,
+        min: -0.02,
+        max: 0.02,
     };
     let mut veil_state = VeilState::new(spatial_hash.width(), spatial_hash.height(), &mut rng, &veil_step_info);
 
