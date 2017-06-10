@@ -90,3 +90,9 @@ pub fn bullet(change: &mut EntityStoreChange, entity_id: EntityId, mut traverse:
     change.collider.insert(entity_id);
     change.realtime_period.insert(entity_id, 2);
 }
+
+pub fn page(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+    change.position.insert(entity_id, position);
+    change.tile.insert(entity_id, ComplexTile::Simple(TileType::Page));
+    change.tile_priority.insert(entity_id, 2);
+}
