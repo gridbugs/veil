@@ -95,4 +95,5 @@ pub fn page(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
     change.position.insert(entity_id, position);
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::Page));
     change.tile_priority.insert(entity_id, 2);
+    change.page.insert(entity_id);
 }

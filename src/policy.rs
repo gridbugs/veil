@@ -143,6 +143,13 @@ impl GamePolicy {
                 }
             }
 
+            // if there's a page there and it's the player's turn
+            if let Some(page_id) = cell.page_set.iter().next() {
+                if entity_store.player.contains(&id) {
+                    self.entities_to_remove.push(*page_id);
+                }
+            }
+
             if let Some(shootable_id) = cell.shootable_set.iter().next() {
                 if entity_store.bullet.contains(&id) {
                     self.entities_to_remove.push(*shootable_id);

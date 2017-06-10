@@ -42,4 +42,5 @@ veil_slot = {}
 veil_current = {}
 veil_next = {}
 veil_change = {}
+page = {}
 veil_step_info = { type = 'VeilStepInfo' }
