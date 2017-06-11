@@ -13,7 +13,7 @@ pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vec
     change.forgetable.insert(entity_id);
     change.turn_period.insert(entity_id, 1);
     change.behaviour_type.insert(entity_id, BehaviourType::Player);
-    change.vision_distance.insert(entity_id, 10);
+    change.vision_distance.insert(entity_id, 20);
     change.door_opener.insert(entity_id);
 }
 

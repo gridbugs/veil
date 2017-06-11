@@ -1,9 +1,8 @@
 use std::path::Path;
-use std::cmp;
 use sdl2::render::WindowCanvas;
 use sdl2::pixels::Color;
 use cgmath::Vector2;
-use sdl2_frontend::tile::TileResolver;
+use sdl2_frontend::tile::{TileResolver, OVERLAY_CHANNEL};
 use sdl2_frontend::tile_buffer::TileBufferCell;
 use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::textures::GameTextures;
@@ -12,9 +11,11 @@ use render_overlay::RenderOverlay;
 use content::OverlayType;
 
 const DIM_COEF: i32 = 32;
-const INTENSITY_NUMERATOR: i32 = ::std::u8::MAX as i32 * DIM_COEF;
-const INTENSITY_MAX: u8 = ::std::u8::MAX;
-const INTENSITY_MIN: u8 = 127;
+const INTENSITY_MAX: u8 = 255;
+const INTENSITY_MIN: u8 = 96;
+const INTENSITY_DIFF: u8 = INTENSITY_MAX - INTENSITY_MIN;
+
+const INTENSITY_NUMERATOR: i32 = INTENSITY_DIFF as i32 * DIM_COEF;
 
 pub struct GameRendererInternal<'a> {
     pub tile_resolver: TileResolver,
@@ -23,9 +24,8 @@ pub struct GameRendererInternal<'a> {
 
 fn delta_to_intensity(delta: Vector2<i32>) -> u8 {
     let length_squared = delta.x * delta.x + delta.y * delta.y;
-    let intensity = INTENSITY_NUMERATOR / (length_squared + 1);
-
-    cmp::max(cmp::min(intensity, INTENSITY_MAX as i32) as u8, INTENSITY_MIN)
+    let intensity_delta = INTENSITY_NUMERATOR / (length_squared + DIM_COEF);
+    INTENSITY_MIN + intensity_delta as u8
 }
 
 impl<'a> GameRendererInternal<'a> {
@@ -52,18 +52,27 @@ impl<'a> GameRendererInternal<'a> {
         let texture = if cell.visible {
             let intensity = delta_to_intensity(coord - centre);
             textures.colour.set_color_mod(intensity, intensity, intensity);
-            &textures.colour
+            &mut textures.colour
         } else {
             textures.greyscale.set_color_mod(INTENSITY_MIN, INTENSITY_MIN, INTENSITY_MIN);
-            &textures.greyscale
+            &mut textures.greyscale
         };
 
         let dest_rect = dimensions.dest_rect(coord.x as u32, coord.y as u32);
 
-        for channel in cell.channels.iter() {
+        for (idx, channel) in cell.channels.iter().enumerate() {
+            if idx == OVERLAY_CHANNEL {
+                // overlay channel is always the last channel
+                break;
+            }
             if let &Some(source) = channel {
                 self.canvas.copy(texture, source, dest_rect).expect("Failed to draw cell");
             }
+        }
+
+        if let Some(source) = cell.channels[OVERLAY_CHANNEL] {
+            texture.set_color_mod(INTENSITY_MAX, INTENSITY_MAX, INTENSITY_MAX);
+            self.canvas.copy(texture, source, dest_rect).expect("Failed to draw cell");
         }
     }
 
