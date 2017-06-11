@@ -10,6 +10,7 @@ use renderer::GameRenderer;
 #[derive(Debug)]
 pub enum Error {
     ObservationFailed(entity_observe::Error),
+    MissingPosition,
 }
 pub type Result<T> = result::Result<T, Error>;
 
@@ -31,7 +32,11 @@ pub fn player_render<Ren: GameRenderer>(
         shadowcast
     ).map_err(Error::ObservationFailed)?;
 
+    let player_position = entity_store.position.get(&id)
+        .ok_or(Error::MissingPosition)?;
+
     if metadata.changed {
+        renderer.update_player_position(*player_position);
         renderer.update(knowledge, time);
         renderer.clear();
         renderer.draw();
