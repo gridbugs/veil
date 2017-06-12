@@ -37,7 +37,7 @@ pub fn player_render<Ren: GameRenderer>(
 
     if metadata.changed {
         renderer.update_player_position(*player_position);
-        renderer.update(knowledge, time);
+        renderer.update_player_knowledge(knowledge, time);
         renderer.clear();
         renderer.draw();
         renderer.publish();

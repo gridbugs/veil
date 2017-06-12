@@ -163,7 +163,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
                 aim_line: line,
             };
             self.renderer.clear();
-            self.renderer.update(self.knowledge, *self.time);
+            self.renderer.update_player_knowledge(self.knowledge, *self.time);
             self.renderer.draw();
             self.renderer.draw_overlay(overlay);
             self.renderer.publish();

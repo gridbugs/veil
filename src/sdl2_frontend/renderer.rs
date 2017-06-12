@@ -51,7 +51,7 @@ impl<'a> GameRenderer for SdlGameRenderer<'a> {
         self.player_coord = player_coord;
     }
 
-    fn update(&mut self, knowledge: &PlayerKnowledgeGrid, time: u64) {
+    fn update_player_knowledge(&mut self, knowledge: &PlayerKnowledgeGrid, time: u64) {
         self.buffer.update(knowledge, &self.internal.tile_resolver, time);
     }
 
