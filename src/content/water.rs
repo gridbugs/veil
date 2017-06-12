@@ -1,0 +1,3 @@
+pub const WATER_FOREGROUND_PROBABILITY: f64 = 0.2;
+pub const WATER_FPS: u64 = 6;
+pub const WATER_TILE_CHANGE_PROBABILITY: f64 = 0.1;
