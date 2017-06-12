@@ -49,11 +49,9 @@ impl GamePolicy {
         None
     }
 
-    pub fn on_frame_animate<R: Rng>(&mut self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
-                                    rng: &mut R, change: &mut EntityStoreChange) {
-        if frame.animation_mode() == AnimationMode::RealTime && frame.id() % 8 != 0 {
-            return;
-        }
+    fn animate_rain<R: Rng>(&mut self, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                            rng: &mut R, change: &mut EntityStoreChange) {
+
         for id in entity_store.rain.iter() {
             if let Some(update) = self.update_finite_trajectory(*id, entity_store, spatial_hash) {
                 match update {
@@ -100,6 +98,41 @@ impl GamePolicy {
                     }
                 }
             }
+        }
+    }
+
+    fn animate_water<R: Rng>(&mut self, entity_store: &EntityStore,
+                            rng: &mut R, change: &mut EntityStoreChange) {
+
+        for id in entity_store.water.iter() {
+            if rng.next_f64() < WATER_TILE_CHANGE_PROBABILITY {
+                let tile = if rng.next_f64() < WATER_FOREGROUND_PROBABILITY {
+                    TileType::WaterWithFg
+                } else {
+                    TileType::WaterBgOnly
+                };
+
+                if let Some(current_tile) = entity_store.tile.get(id).cloned() {
+                    let complex_tile = ComplexTile::Simple(tile);
+                    if complex_tile != current_tile {
+                        change.tile.insert(*id, complex_tile);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn on_frame_animate<R: Rng>(&mut self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
+                                    rng: &mut R, change: &mut EntityStoreChange) {
+
+        let realtime = frame.animation_mode() == AnimationMode::RealTime;
+
+        if !realtime || frame.id() % RAIN_FRAME_RATE == 0 {
+            self.animate_rain(entity_store, spatial_hash, rng, change);
+        }
+
+        if !realtime || frame.id() % WATER_FRAME_RATE == 0 {
+            self.animate_water(entity_store, rng, change);
         }
     }
 

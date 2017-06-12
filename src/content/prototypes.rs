@@ -115,4 +115,5 @@ pub fn water<R: Rng>(change: &mut EntityStoreChange, entity_id: EntityId, positi
         change.tile.insert(entity_id, ComplexTile::Simple(TileType::WaterBgOnly));
     }
     change.tile_priority.insert(entity_id, 2);
+    change.veil_slot.insert(entity_id);
 }

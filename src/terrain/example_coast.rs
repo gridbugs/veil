@@ -32,6 +32,10 @@ pub fn generate<R: Rng>(width: usize, height: usize,
             }
 
             prototypes::stone_floor(change, allocator.allocate(), Vector2::new(x, y));
+
+            if rng.next_f64() < 0.1 {
+                prototypes::rain(change, allocator.allocate(), Vector2::new(x, y), rng);
+            }
         }
     }
 
