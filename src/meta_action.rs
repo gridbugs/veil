@@ -10,6 +10,7 @@ pub enum DebugAction {
     ChangeVeilMax(f64),
     ChangeVeilStep(Vector3<f64>),
     TogglePlayerOmniscient,
+    ToggleDiminishingLighting,
     Wait,
 }
 

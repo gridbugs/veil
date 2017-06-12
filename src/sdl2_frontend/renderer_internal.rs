@@ -9,6 +9,7 @@ use sdl2_frontend::textures::GameTextures;
 use simple_file;
 use render_overlay::RenderOverlay;
 use content::OverlayType;
+use renderer::GameRendererConfig;
 
 const DIM_COEF: i32 = 32;
 const INTENSITY_MAX: u8 = 255;
@@ -20,6 +21,7 @@ const INTENSITY_NUMERATOR: i32 = INTENSITY_DIFF as i32 * DIM_COEF;
 pub struct GameRendererInternal<'a> {
     pub tile_resolver: TileResolver,
     pub canvas: &'a mut WindowCanvas,
+    pub config: GameRendererConfig,
 }
 
 fn delta_to_intensity(delta: Vector2<i32>) -> u8 {
@@ -38,6 +40,7 @@ impl<'a> GameRendererInternal<'a> {
         GameRendererInternal {
             tile_resolver: tile_resolver,
             canvas: canvas,
+            config: Default::default(),
         }
     }
 
@@ -50,7 +53,11 @@ impl<'a> GameRendererInternal<'a> {
                      dimensions: &RendererDimensions, textures: &mut GameTextures) {
 
         let texture = if cell.visible {
-            let intensity = delta_to_intensity(coord - centre);
+            let intensity = if self.config.diminishing_lighting {
+                delta_to_intensity(coord - centre)
+            } else {
+                INTENSITY_MAX
+            };
             textures.colour.set_color_mod(intensity, intensity, intensity);
             &mut textures.colour
         } else {

@@ -19,6 +19,7 @@ use frame::AnimationMode;
 use veil_state::VeilState;
 use meta_action::*;
 use terrain;
+use renderer::GameRenderer;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
@@ -161,6 +162,11 @@ pub fn launch() {
                         } else {
                             entity_store.omniscient.insert(pc);
                         }
+                    }
+                    DebugAction::ToggleDiminishingLighting => {
+                        let mut config = renderer.config();
+                        config.diminishing_lighting = !config.diminishing_lighting;
+                        renderer.set_config(config);
                     }
                     _ => (),
                 }

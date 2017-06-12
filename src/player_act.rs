@@ -103,6 +103,7 @@ impl<'a, R: Rng, Ren: GameRenderer, Inp: GameInput> PlayerActEnv<'a, R, Ren, Inp
             InputEvent::Char('2') => return Some(DebugAction::ChangeVeilMin(0.05)),
             InputEvent::Char('3') => return Some(DebugAction::ChangeVeilMax(-0.05)),
             InputEvent::Char('4') => return Some(DebugAction::ChangeVeilMax(0.05)),
+            InputEvent::Char('8') => return Some(DebugAction::ToggleDiminishingLighting),
             InputEvent::Char('9') => return Some(DebugAction::TogglePlayerOmniscient),
             InputEvent::Char('0') => return Some(DebugAction::Wait),
             InputEvent::Char('!') => return Some(DebugAction::ChangeVeilStep(Vector3::new(-0.01, 0.0, 0.0))),

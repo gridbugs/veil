@@ -7,7 +7,7 @@ use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::renderer_internal::GameRendererInternal;
 use knowledge::PlayerKnowledgeGrid;
 use render_overlay::RenderOverlay;
-use renderer::GameRenderer;
+use renderer::{GameRenderer, GameRendererConfig};
 
 pub struct SdlGameRenderer<'a> {
     buffer: TileBuffer,
@@ -67,5 +67,13 @@ impl<'a> GameRenderer for SdlGameRenderer<'a> {
 
     fn publish(&mut self) {
         self.internal.canvas.present();
+    }
+
+    fn config(&self) -> GameRendererConfig {
+        self.internal.config
+    }
+
+    fn set_config(&mut self, config: GameRendererConfig) {
+        self.internal.config = config;
     }
 }
