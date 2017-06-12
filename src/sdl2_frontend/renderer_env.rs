@@ -14,8 +14,7 @@ impl RendererEnv {
         let gl_attr = video.gl_attr();
 
         gl_attr.set_context_profile(GLProfile::Core);
-        gl_attr.set_context_flags().debug().set();
-        gl_attr.set_context_version(3, 2);
+        gl_attr.set_double_buffer(true);
         gl_attr.set_multisample_buffers(1);
         gl_attr.set_multisample_samples(4);
 
@@ -25,8 +24,6 @@ impl RendererEnv {
             .build()
             .expect("Failed to create window")
             .into_canvas()
-            .accelerated()
-            .present_vsync()
             .build()
             .expect("Failed to create canvas");
 
