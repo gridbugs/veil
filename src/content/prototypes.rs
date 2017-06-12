@@ -97,3 +97,14 @@ pub fn page(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
     change.tile_priority.insert(entity_id, 2);
     change.page.insert(entity_id);
 }
+
+pub fn water<R: Rng>(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>, rng: &mut R) {
+    change.position.insert(entity_id, position);
+    change.water.insert(entity_id);
+    if rng.gen::<f64>() < WATER_FOREGROUND_PROBABILITY {
+        change.tile.insert(entity_id, ComplexTile::Simple(TileType::WaterWithFg));
+    } else {
+        change.tile.insert(entity_id, ComplexTile::Simple(TileType::WaterBgOnly));
+    }
+    change.tile_priority.insert(entity_id, 2);
+}

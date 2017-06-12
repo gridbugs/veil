@@ -23,6 +23,7 @@ tile_priority = { type = 'u8' }
 door_state = { type = 'DoorState' }
 finite_trajectory = { type = 'FiniteAbsoluteLineTraverse' }
 rain = {}
+water = {}
 forgetable = {}
 invisible = {}
 inside = {}

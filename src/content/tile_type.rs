@@ -15,6 +15,8 @@ pub enum TileType {
     ClosedDoorTop,
     Bullet,
     Page,
+    WaterBgOnly,
+    WaterWithFg,
 }
 }
 
@@ -35,8 +37,10 @@ impl TileType {
             TileType::ClosedDoorTop => "ClosedDoorTop",
             TileType::Bullet => "Bullet",
             TileType::Page => "Page",
+            TileType::WaterBgOnly => "WaterBgOnly",
+            TileType::WaterWithFg => "WaterWithFg",
         }
     }
 }
 
-pub const NUM_TILES: usize = 14;
+pub const NUM_TILES: usize = 17;
