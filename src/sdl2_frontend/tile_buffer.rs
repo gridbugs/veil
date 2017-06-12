@@ -66,10 +66,15 @@ impl TileBuffer {
         self.grid.coord_iter()
     }
 
-    pub fn update(&mut self, knowledge: &PlayerKnowledgeGrid, resolver: &tile::TileResolver, time: u64) {
+    pub fn update(&mut self, offset: Vector2<i32>,
+                  knowledge: &PlayerKnowledgeGrid,
+                  resolver: &tile::TileResolver, time: u64) {
+
         for (coord, mut cell) in izip!(self.grid.coord_iter(), self.grid.iter_mut()) {
             cell.clear();
-            if let Some(knowledge_cell) = knowledge.get(coord) {
+            let knowledge_coord = coord + offset;
+
+            if let Some(knowledge_cell) = knowledge.get(knowledge_coord) {
                 cell.visible = knowledge_cell.last_updated == time;
                 if cell.visible {
                     if knowledge_cell.veil_cell.current && knowledge_cell.veil_cell.next {
@@ -88,7 +93,7 @@ impl TileBuffer {
                     }
                     let simple_tile = match tile {
                         ComplexTile::Wall { front, top } => {
-                            let south_coord = coord + Vector2::new(0, 1);
+                            let south_coord = knowledge_coord + Vector2::new(0, 1);
                             if let Some(south_cell) = knowledge.get(south_coord) {
                                 if south_cell.wall {
                                     top

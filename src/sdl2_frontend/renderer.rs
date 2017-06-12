@@ -15,6 +15,7 @@ pub struct SdlGameRenderer<'a> {
     textures: GameTextures<'a>,
     dimensions: RendererDimensions,
     player_coord: Vector2<i32>,
+    offset_delta: Vector2<i32>,
 }
 
 impl<'a> SdlGameRenderer<'a> {
@@ -38,6 +39,7 @@ impl<'a> SdlGameRenderer<'a> {
             textures: textures,
             dimensions: dimensions,
             player_coord: Vector2::new(0, 0),
+            offset_delta: Vector2::new(width as i32 / 2, height as i32 / 2),
         }
     }
 }
@@ -52,17 +54,17 @@ impl<'a> GameRenderer for SdlGameRenderer<'a> {
     }
 
     fn update_player_knowledge(&mut self, knowledge: &PlayerKnowledgeGrid, time: u64) {
-        self.buffer.update(knowledge, &self.internal.tile_resolver, time);
+        self.buffer.update(self.player_coord - self.offset_delta, knowledge, &self.internal.tile_resolver, time);
     }
 
     fn draw(&mut self) {
         for (cell, coord) in izip!(self.buffer.iter(), self.buffer.coord_iter()) {
-            self.internal.draw_cell(cell, self.player_coord, coord, &self.dimensions, &mut self.textures);
+            self.internal.draw_cell(cell, self.offset_delta, coord, &self.dimensions, &mut self.textures);
         }
     }
 
     fn draw_overlay(&mut self, overlay: RenderOverlay) {
-        self.internal.draw_overlay(&self.dimensions, &mut self.textures, overlay);
+        self.internal.draw_overlay(&self.dimensions, self.player_coord - self.offset_delta, &mut self.textures, overlay);
     }
 
     fn publish(&mut self) {

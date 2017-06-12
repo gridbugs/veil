@@ -83,7 +83,7 @@ impl<'a> GameRendererInternal<'a> {
         }
     }
 
-    pub fn draw_overlay(&mut self, dimensions: &RendererDimensions,
+    pub fn draw_overlay(&mut self, dimensions: &RendererDimensions, offset: Vector2<i32>,
                         textures: &mut GameTextures, overlay: RenderOverlay) {
 
         let tile_mid = Some(*self.tile_resolver.resolve_overlay(OverlayType::AimLineMid));
@@ -93,14 +93,16 @@ impl<'a> GameRendererInternal<'a> {
 
         textures.colour.set_color_mod(INTENSITY_MAX, INTENSITY_MAX, INTENSITY_MAX);
 
-        let dest_rect = dimensions.dest_rect(end.x as u32, end.y as u32);
+        let adjusted_end = end - offset;
+        let dest_rect = dimensions.dest_rect(adjusted_end.x as u32, adjusted_end.y as u32);
         self.canvas.copy(&textures.colour, tile_end, Some(dest_rect)).expect("Failed to draw cell");
 
         // skip the start
         traverse.step_in_place();
 
         for coord in traverse {
-            let dest_rect = dimensions.dest_rect(coord.x as u32, coord.y as u32);
+            let adjusted_coord = coord - offset;
+            let dest_rect = dimensions.dest_rect(adjusted_coord.x as u32, adjusted_coord.y as u32);
             self.canvas.copy(&textures.colour, tile_mid, Some(dest_rect)).expect("Failed to draw cell");
         }
     }
