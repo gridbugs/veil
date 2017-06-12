@@ -47,6 +47,7 @@ mod player_render;
 mod commit;
 mod perlin;
 mod veil_state;
+mod terrain;
 
 mod tests;
 

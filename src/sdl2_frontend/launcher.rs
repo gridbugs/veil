@@ -1,16 +1,13 @@
 use std::collections::HashMap;
 use sdl2;
 use sdl2::image::INIT_PNG;
-use cgmath::Vector2;
-use rand::{Rng, StdRng};
+use rand::StdRng;
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
 use sdl2_frontend::input::*;
 use turn::*;
 use entity_store::*;
 use spatial_hash::*;
-use content::prototypes;
-use content::DoorState;
 use content::VeilStepInfo;
 use entity_id_allocator::*;
 use knowledge::*;
@@ -21,92 +18,26 @@ use schedule::Schedule;
 use frame::AnimationMode;
 use veil_state::VeilState;
 use meta_action::*;
+use terrain;
 
 const WIDTH_PX: u32 = 1200;
 const HEIGHT_PX: u32 = 600;
 
 pub fn launch() {
 
-    let level_str = vec![
-"##############################################",
-"#=,,,,,,,,,,#,,,,,,,,,=#...........#,,,,,,,,,#",
-"#,,,,,,,,,,,#,,,@,,,,,,#...........#,,,,z,,,,#",
-"#,z,,,,,,,,,+,,,,,,,,,,+...........#,,,,,,,,,#",
-"#,,,,,z,,,,,#,,,,,,,=,,#...........+,,,,,,,,,#",
-"#,,,,,,,,,,,#,,,,,,,,,,#...........#,,,z,,,,,#",
-"#,,,,,,,,,,,######+#####...........###########",
-"#,,,,,,,,,,,#................................#",
-"#,,,,,,,,,,,#..................z.............#",
-"#####+#######................................#",
-"#............................................#",
-"#................##########+#########........#",
-"#................#=,z,,#,,,,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,#........#",
-"#................###+###,,z,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,+........#",
-"#.........z......#,,,z,#,,,,,,,,,z,,#..z.....#",
-"#................+,,,,,+,,,,,,,,,,,,#........#",
-"#................#,,,,,#,,,,,,,,,,,,#........#",
-"##############################################",
-    ];
+    let width = 46;
+    let height = 20;
 
     let mut entity_store = EntityStore::new();
     let mut change = EntityStoreChange::new();
     let mut allocator = EntityIdAllocator::new();
-    let mut spatial_hash = SpatialHashTable::new(level_str[0].len(), level_str.len());
+    let mut spatial_hash = SpatialHashTable::new(width, height);
 
     let mut rng = StdRng::new().unwrap();
 
-    let mut pc = 0;
-    let mut y = 0;
-    for row in level_str.iter() {
-        let mut x = 0;
-        for ch in row.chars() {
-            match ch {
-                '#' => {
-                    prototypes::wall(&mut change, allocator.allocate(), Vector2::new(x, y));
-                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
-                }
-                '.' => {
-                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
-                }
-                ',' => {
-                    let id = allocator.allocate();
-                    prototypes::stone_floor(&mut change, id, Vector2::new(x, y));
-                    change.inside.insert(id);
-                }
-                '@' => {
-                    pc = allocator.allocate();
-                    prototypes::player(&mut change, pc, Vector2::new(x, y));
-                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
-                }
-                'z' => {
-                    prototypes::undead(&mut change, allocator.allocate(), Vector2::new(x, y));
-                    let id = allocator.allocate();
-                    prototypes::stone_floor(&mut change, id, Vector2::new(x, y));
-                    change.inside.insert(id);
-                }
-                '+' => {
-                    prototypes::door(&mut change, allocator.allocate(), Vector2::new(x, y), DoorState::Closed);
-                    prototypes::stone_floor(&mut change, allocator.allocate(), Vector2::new(x, y));
-                }
-                '=' => {
-                    prototypes::page(&mut change, allocator.allocate(), Vector2::new(x, y));
-                    let id = allocator.allocate();
-                    prototypes::stone_floor(&mut change, id, Vector2::new(x, y));
-                    change.inside.insert(id);
-                }
-                _ => panic!(),
-            }
+    let md = terrain::string_demo::generate(&mut change, &mut allocator, &mut rng);
 
-            if rng.next_f64() < 0.1 {
-                prototypes::rain(&mut change, allocator.allocate(), Vector2::new(x, y), &mut rng);
-            }
-
-            x += 1;
-        }
-        y += 1;
-    }
+    let pc = md.player_id.expect("missing player");
 
     let mut time = 1;
     spatial_hash.update(&entity_store, &change, time);
