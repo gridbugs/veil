@@ -27,7 +27,7 @@ const HEIGHT_PX: u32 = 800;
 pub fn launch() {
 
     let width = 80;
-    let height = 40;
+    let height = 30;
 
     let mut entity_store = EntityStore::new();
     let mut change = EntityStoreChange::new();

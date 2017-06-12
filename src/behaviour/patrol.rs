@@ -8,6 +8,8 @@ use grid_search::{bfs_best, SearchEnv, Step};
 use invert_ord::InvertOrd;
 use cgmath::Vector2;
 
+const BFS_MAX: usize = 500;
+
 fn maybe_make_step(position: Vector2<i32>,
                    knowledge: &PlayerKnowledgeGrid,
                    observation_metadata: ObservationMetadata,
@@ -70,7 +72,7 @@ fn make_step(id: EntityId,
             }
             return !cell.solid || cell.door.is_some();
         };
-        bfs_best(search_env, knowledge, position, DirectionsCardinal, search_score, can_enter, &mut state.path)
+        bfs_best(search_env, knowledge, position, DirectionsCardinal, search_score, can_enter, &mut state.path, BFS_MAX)
             .expect("Failed to search");
         state.path_idx = 0;
         state.path.first()

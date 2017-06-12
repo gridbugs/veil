@@ -161,23 +161,30 @@ pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
         directions: Dirs,
         score: ScoreFn,
         can_enter: CanEnterFn,
-        path: &mut Path) -> Result<()>
+        path: &mut Path,
+        max: usize) -> Result<()>
     where Dirs: Copy + IntoIterator<Item=Direction>,
           Grid: LookupCoord<Item=Cell>,
           Score: Ord + ::std::fmt::Debug,
           ScoreFn: Fn(&Cell) -> Score,
           CanEnterFn: Fn(&Cell) -> bool,
 {
-    env.clear();
-
-    env.queue.push_back(start);
-    env.see_first(start)?;
-
     let mut best = if let Some(c) = knowledge.lookup_coord(start) {
         BestMapNonEmpty::new(score(c), start)
     } else {
         return Err(Error::InvalidGridSize);
     };
+
+    env.clear();
+
+    if max == 0 {
+        return env.construct_path(best.into_value(), path);
+    }
+
+    env.queue.push_back(start);
+    env.see_first(start)?;
+
+    let mut count = 1;
 
     while let Some(current_coord) = env.queue.pop_front() {
         for direction in directions {
@@ -187,18 +194,23 @@ pub fn bfs_best<Dirs, Grid, Cell, ScoreFn, Score, CanEnterFn>(
                 continue;
             }
 
-            if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
+            let knowledge_cell = if let Some(knowledge_cell) = knowledge.lookup_coord(coord) {
 
                 if can_enter(knowledge_cell) {
-                    best.insert_gt(score(knowledge_cell), coord);
+                    knowledge_cell
                 } else {
                     continue;
                 }
 
             } else {
                 continue;
-            }
+            };
 
+            count += 1;
+            if count >= max {
+                break;
+            }
+            best.insert_gt(score(knowledge_cell), coord);
             env.queue.push_back(coord);
         }
     }
