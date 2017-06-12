@@ -2,6 +2,7 @@ enum_from_primitive! {
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum TileType {
     StoneFloor,
+    BrickFloor,
     WallFront,
     WallTop,
     Player,
@@ -24,6 +25,7 @@ impl TileType {
     pub fn to_str(self) -> &'static str {
         match self {
             TileType::StoneFloor => "StoneFloor",
+            TileType::BrickFloor => "BrickFloor",
             TileType::WallFront => "WallFront",
             TileType::WallTop => "WallTop",
             TileType::Player => "Player",

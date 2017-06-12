@@ -41,6 +41,14 @@ pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position
     change.veil_slot.insert(entity_id);
 }
 
+pub fn brick_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+    change.position.insert(entity_id, position);
+    change.floor.insert(entity_id);
+    change.tile.insert(entity_id, ComplexTile::Simple(TileType::BrickFloor));
+    change.tile_priority.insert(entity_id, 1);
+    change.veil_slot.insert(entity_id);
+}
+
 pub fn wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
     change.position.insert(entity_id, position);
     change.solid.insert(entity_id);
