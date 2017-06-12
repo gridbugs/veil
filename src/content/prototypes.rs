@@ -41,10 +41,10 @@ pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position
     change.veil_slot.insert(entity_id);
 }
 
-pub fn brick_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+pub fn wooden_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
     change.position.insert(entity_id, position);
     change.floor.insert(entity_id);
-    change.tile.insert(entity_id, ComplexTile::Simple(TileType::BrickFloor));
+    change.tile.insert(entity_id, ComplexTile::Simple(TileType::WoodenFloor));
     change.tile_priority.insert(entity_id, 1);
     change.veil_slot.insert(entity_id);
 }
@@ -54,6 +54,14 @@ pub fn wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
     change.solid.insert(entity_id);
     change.opacity.insert(entity_id, 1.0);
     change.tile.insert(entity_id, ComplexTile::Wall { front: TileType::WallFront, top: TileType::WallTop });
+    change.tile_priority.insert(entity_id, 2);
+}
+
+pub fn stone_wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
+    change.position.insert(entity_id, position);
+    change.solid.insert(entity_id);
+    change.opacity.insert(entity_id, 1.0);
+    change.tile.insert(entity_id, ComplexTile::Wall { front: TileType::StoneWallFront, top: TileType::StoneWallTop });
     change.tile_priority.insert(entity_id, 2);
 }
 
@@ -116,4 +124,5 @@ pub fn water<R: Rng>(change: &mut EntityStoreChange, entity_id: EntityId, positi
     }
     change.tile_priority.insert(entity_id, 2);
     change.veil_slot.insert(entity_id);
+    change.solid.insert(entity_id);
 }

@@ -26,8 +26,8 @@ const HEIGHT_PX: u32 = 800;
 
 pub fn launch() {
 
-    let width = 50;
-    let height = 30;
+    let width = 80;
+    let height = 40;
 
     let mut entity_store = EntityStore::new();
     let mut change = EntityStoreChange::new();
@@ -36,7 +36,7 @@ pub fn launch() {
 
     let mut rng = StdRng::new().unwrap();
 
-    let md = terrain::example_coast::generate(width, height, &mut change, &mut allocator, &mut rng);
+    let md = terrain::string_demo::generate(&mut change, &mut allocator, &mut rng);
 
     let pc = md.player_id.expect("missing player");
 

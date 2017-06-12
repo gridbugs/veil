@@ -2,7 +2,6 @@ enum_from_primitive! {
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum TileType {
     StoneFloor,
-    BrickFloor,
     WallFront,
     WallTop,
     Player,
@@ -18,6 +17,9 @@ pub enum TileType {
     Page,
     WaterBgOnly,
     WaterWithFg,
+    WoodenFloor,
+    StoneWallFront,
+    StoneWallTop,
 }
 }
 
@@ -25,7 +27,6 @@ impl TileType {
     pub fn to_str(self) -> &'static str {
         match self {
             TileType::StoneFloor => "StoneFloor",
-            TileType::BrickFloor => "BrickFloor",
             TileType::WallFront => "WallFront",
             TileType::WallTop => "WallTop",
             TileType::Player => "Player",
@@ -41,8 +42,11 @@ impl TileType {
             TileType::Page => "Page",
             TileType::WaterBgOnly => "WaterBgOnly",
             TileType::WaterWithFg => "WaterWithFg",
+            TileType::WoodenFloor => "WoodenFloor",
+            TileType::StoneWallFront => "StoneWallFront",
+            TileType::StoneWallTop => "StoneWallTop",
         }
     }
 }
 
-pub const NUM_TILES: usize = 17;
+pub const NUM_TILES: usize = 19;
