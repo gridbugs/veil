@@ -211,6 +211,12 @@ impl GamePolicy {
                 // everything else just gets stopped
                 self.to_cancel.push(id);
             }
+        } else {
+            // destination was outside spatial hash
+            if entity_store.bullet.contains(&id) {
+                self.entities_to_remove.push(id);
+            }
+            self.to_cancel.push(id);
         }
     }
 
