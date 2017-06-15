@@ -1,7 +1,7 @@
 use entity_store::{EntityId, EntityStore};
 use spatial_hash::SpatialHashCell;
 use grid::StaticGrid;
-use content::{ComplexTile, OverlayType};
+use content::{ComplexTile, OverlayType, TileType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
 use coord::LookupCoord;
@@ -21,6 +21,8 @@ pub struct PlayerKnowledgeCell {
     pub tiles: Vec<PlayerKnowledgeTile>,
     pub overlay: Option<OverlayType>,
     pub wall: bool,
+    pub low_tile: bool,
+    pub tile_front: Option<TileType>,
     pub solid: bool,
     pub door: Option<EntityId>,
     pub enemy: Option<EntityId>,
@@ -44,6 +46,8 @@ impl Default for PlayerKnowledgeCell {
             tiles: Vec::new(),
             overlay: None,
             wall: false,
+            low_tile: false,
+            tile_front: None,
             solid: false,
             door: None,
             enemy: None,
@@ -84,6 +88,9 @@ impl PlayerKnowledgeCell {
             self.player = spatial_hash_cell.player_count > 0;
             self.veil_cell.current = spatial_hash_cell.veil_current_count > 0;
             self.veil_cell.next = spatial_hash_cell.veil_next_count > 0;
+            self.low_tile = spatial_hash_cell.low_tile_count > 0;
+            self.tile_front = spatial_hash_cell.tile_front_set.iter().next()
+                .and_then(|id| entity_store.tile_front.get(id)).cloned();
 
             changed = true;
         }

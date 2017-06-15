@@ -106,10 +106,10 @@ impl GamePolicy {
 
         for id in entity_store.water.iter() {
             if rng.next_f64() < WATER_TILE_CHANGE_PROBABILITY {
-                let tile = if rng.next_f64() < WATER_FOREGROUND_PROBABILITY {
-                    TileType::WaterWithFg
+                let tile = if rng.next_f64() < WATER_PROBABILITY {
+                    TileType::Water2
                 } else {
-                    TileType::WaterBgOnly
+                    TileType::Water1
                 };
 
                 if let Some(current_tile) = entity_store.tile.get(id).cloned() {

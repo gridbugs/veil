@@ -4,6 +4,7 @@ imports = [
     'content::DoorState',
     'content::BehaviourType',
     'content::VeilStepInfo',
+    'content::TileType',
     'straight_line::FiniteAbsoluteLineTraverse',
     'straight_line::InfiniteAbsoluteLineTraverse',
     'schedule::ScheduleTicket',
@@ -20,6 +21,8 @@ opacity = { type = 'f64' }
 enemy = {}
 tile = { type = 'ComplexTile' }
 tile_priority = { type = 'u8' }
+low_tile = {}
+tile_front = { type = 'TileType' }
 door_state = { type = 'DoorState' }
 finite_trajectory = { type = 'FiniteAbsoluteLineTraverse' }
 rain = {}

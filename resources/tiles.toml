@@ -13,6 +13,9 @@ AimLineEnd = [0, 6]
 0 = [0, 0]
 1 = [1, 0]
 
+[tiles.StoneFloorFront]
+2 = [2, 0]
+
 [tiles.WallFront]
 1 = [0, 1]
 
@@ -52,16 +55,20 @@ AimLineEnd = [0, 6]
 [tiles.Page]
 2 = [0, 8]
 
-[tiles.WaterBgOnly]
+[tiles.Water1]
 0 = [0, 9]
+1 = [2, 9]
 
-[tiles.WaterWithFg]
+[tiles.Water2]
 0 = [0, 9]
 1 = [1, 9]
 
 [tiles.WoodenFloor]
 0 = [0, 10]
 1 = [1, 10]
+
+[tiles.WoodenPost]
+2= [2, 10]
 
 [tiles.StoneWallFront]
 1 = [0, 11]

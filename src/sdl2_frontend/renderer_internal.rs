@@ -11,7 +11,7 @@ use render_overlay::RenderOverlay;
 use content::OverlayType;
 use renderer::GameRendererConfig;
 
-const DIM_COEF: i32 = 32;
+const DIM_COEF: i32 = 48;
 const INTENSITY_MAX: u8 = 255;
 const INTENSITY_MIN: u8 = 96;
 const INTENSITY_DIFF: u8 = INTENSITY_MAX - INTENSITY_MIN;

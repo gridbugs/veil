@@ -5,6 +5,8 @@ use content::{ComplexTile, OverlayType};
 use sdl2_frontend::tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
 
+const TILE_FRONT_PRIORITY: u8 = 255;
+
 #[derive(Debug)]
 pub struct TileBufferCell {
     pub channels: [Option<Rect>; tile::NUM_TILE_CHANNELS],
@@ -111,6 +113,13 @@ impl TileBuffer {
                     };
 
                     cell.update(resolver.resolve_tile(simple_tile), priority);
+                }
+
+                if knowledge_cell.low_tile {
+                    let north_coord = knowledge_coord + Vector2::new(0, -1);
+                    if let Some(front) = knowledge.get(north_coord).and_then(|c| c.tile_front) {
+                        cell.update(resolver.resolve_tile(front), TILE_FRONT_PRIORITY);
+                    }
                 }
             }
         }

@@ -39,6 +39,7 @@ pub fn stone_floor(change: &mut EntityStoreChange, entity_id: EntityId, position
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::StoneFloor));
     change.tile_priority.insert(entity_id, 1);
     change.veil_slot.insert(entity_id);
+    change.tile_front.insert(entity_id, TileType::StoneFloorFront);
 }
 
 pub fn wooden_floor(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -47,6 +48,7 @@ pub fn wooden_floor(change: &mut EntityStoreChange, entity_id: EntityId, positio
     change.tile.insert(entity_id, ComplexTile::Simple(TileType::WoodenFloor));
     change.tile_priority.insert(entity_id, 1);
     change.veil_slot.insert(entity_id);
+    change.tile_front.insert(entity_id, TileType::WoodenPost);
 }
 
 pub fn wall(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {
@@ -117,12 +119,13 @@ pub fn page(change: &mut EntityStoreChange, entity_id: EntityId, position: Vecto
 pub fn water<R: Rng>(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>, rng: &mut R) {
     change.position.insert(entity_id, position);
     change.water.insert(entity_id);
-    if rng.gen::<f64>() < WATER_FOREGROUND_PROBABILITY {
-        change.tile.insert(entity_id, ComplexTile::Simple(TileType::WaterWithFg));
+    if rng.gen::<f64>() < WATER_PROBABILITY {
+        change.tile.insert(entity_id, ComplexTile::Simple(TileType::Water1));
     } else {
-        change.tile.insert(entity_id, ComplexTile::Simple(TileType::WaterBgOnly));
+        change.tile.insert(entity_id, ComplexTile::Simple(TileType::Water2));
     }
     change.tile_priority.insert(entity_id, 2);
     change.veil_slot.insert(entity_id);
     change.solid.insert(entity_id);
+    change.low_tile.insert(entity_id);
 }

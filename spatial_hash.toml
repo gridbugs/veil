@@ -22,3 +22,5 @@ veil_slot_set = { component = 'veil_slot', aggregate = 'set' }
 veil_current_count = { component = 'veil_current', aggregate = 'count' }
 veil_next_count = { component = 'veil_next', aggregate = 'count' }
 page_set = { component = 'page', aggregate = 'set' }
+low_tile_count = { component = 'low_tile', aggregate = 'count' }
+tile_front_set = { component = 'tile_front', aggregate = 'set' }
