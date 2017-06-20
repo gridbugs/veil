@@ -1,8 +1,10 @@
 use std::collections::HashMap;
-use sdl2::rect::Rect;
-use enum_primitive::FromPrimitive;
-use content::*;
 use toml;
+use enum_primitive::FromPrimitive;
+
+use tile;
+use rect::Rect;
+use content::*;
 
 pub const NUM_TILE_CHANNELS: usize = 5;
 pub const OVERLAY_CHANNEL: usize = 4;
@@ -25,6 +27,7 @@ impl Tile {
         }
     }
 }
+
 
 #[derive(Deserialize)]
 struct TileDesc {
@@ -72,7 +75,7 @@ impl TileResolver {
                 let channels = tile_desc.tiles.get(&tile_type.to_str().to_string())
                     .expect(&format!("Couldn't find tile for {:?}", tile_type));
                 let mut tile = Tile::new();
-                for j in 0..NUM_TILE_CHANNELS {
+                for j in 0..tile::NUM_TILE_CHANNELS {
                     if let Some(coord) = channels.get(&format!("{}", j)) {
                         tile.channels.push(Channel {
                             id: j,

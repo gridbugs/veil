@@ -1,8 +1,9 @@
-use sdl2::rect::Rect;
 use cgmath::Vector2;
+
 use grid::{StaticGrid, StaticGridIdx, static_grid};
 use content::{ComplexTile, OverlayType};
-use sdl2_frontend::tile;
+use rect::Rect;
+use tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
 
 const TILE_FRONT_PRIORITY: u8 = 255;

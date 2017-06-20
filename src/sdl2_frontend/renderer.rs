@@ -1,13 +1,13 @@
 use std::path::Path;
 use cgmath::Vector2;
 use sdl2_frontend::renderer_env::RendererEnv;
-use sdl2_frontend::tile_buffer::TileBuffer;
 use sdl2_frontend::textures::GameTextures;
 use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::renderer_internal::GameRendererInternal;
 use knowledge::PlayerKnowledgeGrid;
 use render_overlay::RenderOverlay;
 use renderer::{GameRenderer, GameRendererConfig};
+use tile_buffer::TileBuffer;
 
 pub struct SdlGameRenderer<'a> {
     buffer: TileBuffer,

@@ -48,6 +48,9 @@ mod commit;
 mod perlin;
 mod veil_state;
 mod terrain;
+mod tile;
+mod tile_buffer;
+mod rect;
 
 mod tests;
 
