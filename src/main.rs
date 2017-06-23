@@ -51,6 +51,9 @@ mod terrain;
 mod tile;
 mod tile_buffer;
 mod rect;
+mod level_env;
+mod game_env;
+mod launch;
 
 mod tests;
 
