@@ -9,15 +9,26 @@ extern crate serde;
 #[macro_use] extern crate itertools;
 
 extern crate rand;
-extern crate sdl2;
 extern crate toml;
+
+extern crate sdl2;
+
+#[macro_use]
+extern crate gfx;
+extern crate gfx_window_glutin;
+extern crate glutin;
+extern crate gfx_text;
+extern crate image;
+extern crate winit;
 
 mod grid;
 #[macro_use] mod entity_store;
 mod spatial_hash;
 
-mod content;
 mod sdl2_frontend;
+mod glutin_frontend;
+
+mod content;
 mod simple_file;
 mod entity_id_allocator;
 mod knowledge;
@@ -58,5 +69,9 @@ mod launch;
 mod tests;
 
 fn main() {
+    #[cfg(feature = "glutin")]
+    glutin_frontend::launch();
+
+    #[cfg(not(feature = "glutin"))]
     sdl2_frontend::launch();
 }

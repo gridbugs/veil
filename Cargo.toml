@@ -9,13 +9,25 @@ cgmath = { version = "0.14", features = ["eders"] }
 enum_primitive = "0.1"
 serde = "1.0"
 serde_derive = "1.0"
-sdl2 = { version = "0.30", features = ["image", "ttf"] }
 toml = "0.4"
 rand = "0.3"
 itertools = "0.6"
+
+sdl2 = { version = "0.30", features = ["image", "ttf"] }
+
+gfx = "0.16"
+gfx_window_glutin = "0.16.0"
+glutin = "0.8.1"
+winit = "0.6.4"
+gfx_text = "0.17"
+image = "0.14"
 
 [build-dependencies]
 serde = "1.0"
 serde_derive = "1.0"
 toml = "0.4"
 handlebars = "0.26"
+
+[replace]
+"winit:0.6.4" = { git = "https://github.com/stevebob/winit.git", branch = "master" }
+"glutin:0.8.1" = { git = "https://github.com/stevebob/glutin.git", branch = "winit-0.6.4" }
