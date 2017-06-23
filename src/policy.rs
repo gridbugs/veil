@@ -125,13 +125,11 @@ impl GamePolicy {
     pub fn on_frame_animate<R: Rng>(&mut self, frame: Frame, entity_store: &EntityStore, spatial_hash: &SpatialHashTable,
                                     rng: &mut R, change: &mut EntityStoreChange) {
 
-        let realtime = frame.animation_mode() == AnimationMode::RealTime;
-
-        if !realtime || frame.id() % RAIN_FRAME_RATE == 0 {
+        if frame.id() % RAIN_FRAME_RATE == 0 {
             self.animate_rain(entity_store, spatial_hash, rng, change);
         }
 
-        if !realtime || frame.id() % WATER_FRAME_RATE == 0 {
+        if frame.id() % WATER_FRAME_RATE == 0 {
             self.animate_water(entity_store, rng, change);
         }
     }

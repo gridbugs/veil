@@ -3,7 +3,6 @@ use sdl2::image::INIT_PNG;
 use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
 use sdl2_frontend::input::*;
-use frame::AnimationMode;
 use launch;
 
 const WIDTH_TILES: u32 = 20;
@@ -26,7 +25,7 @@ pub fn launch() {
                                             "resources/tiles.png",
                                             "resources/tiles.toml");
     let event_pump = sdl.event_pump().expect("Failed to initialize event pump");
-    let mut input = SdlGameInput::new(event_pump, 60, AnimationMode::RealTime);
+    let mut input = SdlGameInput::new(event_pump, 60);
 
     launch::launch(&mut renderer, &mut input);
 }

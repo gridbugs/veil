@@ -4,7 +4,7 @@ use sdl2::EventPump;
 use sdl2::keyboard::{self, Keycode, Mod};
 use sdl2::event::Event;
 use input::{GameInput, InputEvent, ExternalEvent};
-use frame::{Frame, FrameId, AnimationMode};
+use frame::{Frame, FrameId};
 
 const MILLIS_PER_SEC: u32 = 1_000;
 const NANOS_PER_MILLI: u32 = 1_000_000;
@@ -16,17 +16,15 @@ pub struct SdlGameInput {
     frame_duration: Duration,
     previous_frame_instant: Instant,
     next_frame_id: FrameId,
-    animation_mode: AnimationMode,
 }
 
 impl SdlGameInput {
-    pub fn new(event_pump: EventPump, fps: u32, animation_mode: AnimationMode) -> Self {
+    pub fn new(event_pump: EventPump, fps: u32) -> Self {
         SdlGameInput {
             event_pump: event_pump,
             frame_duration: Duration::from_millis((MILLIS_PER_SEC / fps) as u64),
             previous_frame_instant: Instant::now(),
             next_frame_id: 0,
-            animation_mode: animation_mode,
         }
     }
 
@@ -39,7 +37,7 @@ impl SdlGameInput {
     fn next_frame_internal(&mut self, instant: Instant) -> Frame {
         let id = self.next_frame_id();
         self.previous_frame_instant = instant;
-        Frame::new(id, self.animation_mode, instant)
+        Frame::new(id, instant)
     }
 }
 
@@ -171,11 +169,6 @@ impl GameInput for SdlGameInput {
     }
 
     fn next_external(&mut self) -> ExternalEvent {
-        if self.animation_mode == AnimationMode::TurnBased {
-            let input = self.next_input();
-            let frame = self.next_frame_internal(Instant::now());
-            return ExternalEvent::new(input, frame);
-        }
         loop {
             let now = Instant::now();
             let since_last_frame = now - self.previous_frame_instant;
