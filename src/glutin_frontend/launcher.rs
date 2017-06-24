@@ -4,7 +4,11 @@ use gfx::Factory;
 use gfx::traits::FactoryExt;
 use gfx_window_glutin;
 use glutin;
+use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
+use genmesh::{Triangulate, Vertices};
 use image;
+
+use tile_buffer::TileBufferCell;
 
 pub type ColourFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
@@ -12,20 +16,43 @@ pub type DepthFormat = gfx::format::DepthStencil;
 const WIDTH_TILES: u32 = 20;
 const HEIGHT_TILES: u32 = 20;
 const TILE_SIZE: u32 = 32;
+const TILE_IDX_BITS: u32 = 5;
 
 const WIDTH_PX: u32 = WIDTH_TILES * TILE_SIZE;
 const HEIGHT_PX: u32 = HEIGHT_TILES * TILE_SIZE;
+const NUM_TILES: u32 = WIDTH_TILES * HEIGHT_TILES;
 
 gfx_defines!{
     vertex Vertex {
         pos: [f32; 2] = "a_Pos",
         tex_pos: [f32; 2] = "a_TexPos",
+        cell_pos: [f32; 2] = "a_CellPos",
+    }
+
+    constant TileMapData {
+        data: [f32; 4] = "data",
     }
 
     pipeline pipe {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         tex: gfx::TextureSampler<[f32; 4]> = "t_Texture",
-        out: gfx::BlendTarget<ColourFormat> = ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
+        tile_table: gfx::ConstantBuffer<TileMapData> = "b_TileMap",
+        out: gfx::BlendTarget<ColourFormat> =
+            ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
+    }
+}
+
+impl TileMapData {
+    fn new_empty() -> Self {
+        TileMapData {
+            data: [0.0, 0.0, 0.0, 0.0],
+        }
+    }
+}
+
+impl From<TileBufferCell> for TileMapData {
+    fn from(_cell: TileBufferCell) -> Self {
+        unimplemented!()
     }
 }
 
@@ -55,23 +82,47 @@ pub fn launch() {
 
     let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-    const SQUARE: [Vertex; 4] = [
-        Vertex { pos: [-1.0, 1.0], tex_pos: [0.0, 0.0] },
-        Vertex { pos: [1.0, 1.0], tex_pos: [1.0, 0.0] },
-        Vertex { pos: [1.0, -1.0], tex_pos: [1.0, 1.0] },
-        Vertex { pos: [-1.0, -1.0], tex_pos: [0.0, 1.0] },
-    ];
-
     const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 
-    let index_data: &[u16] = &[0, 1, 3, 2, 3, 1];
-    let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(&SQUARE, index_data);
+    let plane = Plane::subdivide(WIDTH_TILES as usize, HEIGHT_TILES as usize);
+
+    let vertex_data: Vec<Vertex> = plane.shared_vertex_iter().map(|vertex| {
+
+            let raw_x = vertex.pos[0];
+            let raw_y = vertex.pos[1];
+
+            let x = raw_x / 2.0 + 0.5;
+            let y = 0.5 - raw_y / 2.0;
+
+            Vertex {
+                pos: [raw_x, raw_y],
+                tex_pos: [x, y],
+                cell_pos: [x * WIDTH_TILES as f32, y * HEIGHT_TILES as f32],
+            }
+        })
+        .collect();
+
+    let index_data: Vec<u32> = plane.indexed_polygon_iter()
+        .triangulate()
+        .vertices()
+        .map(|i| i as u32)
+        .collect();
+
+    let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(&vertex_data, &index_data[..]);
+
+    let tile_buffer = factory.create_constant_buffer(NUM_TILES as usize);
 
     let data = pipe::Data {
         vbuf: vertex_buffer,
         tex: (texture, sampler),
+        tile_table: tile_buffer,
         out: colour_view,
     };
+
+    let mut tile_map = Vec::new();
+    for _ in 0..NUM_TILES {
+        tile_map.push(TileMapData::new_empty());
+    }
 
     'main: loop {
         let mut running = true;
@@ -92,6 +143,10 @@ pub fn launch() {
         }
 
         encoder.clear(&data.out, CLEAR_COLOR);
+
+        encoder.update_buffer(&data.tile_table, &tile_map, 0)
+            .expect("Failed to update tile buffer");
+
         encoder.draw(&slice, &pso, &data);
         encoder.flush(&mut device);
         window.swap_buffers().expect("Failed to swap buffers");

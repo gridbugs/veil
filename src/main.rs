@@ -18,8 +18,9 @@ extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 extern crate gfx_text;
-extern crate image;
 extern crate winit;
+extern crate genmesh;
+extern crate image;
 
 mod grid;
 #[macro_use] mod entity_store;

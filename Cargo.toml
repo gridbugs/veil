@@ -20,6 +20,7 @@ gfx_window_glutin = "0.16.0"
 glutin = "0.8.1"
 winit = "0.6.4"
 gfx_text = "0.17"
+genmesh = "0.5"
 image = "0.14"
 
 [build-dependencies]
