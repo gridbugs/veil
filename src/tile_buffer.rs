@@ -2,7 +2,6 @@ use cgmath::Vector2;
 
 use grid::{StaticGrid, StaticGridIdx, static_grid};
 use content::{ComplexTile, OverlayType};
-use rect::Rect;
 use tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
 
@@ -10,7 +9,7 @@ const TILE_FRONT_PRIORITY: u8 = 255;
 
 #[derive(Debug)]
 pub struct TileBufferCell {
-    pub channels: [Option<Rect>; tile::NUM_TILE_CHANNELS],
+    pub channels: [Option<tile::TileCoord>; tile::NUM_TILE_CHANNELS],
     pub visible: bool,
     priorities: [u8; tile::NUM_TILE_CHANNELS],
 }
@@ -81,11 +80,11 @@ impl TileBuffer {
                 cell.visible = knowledge_cell.last_updated == time;
                 if cell.visible {
                     if knowledge_cell.veil_cell.current && knowledge_cell.veil_cell.next {
-                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::Veil));
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(resolver.resolve_overlay(OverlayType::Veil));
                     } else if knowledge_cell.veil_cell.current {
-                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::VeilCurrent));
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(resolver.resolve_overlay(OverlayType::VeilCurrent));
                     } else if knowledge_cell.veil_cell.next {
-                        cell.channels[tile::OVERLAY_CHANNEL] = Some(*resolver.resolve_overlay(OverlayType::VeilNext));
+                        cell.channels[tile::OVERLAY_CHANNEL] = Some(resolver.resolve_overlay(OverlayType::VeilNext));
                     } else {
                         cell.channels[tile::OVERLAY_CHANNEL] = None;
                     }

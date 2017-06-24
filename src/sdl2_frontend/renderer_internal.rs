@@ -1,10 +1,10 @@
 use std::path::Path;
 use sdl2::render::WindowCanvas;
 use sdl2::pixels::Color;
-use sdl2::rect::Rect as Sdl2Rect;
+use sdl2::rect::Rect;
 use cgmath::Vector2;
 
-use tile::{TileResolver, OVERLAY_CHANNEL};
+use tile::{TileResolver, OVERLAY_CHANNEL, TileCoord};
 use sdl2_frontend::renderer_dimensions::RendererDimensions;
 use sdl2_frontend::textures::GameTextures;
 use tile_buffer::TileBufferCell;
@@ -24,6 +24,7 @@ pub struct GameRendererInternal<'a> {
     pub tile_resolver: TileResolver,
     pub canvas: &'a mut WindowCanvas,
     pub config: GameRendererConfig,
+    pub tile_size: u32,
 }
 
 fn delta_to_intensity(delta: Vector2<i32>) -> u8 {
@@ -40,6 +41,7 @@ impl<'a> GameRendererInternal<'a> {
         let tile_resolver = TileResolver::from_str(&tile_desc_str);
 
         GameRendererInternal {
+            tile_size: tile_resolver.tile_size(),
             tile_resolver: tile_resolver,
             canvas: canvas,
             config: Default::default(),
@@ -75,21 +77,27 @@ impl<'a> GameRendererInternal<'a> {
                 break;
             }
             if let &Some(source) = channel {
-                self.canvas.copy(texture, source, dest_rect).expect("Failed to draw cell");
+                let source_rect = self.make_rect(source);
+                self.canvas.copy(texture, source_rect, dest_rect).expect("Failed to draw cell");
             }
         }
 
         if let Some(source) = cell.channels[OVERLAY_CHANNEL] {
             texture.set_color_mod(INTENSITY_MAX, INTENSITY_MAX, INTENSITY_MAX);
-            self.canvas.copy(texture, source, dest_rect).expect("Failed to draw cell");
+            let source_rect = self.make_rect(source);
+            self.canvas.copy(texture, source_rect, dest_rect).expect("Failed to draw cell");
         }
+    }
+
+    fn make_rect(&self, coord: TileCoord) -> Rect {
+        Rect::new(coord.x as i32 * self.tile_size as i32, coord.y as i32 * self.tile_size as i32, self.tile_size, self.tile_size)
     }
 
     pub fn draw_overlay(&mut self, dimensions: &RendererDimensions, offset: Vector2<i32>,
                         textures: &mut GameTextures, overlay: RenderOverlay) {
 
-        let tile_mid = *self.tile_resolver.resolve_overlay(OverlayType::AimLineMid);
-        let tile_end = *self.tile_resolver.resolve_overlay(OverlayType::AimLineEnd);
+        let tile_mid = self.make_rect(self.tile_resolver.resolve_overlay(OverlayType::AimLineMid));
+        let tile_end = self.make_rect(self.tile_resolver.resolve_overlay(OverlayType::AimLineEnd));
 
         let (mut traverse, end) = overlay.aim_line.split_end();
 
@@ -97,7 +105,7 @@ impl<'a> GameRendererInternal<'a> {
 
         let adjusted_end = end - offset;
         let dest_rect = dimensions.dest_rect(adjusted_end.x as u32, adjusted_end.y as u32);
-        self.canvas.copy(&textures.colour, Sdl2Rect::from(tile_end), dest_rect).expect("Failed to draw cell");
+        self.canvas.copy(&textures.colour, tile_end, dest_rect).expect("Failed to draw cell");
 
         // skip the start
         traverse.step_in_place();
@@ -105,7 +113,7 @@ impl<'a> GameRendererInternal<'a> {
         for coord in traverse {
             let adjusted_coord = coord - offset;
             let dest_rect = dimensions.dest_rect(adjusted_coord.x as u32, adjusted_coord.y as u32);
-            self.canvas.copy(&textures.colour, Sdl2Rect::from(tile_mid), dest_rect).expect("Failed to draw cell");
+            self.canvas.copy(&textures.colour, tile_mid, dest_rect).expect("Failed to draw cell");
         }
     }
 }

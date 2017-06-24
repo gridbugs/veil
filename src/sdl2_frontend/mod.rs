@@ -1,4 +1,3 @@
-mod rect;
 mod renderer_env;
 mod renderer;
 mod renderer_internal;

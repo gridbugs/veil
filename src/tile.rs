@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 use toml;
 use enum_primitive::FromPrimitive;
+use cgmath::Vector2;
 
 use tile;
-use rect::Rect;
 use content::*;
 
 pub const NUM_TILE_CHANNELS: usize = 5;
 pub const OVERLAY_CHANNEL: usize = 4;
+pub type TileCoord = Vector2<i8>;
 
 #[derive(Clone, Debug)]
 pub struct Channel {
     pub id: usize,
-    pub sprite: Rect,
+    pub sprite: TileCoord,
 }
 
 #[derive(Clone, Debug)]
@@ -36,16 +37,10 @@ struct TileDesc {
     tiles: HashMap<String, HashMap<String, [u32; 2]>>,
 }
 
-impl TileDesc {
-    fn rect(&self, x: u32, y: u32) -> Rect {
-        Rect::new((x * self.tile_size) as i32, (y * self.tile_size) as i32, self.tile_size, self.tile_size)
-    }
-}
-
 #[derive(Debug)]
 pub struct TileResolver {
     tiles: Vec<Tile>,
-    overlays: Vec<Rect>,
+    overlays: Vec<TileCoord>,
     tile_size: u32,
 }
 
@@ -66,7 +61,7 @@ impl TileResolver {
             if let Some(overlay_type) = OverlayType::from_usize(i) {
                 let coord = tile_desc.overlays.get(&overlay_type.to_str().to_string())
                     .expect(&format!("Couldn't find overlay for {:?}", overlay_type));
-                resolver.overlays.push(tile_desc.rect(coord[0], coord[1]));
+                resolver.overlays.push(Vector2::new(coord[0] as i8, coord[1] as i8));
             }
         }
 
@@ -79,7 +74,7 @@ impl TileResolver {
                     if let Some(coord) = channels.get(&format!("{}", j)) {
                         tile.channels.push(Channel {
                             id: j,
-                            sprite: tile_desc.rect(coord[0], coord[1]),
+                            sprite: Vector2::new(coord[0] as i8, coord[1] as i8),
                         });
                     }
                 }
@@ -94,8 +89,8 @@ impl TileResolver {
         &self.tiles[tile_type as usize]
     }
 
-    pub fn resolve_overlay(&self, overlay_type: OverlayType) -> &Rect {
-        &self.overlays[overlay_type as usize]
+    pub fn resolve_overlay(&self, overlay_type: OverlayType) -> TileCoord {
+        self.overlays[overlay_type as usize]
     }
 
     pub fn tile_size(&self) -> u32 {
