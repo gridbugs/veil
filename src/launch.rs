@@ -89,6 +89,11 @@ fn take_turn<Ren: GameRenderer, Inp: GameInput>(player_id: EntityId, entity_id: 
 }
 
 fn pre_turn(entity_id: EntityId, game: &mut GameEnv, level: &mut LevelEnv) {
+
+    if let Some(veil_step_info) = level.entity_store.veil_step_info.get(&entity_id) {
+        level.veil_state.step(&mut game.rng, veil_step_info);
+    }
+
     if level.entity_store.player.contains(&entity_id) {
         game.policy.veil_update(&mut game.change,
                                 &level.entity_store,
