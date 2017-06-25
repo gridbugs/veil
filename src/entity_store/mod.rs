@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet, hash_map};
 
-#[macro_use] mod generated_component_list_macros;
+include!(concat!(env!("OUT_DIR"), "/entity_store_macros.rs"));
+
 #[macro_use] pub mod post_change;
 #[macro_use] pub mod migration;
 

@@ -5,15 +5,6 @@ const int WIDTH = 20;
 const int HEIGHT = 20;
 const int NUM_TILE_CHANNELS = 5;
 
-const int TILE_WIDTH = 16 * 2;
-const int TILE_HEIGHT = 16 * 2;
-
-const int TEX_WIDTH = 640 * 2;
-const int TEX_HEIGHT = 400 * 2;
-
-const float TEX_X_RATIO = float(TILE_WIDTH) / float(TEX_WIDTH);
-const float TEX_Y_RATIO = float(TILE_HEIGHT) / float(TEX_HEIGHT);
-
 const int TILE_STATUS_IDX = 3;
 
 // the first NUM_TILE_CHANNELS bits indicate the presence of a channel
@@ -26,6 +17,10 @@ out vec4 Target0;
 
 uniform sampler2D t_Texture;
 
+uniform b_TileMapInfo {
+    vec2 u_TexRatio;
+};
+
 struct TileMapData {
     vec4 data;
 };
@@ -33,10 +28,6 @@ struct TileMapData {
 uniform b_TileMap {
     TileMapData u_Data[WIDTH * HEIGHT];
 };
-
-vec4 resolve_remembered(vec4 data, int status) {
-    return vec4(0.0, 0.0, 0.0, 1.0);
-}
 
 vec4 blend(vec4 current, vec4 new) {
     vec3 delta = vec3(new - current);
@@ -62,14 +53,19 @@ vec4 resolve_visible(vec4 data, int status) {
         int x_coord = word & 0xff;
         int y_coord = (word >> 8) & 0xff;
 
-        float x = (float(x_coord) + x_offset) * TEX_X_RATIO;
-        float y = (float(y_coord) + y_offset) * TEX_Y_RATIO;
+        float x = (float(x_coord) + x_offset) * u_TexRatio[0];
+        float y = (float(y_coord) + y_offset) * u_TexRatio[1];
 
         vec4 colour = texture(t_Texture, vec2(x, y));
         current = blend(current, colour);
     }
 
     return current;
+}
+
+vec4 resolve_remembered(vec4 data, int status) {
+    // TODO
+    return vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 void main() {

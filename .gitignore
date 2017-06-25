@@ -1,7 +1,5 @@
 target/
 **/*.rs.bk
-src/entity_store/generated_component_list_macros.rs
-src/spatial_hash/generated_component_list_macros.rs
 resources/tiles_scaled.png
 *.swp
 Cargo.lock

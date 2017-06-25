@@ -1,19 +1,34 @@
+#![allow(dead_code)]
+
 #[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate toml;
 extern crate handlebars;
 extern crate image;
+extern crate copy_dir;
 
+#[path = "src/resources.rs"]
+mod resources;
+
+use std::env;
 use std::io::Read;
 use std::io::Write;
 use std::fs::{self, File};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
 use image::{FilterType, GenericImage, ColorType};
+use resources::{RESOURCE_DIR, TILE_SHEET_NAME, TILE_SHEET_SCALE, TILE_SHEET_SPEC};
 
-const COMPONENT_PATH: &'static str = "components.toml";
+const COMPONENT_SPEC: &'static str = "components.toml";
+const SPATIAL_HASH_SPEC: &'static str = "spatial_hash.toml";
+
+const ENTITY_STORE_MACROS: &'static str = "entity_store_macros.rs";
+const ENTITY_STORE_TEMPLATE: &'static str = "src/entity_store/template.rs.hbs";
+
+const SPATIAL_HASH_MACROS: &'static str = "spatial_hash_macros.rs";
+const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/template.rs.hbs";
 
 fn ret_none() -> Option<String> { None }
 
@@ -182,24 +197,26 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
 }
 
 fn render_entity_system_template() {
-    let out_path = "src/entity_store/generated_component_list_macros.rs";
-    let template_path = "src/entity_store/template.rs.hbs";
+    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(ENTITY_STORE_MACROS);
+    let in_path = &PathBuf::from(RESOURCE_DIR).join(COMPONENT_SPEC);
+    let template_path = ENTITY_STORE_TEMPLATE;
 
-    if source_changed_rel(COMPONENT_PATH, out_path) || source_changed_rel(template_path, out_path) {
-        let type_desc = read_entity_store_desc(COMPONENT_PATH);
+    if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
+        let type_desc = read_entity_store_desc(in_path);
         let output = render_entity_system_template_internal(type_desc, template_path);
         write_file(out_path, output);
     }
 }
 
 fn render_spatial_hash_template() {
-    let out_path = "src/spatial_hash/generated_component_list_macros.rs";
-    let in_path = "spatial_hash.toml";
-    let template_path = "src/spatial_hash/template.rs.hbs";
+    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(SPATIAL_HASH_MACROS);
+    let in_path = &PathBuf::from(RESOURCE_DIR).join(SPATIAL_HASH_SPEC);
+    let template_path = SPATIAL_HASH_TEMPLATE;
+    let component_spec = &PathBuf::from(RESOURCE_DIR).join(COMPONENT_SPEC);
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
         let desc = read_spatial_hash_desc(in_path);
-        let type_desc = read_entity_store_desc(COMPONENT_PATH);
+        let type_desc = read_entity_store_desc(component_spec);
         let output = render_spatial_hash_template_internal(desc, type_desc, template_path);
         write_file(out_path, output);
     }
@@ -207,26 +224,81 @@ fn render_spatial_hash_template() {
 
 fn scale_tiles() {
 
-    const IN_PATH: &'static str = "resources/tiles.png";
-    const OUT_PATH: &'static str = "resources/tiles_scaled.png";
-    const TILE_SCALE: u32 = 2;
+    let in_path = &PathBuf::from(RESOURCE_DIR).join(TILE_SHEET_NAME);
+    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap())
+        .join(RESOURCE_DIR)
+        .join(TILE_SHEET_NAME);
 
-    if source_changed_rel(IN_PATH, OUT_PATH) {
+    if source_changed_rel(in_path, out_path) {
 
-        let original = image::open(IN_PATH).expect(format!("Failed to open image: {}", IN_PATH).as_ref());
+        let original = image::open(in_path).expect(format!("Failed to open image: {:?}", in_path).as_ref());
 
         let (width, height) = original.dimensions();
-        let scaled = original.resize_exact(width * TILE_SCALE, height * TILE_SCALE, FilterType::Nearest).to_rgba();
+        let scaled = original.resize_exact(width * TILE_SHEET_SCALE, height * TILE_SHEET_SCALE, FilterType::Nearest).to_rgba();
 
         let (width, height) = scaled.dimensions();
-        image::save_buffer(OUT_PATH, &scaled, width, height, ColorType::RGBA(8))
-            .expect(format!("Failed to save scaled image: {}", OUT_PATH).as_ref());
+        image::save_buffer(out_path, &scaled, width, height, ColorType::RGBA(8))
+            .expect(format!("Failed to save scaled image: {:?}", out_path).as_ref());
     }
+}
 
+fn copy_tile_spec() {
+    let in_path = &PathBuf::from(RESOURCE_DIR).join(TILE_SHEET_SPEC);
+    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap())
+        .join(RESOURCE_DIR)
+        .join(TILE_SHEET_SPEC);
+
+    fs::copy(in_path, out_path).expect("Failed to copy tile sheet spec");
+}
+
+fn make_resource_dir() {
+    let resource_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(RESOURCE_DIR);
+    if !resource_path.exists() {
+        fs::create_dir(resource_path).expect("Failed to create resource dir");
+    }
+}
+
+fn copy_resource_dir() {
+
+    let resource_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(RESOURCE_DIR);
+
+    let target = env::var("TARGET").unwrap();
+    let host = env::var("HOST").unwrap();
+    let profile = env::var("PROFILE").unwrap();
+
+    let dests = if target == host {
+        vec![
+           Path::new("target").join(&profile),
+           Path::new("target").join(&target).join(&profile),
+        ]
+    } else {
+        vec![Path::new("target").join(&target).join(&profile)]
+    };
+
+    for dest in dests {
+        if !dest.exists() {
+            continue;
+        }
+
+        let dest_resource_path = dest.join(RESOURCE_DIR);
+
+        if dest_resource_path.exists() {
+            fs::remove_dir_all(&dest_resource_path).expect("Failed to remove old resources directory");
+        }
+
+        copy_dir::copy_dir(resource_path, dest_resource_path).expect("Failed to copy resource dir");
+    }
 }
 
 fn main() {
+
     render_entity_system_template();
     render_spatial_hash_template();
+
+    make_resource_dir();
+
     scale_tiles();
+    copy_tile_spec();
+
+    copy_resource_dir();
 }

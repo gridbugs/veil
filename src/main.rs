@@ -65,6 +65,8 @@ mod tile_buffer;
 mod level_env;
 mod game_env;
 mod launch;
+mod resources;
+mod resource_file;
 
 mod tests;
 

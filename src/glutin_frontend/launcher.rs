@@ -8,6 +8,8 @@ use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
 use genmesh::{Triangulate, Vertices};
 use image;
 
+use resources::*;
+use resource_file;
 use tile_buffer::TileBufferCell;
 
 pub type ColourFormat = gfx::format::Srgba8;
@@ -33,10 +35,15 @@ gfx_defines!{
         data: [f32; 4] = "data",
     }
 
+    constant TileMapInfo {
+        ratio: [f32; 2] = "u_TexRatio",
+    }
+
     pipeline pipe {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         tex: gfx::TextureSampler<[f32; 4]> = "t_Texture",
         tile_table: gfx::ConstantBuffer<TileMapData> = "b_TileMap",
+        tile_map_info: gfx::ConstantBuffer<TileMapInfo> = "b_TileMapInfo",
         out: gfx::BlendTarget<ColourFormat> =
             ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
     }
@@ -52,6 +59,17 @@ impl TileMapData {
     }
 }
 
+impl TileMapInfo {
+    fn new(tex_width: u32, tex_height: u32) -> Self {
+        TileMapInfo {
+            ratio: [
+                TILE_SCALED_WIDTH_PX as f32 / tex_width as f32,
+                TILE_SCALED_HEIGHT_PX as f32 / tex_height as f32,
+            ]
+        }
+    }
+}
+
 impl<'a> From<&'a TileBufferCell> for TileMapData {
     fn from(_cell: &TileBufferCell) -> Self {
         unimplemented!()
@@ -60,7 +78,8 @@ impl<'a> From<&'a TileBufferCell> for TileMapData {
 
 pub fn launch() {
 
-    let img = image::open("resources/tiles_scaled.png").expect("failed to open image").to_rgba();
+    let tile_path = resource_file::resource_path().join(TILE_SHEET_NAME);
+    let img = image::open(tile_path).expect("failed to open image").to_rgba();
     let (img_width, img_height) = img.dimensions();
 
     let builder = glutin::WindowBuilder::new()
@@ -117,13 +136,18 @@ pub fn launch() {
     let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(&vertex_data, &index_data[..]);
 
     let tile_buffer = factory.create_constant_buffer(NUM_TILES as usize);
+    let tile_map_info = factory.create_constant_buffer(1);
 
     let data = pipe::Data {
         vbuf: vertex_buffer,
         tex: (texture, sampler),
+        tile_map_info: tile_map_info,
         tile_table: tile_buffer,
         out: colour_view,
     };
+
+    encoder.update_buffer(&data.tile_map_info, &[TileMapInfo::new(img_width, img_height)], 0)
+        .expect("Failed to update texture ratio");
 
     let mut tile_map = Vec::new();
     for _ in 0..NUM_TILES {
