@@ -28,7 +28,8 @@ serde = "1.0"
 serde_derive = "1.0"
 toml = "0.4"
 handlebars = "0.26"
+image = "0.14"
 
 [replace]
-"winit:0.6.4" = { git = "https://github.com/stevebob/winit.git", branch = "master" }
+"winit:0.6.4" = { git = "https://github.com/stevebob/winit.git", branch = "develop" }
 "glutin:0.8.1" = { git = "https://github.com/stevebob/glutin.git", branch = "winit-0.6.4" }

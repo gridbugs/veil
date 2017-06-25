@@ -10,7 +10,7 @@ use image;
 
 use tile_buffer::TileBufferCell;
 
-pub type ColourFormat = gfx::format::Rgba8;
+pub type ColourFormat = gfx::format::Srgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
 
 const WIDTH_TILES: u32 = 20;
@@ -44,22 +44,30 @@ gfx_defines!{
 
 impl TileMapData {
     fn new_empty() -> Self {
+        let status: f32 = f32::from_bits((1<<5) | 1);
+        let first: f32 = f32::from_bits((2 << 8) | 0);
         TileMapData {
-            data: [0.0, 0.0, 0.0, 0.0],
+            data: [first, 0.0, 0.0, status],
         }
     }
 }
 
-impl From<TileBufferCell> for TileMapData {
-    fn from(_cell: TileBufferCell) -> Self {
+impl<'a> From<&'a TileBufferCell> for TileMapData {
+    fn from(_cell: &TileBufferCell) -> Self {
         unimplemented!()
     }
 }
 
 pub fn launch() {
 
+    let img = image::open("resources/tiles_scaled.png").expect("failed to open image").to_rgba();
+    let (img_width, img_height) = img.dimensions();
+
     let builder = glutin::WindowBuilder::new()
+        .with_decorations(true)
         .with_dimensions(WIDTH_PX, HEIGHT_PX)
+        .with_min_dimensions(WIDTH_PX, HEIGHT_PX)
+        .with_max_dimensions(WIDTH_PX, HEIGHT_PX)
         .with_title("Veil".to_string());
 
     let events_loop = glutin::EventsLoop::new();
@@ -67,22 +75,20 @@ pub fn launch() {
     let (window, mut device, mut factory, colour_view, _main_depth) =
         gfx_window_glutin::init::<ColourFormat, DepthFormat>(builder, &events_loop);
 
-    let img = image::open("resources/tiles.png").expect("failed to open image").to_rgba();
-    let (img_width, img_height) = img.dimensions();
     let tex_kind = gfx::texture::Kind::D2(img_width as u16, img_height as u16, gfx::texture::AaMode::Single);
     let (_, texture) = factory.create_texture_immutable_u8::<ColourFormat>(tex_kind, &[&img])
         .expect("Failed to create texture");
     let sampler = factory.create_sampler_linear();
 
     let pso = factory.create_pipeline_simple(
-        include_bytes!("shaders/shdr_150.vert"),
-        include_bytes!("shaders/shdr_150.frag"),
+        include_bytes!("shaders/shdr_330.vert"),
+        include_bytes!("shaders/shdr_330.frag"),
         pipe::new()
     ).expect("Failed to create pipeline");
 
     let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-    const CLEAR_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
+    const CLEAR_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
     let plane = Plane::subdivide(WIDTH_TILES as usize, HEIGHT_TILES as usize);
 

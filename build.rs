@@ -2,6 +2,7 @@
 extern crate serde;
 extern crate toml;
 extern crate handlebars;
+extern crate image;
 
 use std::io::Read;
 use std::io::Write;
@@ -10,6 +11,7 @@ use std::path::Path;
 use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
+use image::{FilterType, GenericImage, ColorType};
 
 const COMPONENT_PATH: &'static str = "components.toml";
 
@@ -203,7 +205,28 @@ fn render_spatial_hash_template() {
     }
 }
 
+fn scale_tiles() {
+
+    const IN_PATH: &'static str = "resources/tiles.png";
+    const OUT_PATH: &'static str = "resources/tiles_scaled.png";
+    const TILE_SCALE: u32 = 2;
+
+    if source_changed_rel(IN_PATH, OUT_PATH) {
+
+        let original = image::open(IN_PATH).expect(format!("Failed to open image: {}", IN_PATH).as_ref());
+
+        let (width, height) = original.dimensions();
+        let scaled = original.resize_exact(width * TILE_SCALE, height * TILE_SCALE, FilterType::Nearest).to_rgba();
+
+        let (width, height) = scaled.dimensions();
+        image::save_buffer(OUT_PATH, &scaled, width, height, ColorType::RGBA(8))
+            .expect(format!("Failed to save scaled image: {}", OUT_PATH).as_ref());
+    }
+
+}
+
 fn main() {
     render_entity_system_template();
     render_spatial_hash_template();
+    scale_tiles();
 }
