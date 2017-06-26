@@ -1,9 +1,8 @@
-use std::collections::HashMap;
 use toml;
 use enum_primitive::FromPrimitive;
 use cgmath::Vector2;
 
-use tile;
+use tile_desc::TileDesc;
 use content::*;
 
 pub const NUM_TILE_CHANNELS: usize = 5;
@@ -27,14 +26,6 @@ impl Tile {
             channels: Vec::new(),
         }
     }
-}
-
-
-#[derive(Deserialize)]
-struct TileDesc {
-    tile_size: u32,
-    overlays: HashMap<String, [u32; 2]>,
-    tiles: HashMap<String, HashMap<String, [u32; 2]>>,
 }
 
 #[derive(Debug)]
@@ -70,7 +61,7 @@ impl TileResolver {
                 let channels = tile_desc.tiles.get(&tile_type.to_str().to_string())
                     .expect(&format!("Couldn't find tile for {:?}", tile_type));
                 let mut tile = Tile::new();
-                for j in 0..tile::NUM_TILE_CHANNELS {
+                for j in 0..NUM_TILE_CHANNELS {
                     if let Some(coord) = channels.get(&format!("{}", j)) {
                         tile.channels.push(Channel {
                             id: j,

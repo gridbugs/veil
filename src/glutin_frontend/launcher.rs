@@ -9,7 +9,6 @@ use genmesh::{Triangulate, Vertices};
 use image;
 
 use resources::*;
-use resource_file;
 use tile_buffer::TileBufferCell;
 
 pub type ColourFormat = gfx::format::Srgba8;
@@ -78,7 +77,7 @@ impl<'a> From<&'a TileBufferCell> for TileMapData {
 
 pub fn launch() {
 
-    let tile_path = resource_file::resource_path().join(TILE_SHEET_NAME);
+    let tile_path = resource_path(TILE_SHEET_IMAGE);
     let img = image::open(tile_path).expect("failed to open image").to_rgba();
     let (img_width, img_height) = img.dimensions();
 

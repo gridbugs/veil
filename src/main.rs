@@ -10,6 +10,7 @@ extern crate serde;
 
 extern crate rand;
 extern crate toml;
+extern crate handlebars;
 
 extern crate sdl2;
 
@@ -61,12 +62,12 @@ mod perlin;
 mod veil_state;
 mod terrain;
 mod tile;
+mod tile_desc;
 mod tile_buffer;
 mod level_env;
 mod game_env;
 mod launch;
 mod resources;
-mod resource_file;
 
 mod tests;
 

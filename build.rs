@@ -10,16 +10,21 @@ extern crate copy_dir;
 #[path = "src/resources.rs"]
 mod resources;
 
+#[path = "src/tile_desc.rs"]
+mod tile_desc;
+
+#[path = "src/simple_file.rs"]
+mod simple_file;
+
 use std::env;
-use std::io::Read;
-use std::io::Write;
-use std::fs::{self, File};
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
 use image::{FilterType, GenericImage, ColorType};
-use resources::{RESOURCE_DIR, TILE_SHEET_NAME, TILE_SHEET_SCALE, TILE_SHEET_SPEC};
+use resources::{RESOURCE_DIR, TILE_SHEET_IMAGE, TILE_SHEET_SPEC};
+use tile_desc::TileDesc;
 
 const COMPONENT_SPEC: &'static str = "components.toml";
 const SPATIAL_HASH_SPEC: &'static str = "spatial_hash.toml";
@@ -86,24 +91,12 @@ struct EntityStoreDescOut {
     components: HashMap<String, ComponentDesc>,
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> String {
-    let mut data = String::new();
-    let mut f = File::open(path).expect("Unable to open file");
-    f.read_to_string(&mut data).expect("Unable to read file");
-    data
-}
-
-fn write_file<P: AsRef<Path>>(path: P, s: String) {
-    let mut f = File::create(path).expect("Unable to create file");
-    f.write_all(s.as_bytes()).expect("Unable to write file");
-}
-
 fn read_entity_store_desc<P: AsRef<Path>>(path: P) -> EntityStoreDesc {
-    toml::from_str(&read_file(path)).expect("Failed to parse entity store desc")
+    simple_file::read_toml(path).expect("Failed to parse entity store desc")
 }
 
 fn read_spatial_hash_desc<P: AsRef<Path>>(path: P) -> SpatialHashDesc {
-    toml::from_str(&read_file(path)).expect("Failed to parse spatial hash desc")
+    simple_file::read_toml(path).expect("Failed to parse spatial hash desc")
 }
 
 fn make_handlebars() -> Handlebars {
@@ -116,7 +109,7 @@ fn make_handlebars() -> Handlebars {
 fn render_entity_system_template_internal<P: AsRef<Path>>(desc: EntityStoreDesc,
                                    template_path: P) -> String {
 
-    let template = read_file(template_path);
+    let template = simple_file::read_string(template_path).expect("Failed to read template");
 
     let EntityStoreDesc { imports, components } = desc;
 
@@ -133,7 +126,7 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
                                                          type_desc: EntityStoreDesc,
                                                          template_path: P) -> String {
 
-    let template = read_file(template_path);
+    let template = simple_file::read_string(template_path).expect("Failed to read template");
 
     let SpatialHashDesc { imports, position_component, fields } = desc;
     let EntityStoreDesc { components, .. } = type_desc;
@@ -197,14 +190,16 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
 }
 
 fn render_entity_system_template() {
-    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(ENTITY_STORE_MACROS);
-    let in_path = &PathBuf::from(RESOURCE_DIR).join(COMPONENT_SPEC);
+
+    let in_path = &resources::build_resource_path(COMPONENT_SPEC);
+    let out_path = &resources::out_path(ENTITY_STORE_MACROS);
+
     let template_path = ENTITY_STORE_TEMPLATE;
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
         let type_desc = read_entity_store_desc(in_path);
         let output = render_entity_system_template_internal(type_desc, template_path);
-        write_file(out_path, output);
+        simple_file::write_string(out_path, output).expect("Failed to write entity system code");
     }
 }
 
@@ -218,23 +213,26 @@ fn render_spatial_hash_template() {
         let desc = read_spatial_hash_desc(in_path);
         let type_desc = read_entity_store_desc(component_spec);
         let output = render_spatial_hash_template_internal(desc, type_desc, template_path);
-        write_file(out_path, output);
+        simple_file::write_string(out_path, output).expect("Failed to write spatial hash code");
     }
 }
 
 fn scale_tiles() {
 
-    let in_path = &PathBuf::from(RESOURCE_DIR).join(TILE_SHEET_NAME);
-    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap())
-        .join(RESOURCE_DIR)
-        .join(TILE_SHEET_NAME);
+    let in_path = &resources::build_resource_path(TILE_SHEET_IMAGE);
+    let out_path = &resources::stage_resource_path(TILE_SHEET_IMAGE);
+
+    let tiles: TileDesc = simple_file::read_toml(resources::build_resource_path(TILE_SHEET_SPEC))
+        .expect("Failed to read tile spec");
 
     if source_changed_rel(in_path, out_path) {
 
         let original = image::open(in_path).expect(format!("Failed to open image: {:?}", in_path).as_ref());
 
         let (width, height) = original.dimensions();
-        let scaled = original.resize_exact(width * TILE_SHEET_SCALE, height * TILE_SHEET_SCALE, FilterType::Nearest).to_rgba();
+        let scaled = original.resize_exact(width * tiles.tile_scale,
+                                           height * tiles.tile_scale,
+                                           FilterType::Nearest).to_rgba();
 
         let (width, height) = scaled.dimensions();
         image::save_buffer(out_path, &scaled, width, height, ColorType::RGBA(8))
@@ -243,16 +241,15 @@ fn scale_tiles() {
 }
 
 fn copy_tile_spec() {
-    let in_path = &PathBuf::from(RESOURCE_DIR).join(TILE_SHEET_SPEC);
-    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap())
-        .join(RESOURCE_DIR)
-        .join(TILE_SHEET_SPEC);
+
+    let in_path = &resources::build_resource_path(TILE_SHEET_SPEC);
+    let out_path = &resources::stage_resource_path(TILE_SHEET_SPEC);
 
     fs::copy(in_path, out_path).expect("Failed to copy tile sheet spec");
 }
 
 fn make_resource_dir() {
-    let resource_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(RESOURCE_DIR);
+    let resource_path = &resources::stage_resource_dir_path();
     if !resource_path.exists() {
         fs::create_dir(resource_path).expect("Failed to create resource dir");
     }
@@ -260,7 +257,7 @@ fn make_resource_dir() {
 
 fn copy_resource_dir() {
 
-    let resource_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(RESOURCE_DIR);
+    let resource_path = &resources::stage_resource_dir_path();
 
     let target = env::var("TARGET").unwrap();
     let host = env::var("HOST").unwrap();
