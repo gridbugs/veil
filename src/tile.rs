@@ -46,7 +46,7 @@ impl TileResolver {
 
     pub fn from_str(s: &str) -> Self {
         let tile_desc: TileDesc = toml::from_str(s).expect("Failed to parse tile description");
-        let mut resolver = TileResolver::new(tile_desc.tile_size);
+        let mut resolver = TileResolver::new(tile_desc.tile_size_scaled());
 
         for i in 0..NUM_OVERLAYS {
             if let Some(overlay_type) = OverlayType::from_usize(i) {

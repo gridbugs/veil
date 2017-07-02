@@ -8,15 +8,17 @@ use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
 use genmesh::{Triangulate, Vertices};
 use image;
 
-use resources::*;
+use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
 use tile_buffer::TileBufferCell;
+use simple_file;
+use tile_desc::TileDesc;
 
 pub type ColourFormat = gfx::format::Srgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
 
 const WIDTH_TILES: u32 = 20;
 const HEIGHT_TILES: u32 = 20;
-const TILE_SIZE: u32 = 32;
+const TILE_SIZE: u32 = 48;
 const TILE_IDX_BITS: u32 = 5;
 
 const WIDTH_PX: u32 = WIDTH_TILES * TILE_SIZE;
@@ -59,11 +61,11 @@ impl TileMapData {
 }
 
 impl TileMapInfo {
-    fn new(tex_width: u32, tex_height: u32) -> Self {
+    fn new(tile_size: u32, tex_width: u32, tex_height: u32) -> Self {
         TileMapInfo {
             ratio: [
-                TILE_SCALED_WIDTH_PX as f32 / tex_width as f32,
-                TILE_SCALED_HEIGHT_PX as f32 / tex_height as f32,
+                tile_size as f32 / tex_width as f32,
+                tile_size as f32 / tex_height as f32,
             ]
         }
     }
@@ -77,7 +79,7 @@ impl<'a> From<&'a TileBufferCell> for TileMapData {
 
 pub fn launch() {
 
-    let tile_path = resource_path(TILE_SHEET_IMAGE);
+    let tile_path = resources::resource_path(TILE_SHEET_IMAGE);
     let img = image::open(tile_path).expect("failed to open image").to_rgba();
     let (img_width, img_height) = img.dimensions();
 
@@ -145,7 +147,10 @@ pub fn launch() {
         out: colour_view,
     };
 
-    encoder.update_buffer(&data.tile_map_info, &[TileMapInfo::new(img_width, img_height)], 0)
+    let tile_desc: TileDesc = simple_file::read_toml(&resources::resource_path(TILE_SHEET_SPEC))
+        .expect("Failed to read tile spec");
+
+    encoder.update_buffer(&data.tile_map_info, &[TileMapInfo::new(tile_desc.tile_size_scaled(), img_width, img_height)], 0)
         .expect("Failed to update texture ratio");
 
     let mut tile_map = Vec::new();

@@ -4,6 +4,7 @@ use sdl2_frontend::renderer::*;
 use sdl2_frontend::renderer_env::*;
 use sdl2_frontend::input::*;
 use launch;
+use resources::{self, TILE_SHEET_IMAGE, TILE_SHEET_SPEC};
 
 const WIDTH_TILES: u32 = 20;
 const HEIGHT_TILES: u32 = 20;
@@ -22,8 +23,8 @@ pub fn launch() {
     let mut renderer = SdlGameRenderer::new(WIDTH_TILES as usize,
                                             HEIGHT_TILES as usize,
                                             &mut renderer_env,
-                                            "resources/tiles.png",
-                                            "resources/tiles.toml");
+                                            resources::resource_path(TILE_SHEET_IMAGE),
+                                            resources::resource_path(TILE_SHEET_SPEC));
     let event_pump = sdl.event_pump().expect("Failed to initialize event pump");
     let mut input = SdlGameInput::new(event_pump, 60);
 
