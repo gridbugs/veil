@@ -18,4 +18,8 @@ impl Frame {
             instant: instant,
         }
     }
+
+    pub fn now(id: FrameId) -> Self {
+        Frame::new(id, Instant::now())
+    }
 }

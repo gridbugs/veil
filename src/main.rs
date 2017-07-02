@@ -69,6 +69,7 @@ mod level_env;
 mod game_env;
 mod launch;
 mod resources;
+mod common_input;
 
 mod tests;
 

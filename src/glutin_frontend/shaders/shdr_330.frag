@@ -1,8 +1,8 @@
 #version 330 core
 
 // TODO deduplicate this information
-const int WIDTH = 20;
-const int HEIGHT = 20;
+const int WIDTH = 30;
+const int HEIGHT = 30;
 const int NUM_TILE_CHANNELS = 5;
 
 const int TILE_STATUS_IDX = 3;

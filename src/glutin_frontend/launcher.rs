@@ -1,6 +1,7 @@
 use glutin_frontend::frontend;
+use launch;
 
 pub fn launch() {
     let (mut renderer, mut input) = frontend::create();
-    frontend::example(&mut renderer, &mut input);
+    launch::launch(&mut renderer, &mut input);
 }
