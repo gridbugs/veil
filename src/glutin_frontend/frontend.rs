@@ -9,6 +9,7 @@ use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
 use genmesh::{Triangulate, Vertices};
 use image;
 
+use glutin_frontend::input;
 use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
 use tile_buffer::TileBufferCell;
 use simple_file;
@@ -369,15 +370,8 @@ impl GameInput for GlutinGameInput {
         let mut input_event = None;
 
         self.events_loop.poll_events(|e| {
-            let event = if let glutin::Event::WindowEvent { event, .. } = e {
-                event
-            } else {
-                return;
-            };
-
-            match event {
-                glutin::WindowEvent::Closed => input_event = Some(InputEvent::Quit),
-                _ => {}
+            if let Some(event) = input::convert_event(e) {
+                input_event = Some(event);
             }
         });
 
