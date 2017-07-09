@@ -7,6 +7,7 @@ extern crate cgmath;
 extern crate serde;
 #[macro_use] extern crate enum_primitive;
 #[macro_use] extern crate itertools;
+#[macro_use] extern crate maplit;
 
 extern crate rand;
 extern crate toml;

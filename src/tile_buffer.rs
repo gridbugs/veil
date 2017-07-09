@@ -68,6 +68,14 @@ impl TileBuffer {
         self.grid.coord_iter()
     }
 
+    pub fn width(&self) -> usize {
+        self.grid.width()
+    }
+
+    pub fn height(&self) -> usize {
+        self.grid.height()
+    }
+
     pub fn update(&mut self, offset: Vector2<i32>,
                   knowledge: &PlayerKnowledgeGrid,
                   resolver: &tile::TileResolver, time: u64) {

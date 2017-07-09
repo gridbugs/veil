@@ -1,16 +1,14 @@
 #version 330 core
 
-// TODO deduplicate this information
-const int WIDTH = 30;
-const int HEIGHT = 30;
-const int NUM_TILE_CHANNELS = 5;
+// general parameters
+const int WIDTH = {{WIDTH_TILES}};
+const int HEIGHT = {{HEIGHT_TILES}};
 
-const int TILE_STATUS_IDX = 3;
+// shader-specific parameters
+const int NUM_TILE_CHANNELS = {{NUM_TILE_CHANNELS}};
+const int TILE_STATUS_IDX = {{TILE_STATUS_IDX}};
+const int TILE_STATUS_VISIBLE = {{TILE_STATUS_VISIBLE}};
 
-// the first NUM_TILE_CHANNELS bits indicate the presence of a channel
-const int TILE_STATUS_VISIBLE = 1 << (NUM_TILE_CHANNELS + 0);
-
-in vec2 v_TexPos;
 in vec2 v_CellPos;
 
 out vec4 Target0;
