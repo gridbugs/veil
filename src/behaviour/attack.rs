@@ -1,9 +1,9 @@
 use behaviour::{BehaviourEnv, BehaviourState};
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeCell};
 use content::ActionType;
-use direction::DirectionsCardinal;
 use entity_store::{EntityId, EntityStore};
-use grid_search::bfs_coord;
+use geometry::direction::DirectionsCardinal;
+use geometry::grid_search::bfs_coord;
 
 pub fn attack(id: EntityId,
               entity_store: &EntityStore,

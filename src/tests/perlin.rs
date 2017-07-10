@@ -1,5 +1,5 @@
 use rand::{StdRng, SeedableRng};
-use perlin::*;
+use geometry::perlin::*;
 
 const ZOOM: usize = 10;
 const ZOOM_F: f64 = ZOOM as f64;

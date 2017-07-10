@@ -1,10 +1,10 @@
 use entity_store::{EntityId, EntityStore};
 use spatial_hash::SpatialHashCell;
-use grid::StaticGrid;
+use geometry::grid::StaticGrid;
 use content::{ComplexTile, OverlayType, TileType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
-use coord::LookupCoord;
+use geometry::coord::LookupCoord;
 use veil_state::VeilCell;
 use cgmath::Vector2;
 

@@ -1,10 +1,10 @@
 use std::cmp;
 use cgmath::Vector2;
 
-use direction::{Direction, CardinalDirection, OrdinalDirection};
+use geometry::direction::{Direction, CardinalDirection, OrdinalDirection};
+use geometry::vector_index::VectorIndex;
 use spatial_hash::SpatialHashTable;
 use entity_store::EntityStore;
-use vector_index::VectorIndex;
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
 

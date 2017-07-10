@@ -24,8 +24,8 @@ extern crate genmesh;
 extern crate image;
 
 extern crate util;
+extern crate geometry;
 
-mod grid;
 #[macro_use] mod entity_store;
 mod spatial_hash;
 
@@ -35,15 +35,9 @@ mod content;
 mod entity_id_allocator;
 mod knowledge;
 mod observation;
-mod direction;
 mod policy;
-mod straight_line;
-mod vector_index;
-mod grid_search;
 mod behaviour;
-mod coord;
 mod render_overlay;
-mod limits;
 mod frame;
 mod reaction;
 mod entity_observe;
@@ -55,7 +49,6 @@ mod player_act;
 mod npc_act;
 mod player_render;
 mod commit;
-mod perlin;
 mod veil_state;
 mod terrain;
 mod tile;

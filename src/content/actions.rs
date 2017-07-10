@@ -1,8 +1,8 @@
 use entity_store::*;
 use entity_id_allocator::EntityIdAllocator;
 use content::*;
-use direction::Direction;
-use straight_line::InfiniteAbsoluteLineTraverse;
+use geometry::direction::Direction;
+use geometry::straight_line::InfiniteAbsoluteLineTraverse;
 
 pub fn walk(change: &mut EntityStoreChange, entity_store: &EntityStore,
             id: EntityId, direction: Direction) {

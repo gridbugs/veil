@@ -1,5 +1,5 @@
 use cgmath::Vector2;
-use straight_line::*;
+use geometry::straight_line::*;
 
 #[test]
 fn finite_absolute() {

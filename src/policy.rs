@@ -2,7 +2,7 @@ use rand::Rng;
 use cgmath::Vector2;
 use entity_store::*;
 use spatial_hash::*;
-use straight_line::*;
+use geometry::straight_line::*;
 use content::*;
 use frame::*;
 use reaction::Reaction;

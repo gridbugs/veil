@@ -1,7 +1,7 @@
 use rand::Rng;
 use entity_store::*;
 use content::*;
-use straight_line::*;
+use geometry::straight_line::*;
 use cgmath::Vector2;
 
 pub fn player(change: &mut EntityStoreChange, entity_id: EntityId, position: Vector2<i32>) {

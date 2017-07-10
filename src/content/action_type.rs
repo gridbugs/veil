@@ -1,8 +1,8 @@
 use entity_store::*;
 use entity_id_allocator::EntityIdAllocator;
-use direction::Direction;
 use content::actions;
-use straight_line::InfiniteAbsoluteLineTraverse;
+use geometry::direction::Direction;
+use geometry::straight_line::InfiniteAbsoluteLineTraverse;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ActionType {

@@ -1,4 +1,4 @@
-use grid_search::SearchEnv;
+use geometry::grid_search::SearchEnv;
 
 pub struct BehaviourEnv {
     pub search_env: SearchEnv,

@@ -4,7 +4,7 @@ use entity_store::EntityStoreChange;
 use entity_id_allocator::EntityIdAllocator;
 use content::prototypes;
 use terrain::TerrainMetadata;
-use perlin::{PerlinGrid, PerlinWrapType};
+use geometry::perlin::{PerlinGrid, PerlinWrapType};
 
 const WATER_ZOOM: usize = 10;
 const WATER_ZOOM_F: f64 = WATER_ZOOM as f64;

@@ -3,8 +3,8 @@
 #![allow(unused_variables)]
 use std::collections::HashSet;
 use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, FlagChangeType};
-use grid::{static_grid, StaticGridIdx, StaticGrid};
-use limits::LimitsRect;
+use geometry::grid::{static_grid, StaticGridIdx, StaticGrid};
+use geometry::limits::LimitsRect;
 
 #[path = "macros.gen.rs"]
 #[macro_use] mod macros;

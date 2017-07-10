@@ -2,9 +2,9 @@ use behaviour::{BehaviourEnv, BehaviourState};
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeCell};
 use observation::ObservationMetadata;
 use content::{ActionType, DoorState};
-use direction::DirectionsCardinal;
 use entity_store::{EntityId, EntityStore};
-use grid_search::{bfs_best, SearchEnv, Step};
+use geometry::direction::DirectionsCardinal;
+use geometry::grid_search::{bfs_best, SearchEnv, Step};
 use util::invert_ord::InvertOrd;
 use cgmath::Vector2;
 

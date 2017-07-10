@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use entity_store::EntityId;
-use grid_search::{Path, Step, PathIterFrom};
+use geometry::grid_search::{Path, Step, PathIterFrom};
 
 pub struct BehaviourState {
     pub opened_doors: HashSet<EntityId>,

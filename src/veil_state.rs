@@ -1,8 +1,8 @@
 use std::mem;
 use std::slice;
 use rand::Rng;
-use grid::{StaticGrid, static_grid};
-use perlin::{PerlinGrid, PerlinWrapType};
+use geometry::grid::{StaticGrid, static_grid};
+use geometry::perlin::{PerlinGrid, PerlinWrapType};
 use cgmath::Vector2;
 use content::VeilStepInfo;
 

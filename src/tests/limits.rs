@@ -1,5 +1,5 @@
 use spatial_hash::SpatialHashTable;
-use limits::LimitsRect;
+use geometry::limits::LimitsRect;
 use cgmath::Vector2;
 
 #[test]

@@ -1,6 +1,6 @@
 use cgmath::Vector2;
-use grid::StaticGrid;
-use direction::*;
+use geometry::grid::StaticGrid;
+use geometry::direction::*;
 
 #[test]
 fn neighbour_coord_iter() {

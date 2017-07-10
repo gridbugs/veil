@@ -1,4 +1,4 @@
-use straight_line::FiniteAbsoluteLineTraverse;
+use geometry::straight_line::FiniteAbsoluteLineTraverse;
 
 pub struct RenderOverlay {
     pub aim_line: FiniteAbsoluteLineTraverse,

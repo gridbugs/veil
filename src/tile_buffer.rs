@@ -1,6 +1,6 @@
 use cgmath::Vector2;
 
-use grid::{StaticGrid, StaticGridIdx, static_grid};
+use geometry::grid::{StaticGrid, StaticGridIdx, static_grid};
 use content::{ComplexTile, OverlayType};
 use tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
