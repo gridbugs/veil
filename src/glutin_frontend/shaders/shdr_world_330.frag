@@ -88,9 +88,22 @@ vec4 resolve_visible(vec4 data, int status) {
     return current;
 }
 
+const float REMEMBERED_DARKEN = 0.2;
+
+float darken(float x, float coef) {
+    return (coef * x * x + 2 * coef * x) / 3.0;
+}
+
+vec4 darken_colour(vec4 colour, float coef) {
+    float r = darken(colour[0], coef);
+    float g = darken(colour[1], coef);
+    float b = darken(colour[2], coef);
+    return vec4(r, g, b, colour[3]);
+}
+
 vec4 resolve_remembered(vec4 data, int status) {
-    // TODO
-    return vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 coloured = resolve_visible(data, status);
+    return darken_colour(coloured, REMEMBERED_DARKEN);
 }
 
 void main() {
