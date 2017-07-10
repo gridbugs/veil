@@ -7,7 +7,7 @@ imports = [
     'content::TileType',
     'straight_line::FiniteAbsoluteLineTraverse',
     'straight_line::InfiniteAbsoluteLineTraverse',
-    'schedule::ScheduleTicket',
+    'util::schedule::ScheduleTicket',
 ]
 
 [components]

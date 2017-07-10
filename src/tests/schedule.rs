@@ -1,4 +1,4 @@
-use schedule::*;
+use util::schedule::*;
 
 #[test]
 fn insert_drain() {

@@ -13,7 +13,7 @@ use policy::*;
 use commit::{self, CommitEnv};
 use renderer::GameRenderer;
 use input::GameInput;
-use schedule::{Schedule, ScheduleEntry};
+use util::schedule::{Schedule, ScheduleEntry};
 use content::ActionType;
 use player_act;
 use npc_act;

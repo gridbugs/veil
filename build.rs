@@ -12,7 +12,7 @@ mod resources;
 #[path = "src/tile_desc.rs"]
 mod tile_desc;
 
-#[path = "src/simple_file.rs"]
+#[path = "crates/util/src/simple_file.rs"]
 mod simple_file;
 
 use std::env;

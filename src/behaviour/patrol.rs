@@ -5,7 +5,7 @@ use content::{ActionType, DoorState};
 use direction::DirectionsCardinal;
 use entity_store::{EntityId, EntityStore};
 use grid_search::{bfs_best, SearchEnv, Step};
-use invert_ord::InvertOrd;
+use util::invert_ord::InvertOrd;
 use cgmath::Vector2;
 
 const BFS_MAX: usize = 500;

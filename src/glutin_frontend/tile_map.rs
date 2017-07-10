@@ -11,7 +11,7 @@ use handlebars::Handlebars;
 
 use glutin_frontend::formats::ColourFormat;
 use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
-use simple_file;
+use util::simple_file;
 use tile_desc::TileDesc;
 
 type VertexBufferHandle = gfx::handle::Buffer<gfx_device_gl::Resources, Vertex>;

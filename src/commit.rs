@@ -10,7 +10,7 @@ use observation::shadowcast::ShadowcastEnv;
 use policy::*;
 use renderer::GameRenderer;
 use input::GameInput;
-use schedule::{Schedule, ScheduleEntry};
+use util::schedule::{Schedule, ScheduleEntry};
 use player_render;
 
 #[derive(Debug)]

@@ -4,7 +4,7 @@ use std::slice;
 use grid:: StaticGrid;
 use direction::Direction;
 use cgmath::Vector2;
-use best::BestMapNonEmpty;
+use util::best::BestMapNonEmpty;
 use coord::LookupCoord;
 
 #[derive(Debug)]

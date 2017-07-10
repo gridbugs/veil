@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use rand::Rng;
 use entity_store::{EntityId, EntityStore, EntityStoreChange};
 use spatial_hash::SpatialHashTable;
-use schedule::Schedule;
+use util::schedule::Schedule;
 use knowledge::PlayerKnowledgeGrid;
 use behaviour::{BehaviourState, BehaviourEnv};
 use veil_state::VeilState;
