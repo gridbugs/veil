@@ -13,8 +13,6 @@ extern crate rand;
 extern crate toml;
 extern crate handlebars;
 
-extern crate sdl2;
-
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
@@ -29,7 +27,6 @@ mod grid;
 #[macro_use] mod entity_store;
 mod spatial_hash;
 
-mod sdl2_frontend;
 mod glutin_frontend;
 
 mod content;
@@ -75,9 +72,5 @@ mod common_input;
 mod tests;
 
 fn main() {
-    #[cfg(feature = "glutin")]
     glutin_frontend::launch();
-
-    #[cfg(not(feature = "glutin"))]
-    sdl2_frontend::launch();
 }

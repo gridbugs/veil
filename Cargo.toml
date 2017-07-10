@@ -15,8 +15,6 @@ itertools = "0.6"
 handlebars = "0.26"
 maplit = "0.1.4"
 
-sdl2 = { version = "0.30", features = ["image", "ttf"] }
-
 gfx = "0.16"
 gfx_window_glutin = "0.16.0"
 gfx_device_gl = "0.14.1"
