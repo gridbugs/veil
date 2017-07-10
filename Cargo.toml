@@ -30,7 +30,6 @@ serde_derive = "1.0"
 toml = "0.4"
 handlebars = "0.26"
 image = "0.14"
-copy_dir = "0.1"
 
 [replace]
 "winit:0.6.4" = { git = "https://github.com/stevebob/winit.git", branch = "x11-hidpi-fix" }

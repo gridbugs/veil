@@ -82,10 +82,10 @@ impl TileMapInfo {
 }
 
 fn read_tiles() -> (RgbaImage, TileDesc) {
-    let tile_path = resources::resource_path(TILE_SHEET_IMAGE);
+    let tile_path = resources::res_path(TILE_SHEET_IMAGE);
     let img = image::open(tile_path).expect("failed to open image").to_rgba();
 
-    let tile_desc: TileDesc = simple_file::read_toml(&resources::resource_path(TILE_SHEET_SPEC))
+    let tile_desc: TileDesc = simple_file::read_toml(&resources::res_path(TILE_SHEET_SPEC))
         .expect("Failed to read tile spec");
 
     (img, tile_desc)

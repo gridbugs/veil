@@ -5,7 +5,6 @@ extern crate serde;
 extern crate toml;
 extern crate handlebars;
 extern crate image;
-extern crate copy_dir;
 
 #[path = "src/resources.rs"]
 mod resources;
@@ -23,17 +22,42 @@ use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
 use image::{FilterType, GenericImage, ColorType};
-use resources::{RESOURCE_DIR, TILE_SHEET_IMAGE, TILE_SHEET_SPEC};
 use tile_desc::TileDesc;
 
+// files in the resources dir
 const COMPONENT_SPEC: &'static str = "components.toml";
 const SPATIAL_HASH_SPEC: &'static str = "spatial_hash.toml";
+const TILE_SHEET_IMAGE: &'static str = "tiles.png";
+const TILE_SHEET_SPEC: &'static str = "tiles.toml";
 
 const ENTITY_STORE_MACROS: &'static str = "entity_store_macros.rs";
 const ENTITY_STORE_TEMPLATE: &'static str = "src/entity_store/template.rs.hbs";
 
 const SPATIAL_HASH_MACROS: &'static str = "spatial_hash_macros.rs";
 const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/template.rs.hbs";
+
+const STAGE_DIR: &'static str = "stage";
+const RES_SRC_DIR: &'static str = "res_src";
+
+fn manifest_dir() -> PathBuf {
+    PathBuf::from(&env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is not set"))
+}
+
+fn res_src_dir() -> PathBuf {
+    manifest_dir().join(RES_SRC_DIR)
+}
+
+fn res_src_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    res_src_dir().join(path)
+}
+
+fn stage_dir() -> PathBuf {
+    manifest_dir().join(STAGE_DIR)
+}
+
+fn stage_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    stage_dir().join(path)
+}
 
 fn ret_none() -> Option<String> { None }
 
@@ -191,23 +215,25 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
 
 fn render_entity_system_template() {
 
-    let in_path = &resources::build_resource_path(COMPONENT_SPEC);
-    let out_path = &resources::out_path(ENTITY_STORE_MACROS);
+    let in_path = &res_src_path(COMPONENT_SPEC);
+    let out_path = &stage_path(ENTITY_STORE_MACROS);
 
     let template_path = ENTITY_STORE_TEMPLATE;
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
         let type_desc = read_entity_store_desc(in_path);
         let output = render_entity_system_template_internal(type_desc, template_path);
+        println!("{:?}", out_path);
         simple_file::write_string(out_path, output).expect("Failed to write entity system code");
     }
 }
 
 fn render_spatial_hash_template() {
-    let out_path = &PathBuf::from(&env::var("OUT_DIR").unwrap()).join(SPATIAL_HASH_MACROS);
-    let in_path = &PathBuf::from(RESOURCE_DIR).join(SPATIAL_HASH_SPEC);
+    let in_path = &res_src_path(SPATIAL_HASH_SPEC);
+    let out_path = &stage_path(SPATIAL_HASH_MACROS);
+
     let template_path = SPATIAL_HASH_TEMPLATE;
-    let component_spec = &PathBuf::from(RESOURCE_DIR).join(COMPONENT_SPEC);
+    let component_spec = &res_src_path(COMPONENT_SPEC);
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
         let desc = read_spatial_hash_desc(in_path);
@@ -219,14 +245,13 @@ fn render_spatial_hash_template() {
 
 fn scale_tiles() {
 
-    let in_path = &resources::build_resource_path(TILE_SHEET_IMAGE);
-    let stage_path = &resources::stage_resource_path(TILE_SHEET_IMAGE);
-    let run_path = &resources::resource_path(TILE_SHEET_IMAGE);
+    let in_path = &res_src_path(TILE_SHEET_IMAGE);
+    let out_path = &stage_path(resources::TILE_SHEET_IMAGE);
 
-    let tiles: TileDesc = simple_file::read_toml(resources::build_resource_path(TILE_SHEET_SPEC))
+    let tiles: TileDesc = simple_file::read_toml(res_src_path(TILE_SHEET_SPEC))
         .expect("Failed to read tile spec");
 
-    if source_changed_rel(in_path, stage_path) || source_changed_rel(in_path, run_path) {
+    if source_changed_rel(in_path, out_path) {
 
         let original = image::open(in_path).expect(format!("Failed to open image: {:?}", in_path).as_ref());
 
@@ -236,29 +261,28 @@ fn scale_tiles() {
                                            FilterType::Nearest).to_rgba();
 
         let (width, height) = scaled.dimensions();
-        image::save_buffer(stage_path, &scaled, width, height, ColorType::RGBA(8))
-            .expect(format!("Failed to save scaled image: {:?}", stage_path).as_ref());
+        image::save_buffer(out_path, &scaled, width, height, ColorType::RGBA(8))
+            .expect(format!("Failed to save scaled image: {:?}", out_path).as_ref());
     }
 }
 
 fn copy_tile_spec() {
 
-    let in_path = &resources::build_resource_path(TILE_SHEET_SPEC);
-    let out_path = &resources::stage_resource_path(TILE_SHEET_SPEC);
+    let in_path = &res_src_path(TILE_SHEET_SPEC);
+    let out_path = &stage_path(TILE_SHEET_SPEC);
 
-    fs::copy(in_path, out_path).expect("Failed to copy tile sheet spec");
+    if source_changed_rel(in_path, out_path) {
+        fs::copy(in_path, out_path).expect("Failed to copy tile sheet spec");
+    }
 }
 
-fn make_resource_dir() {
-    let resource_path = &resources::stage_resource_dir_path();
-    if !resource_path.exists() {
-        fs::create_dir(resource_path).expect("Failed to create resource dir");
+fn ensure_dir<P: AsRef<Path>>(path: P) {
+    if !path.as_ref().exists() {
+        fs::create_dir(path).expect("Failed to create dir");
     }
 }
 
 fn copy_resource_dir() {
-
-    let resource_path = &resources::stage_resource_dir_path();
 
     let target = env::var("TARGET").unwrap();
     let host = env::var("HOST").unwrap();
@@ -278,22 +302,22 @@ fn copy_resource_dir() {
             continue;
         }
 
-        let dest_resource_path = dest.join(RESOURCE_DIR);
+        let dest_resource_path = dest.join(resources::RES_DIR);
 
-        if dest_resource_path.exists() {
-            fs::remove_dir_all(&dest_resource_path).expect("Failed to remove old resources directory");
-        }
+        ensure_dir(&dest_resource_path);
 
-        copy_dir::copy_dir(resource_path, dest_resource_path).expect("Failed to copy resource dir");
+        fs::copy(res_src_path(TILE_SHEET_SPEC), &dest_resource_path.join(resources::TILE_SHEET_SPEC))
+            .expect("Failed to copy tile sheet spec");
+        fs::copy(stage_path(TILE_SHEET_IMAGE), &dest_resource_path.join(resources::TILE_SHEET_IMAGE))
+            .expect("Failed to copy tile sheet image");
     }
 }
 
 fn main() {
+    ensure_dir(stage_dir());
 
     render_entity_system_template();
     render_spatial_hash_template();
-
-    make_resource_dir();
 
     scale_tiles();
     copy_tile_spec();

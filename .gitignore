@@ -1,5 +1,5 @@
 target/
+stage/
 **/*.rs.bk
-resources/tiles_scaled.png
 *.swp
 Cargo.lock

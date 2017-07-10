@@ -1,45 +1,20 @@
 use std::path::{PathBuf, Path};
 use std::env;
 
-pub const RESOURCE_DIR: &'static str = "resources";
-pub const BUILD_RESOURCE_DIR: &'static str = "resources";
+pub const RES_DIR: &'static str = "res";
 
 pub const TILE_SHEET_IMAGE: &'static str = "tiles.png";
 pub const TILE_SHEET_SPEC: &'static str = "tiles.toml";
 
-pub fn build_resource_dir_path() -> PathBuf {
-    PathBuf::from(BUILD_RESOURCE_DIR)
-}
-
-pub fn build_resource_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    build_resource_dir_path().join(path)
-}
-
-pub fn out_dir_path() -> PathBuf {
-    PathBuf::from(&env::var("OUT_DIR").expect("OUT_DIR is not set"))
-}
-
-pub fn out_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    out_dir_path().join(path)
-}
-
-pub fn stage_resource_dir_path() -> PathBuf {
-    out_dir_path().join(RESOURCE_DIR)
-}
-
-pub fn stage_resource_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    stage_resource_dir_path().join(path)
-}
-
-pub fn resource_dir_path() -> PathBuf {
+pub fn res_dir() -> PathBuf {
     let mut exe_path = env::current_exe()
         .expect("Failed to find executable path");
 
     exe_path.pop();
 
-    exe_path.join(RESOURCE_DIR)
+    exe_path.join(RES_DIR)
 }
 
-pub fn resource_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    resource_dir_path().join(path)
+pub fn res_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    res_dir().join(path)
 }
