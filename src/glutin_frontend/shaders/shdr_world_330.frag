@@ -8,6 +8,9 @@ const int HEIGHT = {{HEIGHT_TILES}};
 const int NUM_TILE_CHANNELS = {{NUM_TILE_CHANNELS}};
 const int TILE_STATUS_IDX = {{TILE_STATUS_IDX}};
 const int TILE_STATUS_VISIBLE = {{TILE_STATUS_VISIBLE}};
+const int STATUS_BITS_PER_CHANNEL = {{STATUS_BITS_PER_CHANNEL}};
+const int CHANNEL_PRESENT_OFFSET = {{CHANNEL_PRESENT_OFFSET}};
+const int CHANNEL_DIMINISH_OFFSET = {{CHANNEL_DIMINISH_OFFSET}};
 
 in vec2 v_CellPos;
 
@@ -17,6 +20,7 @@ uniform sampler2D t_Texture;
 
 uniform b_TileMapInfo {
     vec2 u_TexRatio;
+    vec2 u_Centre;
 };
 
 struct TileMapData {
@@ -33,15 +37,31 @@ vec4 blend(vec4 current, vec4 new) {
     return vec4(result, max(current[3], new[3]));
 }
 
+const float DIM_COEF = 60.0;
+const float INTENSITY_MIN = 0.0;
+const float INTENSITY_MAX = 1.0;
+const float INTENSITY_DIFF = INTENSITY_MAX - INTENSITY_MIN;
+
+const float INTENSITY_NUMERATOR = INTENSITY_DIFF * DIM_COEF;
+
+float delta_to_intensity(vec2 delta) {
+    float length_squared = delta[0] * delta[0] + delta[1] * delta[1];
+    float intensity_delta = INTENSITY_NUMERATOR / (length_squared + DIM_COEF);
+    return INTENSITY_MIN + intensity_delta;
+}
+
 vec4 resolve_visible(vec4 data, int status) {
     vec4 current = vec4(0.0, 0.0, 0.0, 0.0);
     float x_offset = fract(v_CellPos[0]);
     float y_offset = fract(v_CellPos[1]);
 
     for (int i = 0; i < NUM_TILE_CHANNELS; i++) {
-        if ((status & (1 << i)) == 0) {
+        // check if channel is visible
+        if ((status & (1 << (i * STATUS_BITS_PER_CHANNEL + CHANNEL_PRESENT_OFFSET))) == 0) {
             continue;
         }
+
+        bool diminish = (status & (1 << (i * STATUS_BITS_PER_CHANNEL + CHANNEL_DIMINISH_OFFSET))) != 0;
 
         int word = floatBitsToInt(data[i / 2]);
         if ((i % 2) == 1) {
@@ -55,6 +75,13 @@ vec4 resolve_visible(vec4 data, int status) {
         float y = (float(y_coord) + y_offset) * u_TexRatio[1];
 
         vec4 colour = texture(t_Texture, vec2(x, y));
+
+        if (diminish) {
+            float intensity = delta_to_intensity(v_CellPos - u_Centre);
+            vec3 diminished_colour = vec3(colour) * intensity;
+            colour = vec4(diminished_colour, colour[3]);
+        }
+
         current = blend(current, colour);
     }
 

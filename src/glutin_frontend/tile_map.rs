@@ -41,6 +41,7 @@ gfx_defines!{
 
     constant TileMapInfo {
         ratio: [f32; 2] = "u_TexRatio",
+        centre: [f32; 2] = "u_Centre",
     }
 
     pipeline pipe {
@@ -66,12 +67,16 @@ pub trait UpdateTileMapData {
 }
 
 impl TileMapInfo {
-    pub fn new(tile_size: u32, tex_width: u32, tex_height: u32) -> Self {
+    pub fn new(tile_size: u32, tex_width: u32, tex_height: u32, width: u32, height: u32) -> Self {
         TileMapInfo {
             ratio: [
                 tile_size as f32 / tex_width as f32,
                 tile_size as f32 / tex_height as f32,
-            ]
+            ],
+            centre: [
+                width as f32 / 2.0 + 0.5,
+                height as f32 / 2.0 + 0.5,
+            ],
         }
     }
 }
@@ -159,11 +164,14 @@ fn create_pipeline_data(width: u32, height: u32,
 fn update_tile_map_info(tile_map_info: &gfx::handle::Buffer<gfx_device_gl::Resources, TileMapInfo>,
                         tile_img: &RgbaImage,
                         tile_desc: &TileDesc,
+                        width: u32,
+                        height: u32,
                         encoder: &mut Encoder) {
 
     let (img_width, img_height) = tile_img.dimensions();
+    let info = TileMapInfo::new(tile_desc.tile_size_scaled(), img_width, img_height, width, height);
     encoder.update_buffer(tile_map_info,
-                          &[TileMapInfo::new(tile_desc.tile_size_scaled(), img_width, img_height)],
+                          &[info],
                           0).expect("Failed to upload tile map info");
 }
 
@@ -221,7 +229,7 @@ impl TileMapPipeline {
         let (vertex_buffer, slice) = create_vertex_buffer(width, height, factory);
 
         let pipeline_data = create_pipeline_data(width, height, rtv, vertex_buffer, texture, factory);
-        update_tile_map_info(&pipeline_data.tile_map_info, &tile_img, &tile_desc, encoder);
+        update_tile_map_info(&pipeline_data.tile_map_info, &tile_img, &tile_desc, width, height, encoder);
 
         let buffer = create_buffer(tile_data_size);
 

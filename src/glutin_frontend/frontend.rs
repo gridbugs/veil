@@ -66,11 +66,13 @@ pub fn create() -> (GlutinGameRenderer, GlutinGameInput) {
 
     let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-    let world_pipeline = TileMapPipeline::new(WIDTH_TILES, HEIGHT_TILES, (WIDTH_TILES * HEIGHT_TILES) as usize,
-                                              include_bytes!("shaders/shdr_330.vert"),
-                                              include_bytes!("shaders/shdr_world_330.frag"),
-                                              world_tile::shader_template_info(),
-                                              rtv.clone(), &mut factory, &mut encoder);
+    let mut world_pipeline = TileMapPipeline::new(WIDTH_TILES, HEIGHT_TILES, (WIDTH_TILES * HEIGHT_TILES) as usize,
+                                                  include_bytes!("shaders/shdr_330.vert"),
+                                                  include_bytes!("shaders/shdr_world_330.frag"),
+                                                  world_tile::shader_template_info(),
+                                                  rtv.clone(), &mut factory, &mut encoder);
+
+    world_tile::init_tile_map_data(&mut world_pipeline.buffer);
 
     let overlay_pipeline = TileMapPipeline::new(WIDTH_TILES, HEIGHT_TILES, (WIDTH_TILES * HEIGHT_TILES) as usize,
                                                 include_bytes!("shaders/shdr_330.vert"),
