@@ -30,11 +30,11 @@ const SPATIAL_HASH_SPEC: &'static str = "spatial_hash.toml";
 const TILE_SHEET_IMAGE: &'static str = "tiles.png";
 const TILE_SHEET_SPEC: &'static str = "tiles.toml";
 
-const ENTITY_STORE_MACROS: &'static str = "entity_store_macros.rs";
-const ENTITY_STORE_TEMPLATE: &'static str = "src/entity_store/template.rs.hbs";
+const ENTITY_STORE_MACROS: &'static str = "src/entity_store/macros.gen.rs";
+const ENTITY_STORE_TEMPLATE: &'static str = "src/entity_store/macros.hbs.rs";
 
-const SPATIAL_HASH_MACROS: &'static str = "spatial_hash_macros.rs";
-const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/template.rs.hbs";
+const SPATIAL_HASH_MACROS: &'static str = "src/spatial_hash/macros.gen.rs";
+const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/macros.hbs.rs";
 
 const STAGE_DIR: &'static str = "stage";
 const RES_SRC_DIR: &'static str = "res_src";
@@ -216,21 +216,20 @@ fn source_changed_rel<P: AsRef<Path>, Q: AsRef<Path>>(in_path: P, out_path: Q) -
 fn render_entity_system_template() {
 
     let in_path = &res_src_path(COMPONENT_SPEC);
-    let out_path = &stage_path(ENTITY_STORE_MACROS);
+    let out_path = ENTITY_STORE_MACROS;
 
     let template_path = ENTITY_STORE_TEMPLATE;
 
     if source_changed_rel(in_path, out_path) || source_changed_rel(template_path, out_path) {
         let type_desc = read_entity_store_desc(in_path);
         let output = render_entity_system_template_internal(type_desc, template_path);
-        println!("{:?}", out_path);
         simple_file::write_string(out_path, output).expect("Failed to write entity system code");
     }
 }
 
 fn render_spatial_hash_template() {
     let in_path = &res_src_path(SPATIAL_HASH_SPEC);
-    let out_path = &stage_path(SPATIAL_HASH_MACROS);
+    let out_path = SPATIAL_HASH_MACROS;
 
     let template_path = SPATIAL_HASH_TEMPLATE;
     let component_spec = &res_src_path(COMPONENT_SPEC);

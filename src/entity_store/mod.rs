@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet, hash_map};
 
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/stage/entity_store_macros.rs"));
+#[path = "macros.gen.rs"]
+#[macro_use] mod macros;
 
 #[macro_use] pub mod post_change;
 #[macro_use] pub mod migration;

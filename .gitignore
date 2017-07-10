@@ -1,5 +1,8 @@
 target/
 stage/
-**/*.rs.bk
-*.swp
+
 Cargo.lock
+
+**/*.rs.bk
+**/*.swp
+**/*.gen.rs

@@ -6,7 +6,8 @@ use entity_store::{EntityId, EntityStore, EntityStoreChange, DataChangeType, Fla
 use grid::{static_grid, StaticGridIdx, StaticGrid};
 use limits::LimitsRect;
 
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/stage/spatial_hash_macros.rs"));
+#[path = "macros.gen.rs"]
+#[macro_use] mod macros;
 
 spatial_hash_imports!{}
 
