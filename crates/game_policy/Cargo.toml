@@ -1,0 +1,16 @@
+[package]
+name = "game_policy"
+version = "0.1.0"
+authors = ["Stephen Sherratt <stephen@sherra.tt>"]
+
+[dependencies]
+game_data = { path = "../game_data" }
+geometry = { path = "../geometry" }
+util = { path = "../util" }
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.4"
+rand = "0.3"
+itertools = "0.6"
+cgmath = { version = "0.14", features = ["eders"] }
+enum_primitive = "0.1"
