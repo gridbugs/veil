@@ -1,9 +1,9 @@
 use rand::Rng;
 use cgmath::Vector2;
-use entity_store::*;
-use spatial_hash::*;
+use game_data::entity_store::*;
+use game_data::spatial_hash::*;
+use game_data::content::*;
 use geometry::straight_line::*;
-use content::*;
 use frame::*;
 use reaction::Reaction;
 use veil_state::VeilState;

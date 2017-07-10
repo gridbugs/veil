@@ -1,3 +1,4 @@
+#[macro_export]
 macro_rules! migrate_data_copy {
     ($source:expr, $dest:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if let Some(x) = $source.$component.get(&$entity) {
@@ -8,6 +9,7 @@ macro_rules! migrate_data_copy {
     }
 }
 
+#[macro_export]
 macro_rules! migrate_flag_copy {
     ($source:expr, $dest:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if $source.$component.contains(&$entity) {
@@ -18,6 +20,7 @@ macro_rules! migrate_flag_copy {
     }
 }
 
+#[macro_export]
 macro_rules! migrate_data_move {
     ($source:expr, $dest:expr, $source_change:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if let Some(x) = $source.$component.get(&$entity) {
@@ -29,6 +32,7 @@ macro_rules! migrate_data_move {
     }
 }
 
+#[macro_export]
 macro_rules! migrate_flag_move {
     ($source:expr, $dest:expr, $source_change:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if $source.$component.contains(&$entity) {
@@ -40,6 +44,7 @@ macro_rules! migrate_flag_move {
     }
 }
 
+#[macro_export]
 macro_rules! migrate_data_swap {
     ($source:expr, $dest:expr, $source_change:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if let Some(x) = $source.$component.get(&$entity) {
@@ -55,6 +60,7 @@ macro_rules! migrate_data_swap {
     }
 }
 
+#[macro_export]
 macro_rules! migrate_flag_swap {
     ($source:expr, $dest:expr, $source_change:expr, $dest_change:expr, $entity:expr, $component:ident) => {
         if $source.$component.contains(&$entity) {

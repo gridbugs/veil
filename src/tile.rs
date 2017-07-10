@@ -3,7 +3,7 @@ use enum_primitive::FromPrimitive;
 use cgmath::Vector2;
 
 use tile_desc::TileDesc;
-use content::*;
+use game_data::content::*;
 
 pub const NUM_TILE_CHANNELS: usize = 5;
 pub const OVERLAY_CHANNEL: usize = 4;

@@ -1,4 +1,4 @@
-use spatial_hash::SpatialHashTable;
+use game_data::spatial_hash::SpatialHashTable;
 use geometry::limits::LimitsRect;
 use cgmath::Vector2;
 

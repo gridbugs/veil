@@ -1,6 +1,6 @@
 use std::result;
-use entity_store::{EntityId, EntityStore};
-use spatial_hash::SpatialHashTable;
+use game_data::entity_store::{EntityId, EntityStore};
+use game_data::spatial_hash::SpatialHashTable;
 use knowledge::KnowledgeGrid;
 use observation::{shadowcast, omniscient, ObservationMetadata};
 

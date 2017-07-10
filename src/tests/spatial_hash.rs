@@ -1,5 +1,5 @@
-use entity_store::*;
-use spatial_hash::*;
+use game_data::entity_store::*;
+use game_data::spatial_hash::*;
 use cgmath::Vector2;
 
 const WIDTH: usize = 10;

@@ -1,4 +1,4 @@
-use entity_store::*;
+use game_data::entity_store::*;
 
 #[test]
 fn commit_into_store() {

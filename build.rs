@@ -30,11 +30,11 @@ const SPATIAL_HASH_SPEC: &'static str = "spatial_hash.toml";
 const TILE_SHEET_IMAGE: &'static str = "tiles.png";
 const TILE_SHEET_SPEC: &'static str = "tiles.toml";
 
-const ENTITY_STORE_MACROS: &'static str = "src/entity_store/macros.gen.rs";
-const ENTITY_STORE_TEMPLATE: &'static str = "src/entity_store/macros.hbs.rs";
+const ENTITY_STORE_MACROS: &'static str = "crates/game_data/src/entity_store/macros.gen.rs";
+const ENTITY_STORE_TEMPLATE: &'static str = "crates/game_data/src/entity_store/macros.hbs.rs";
 
-const SPATIAL_HASH_MACROS: &'static str = "src/spatial_hash/macros.gen.rs";
-const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/macros.hbs.rs";
+const SPATIAL_HASH_MACROS: &'static str = "crates/game_data/src/spatial_hash/macros.gen.rs";
+const SPATIAL_HASH_TEMPLATE: &'static str = "crates/game_data/src/spatial_hash/macros.hbs.rs";
 
 const STAGE_DIR: &'static str = "stage";
 const RES_SRC_DIR: &'static str = "res_src";
@@ -78,7 +78,6 @@ struct SpatialHashFieldDesc {
 struct SpatialHashDescOut {
     imports: HashSet<String>,
     position_component: String,
-    position_type: String,
     components: HashMap<String, SpatialHashComponentDescOut>,
 }
 
@@ -186,9 +185,6 @@ fn render_spatial_hash_template_internal<P: AsRef<Path>>(desc: SpatialHashDesc,
     let desc_out = SpatialHashDescOut {
         imports: imports,
         position_component: position_component.clone(),
-        position_type: components.get(&position_component)
-            .expect(&format!("No such component: {}", &position_component))
-            .type_name.clone().expect("Position component must have associated data"),
         components: components_out,
     };
 

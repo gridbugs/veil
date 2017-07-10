@@ -1,8 +1,8 @@
 use rand::StdRng;
-use entity_store::EntityStoreChange;
-use entity_id_allocator::EntityIdAllocator;
+use game_data::entity_store::EntityStoreChange;
+use game_data::entity_id_allocator::EntityIdAllocator;
+use game_data::content::ActionType;
 use util::schedule::{Schedule, ScheduleEntry};
-use content::ActionType;
 use policy::GamePolicy;
 use observation::shadowcast::ShadowcastEnv;
 use reaction::Reaction;

@@ -1,5 +1,5 @@
-use entity_store::EntityStore;
-use spatial_hash::SpatialHashCell;
+use game_data::entity_store::EntityStore;
+use game_data::spatial_hash::SpatialHashCell;
 use observation::ObservationMetadata;
 use cgmath::Vector2;
 

@@ -1,7 +1,7 @@
 use cgmath::Vector2;
 
 use geometry::grid::{StaticGrid, StaticGridIdx, static_grid};
-use content::{ComplexTile, OverlayType};
+use game_data::content::{ComplexTile, OverlayType};
 use tile;
 use knowledge::{PlayerKnowledgeGrid, PlayerKnowledgeTile};
 

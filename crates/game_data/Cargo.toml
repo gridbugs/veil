@@ -1,0 +1,13 @@
+[package]
+name = "game_data"
+version = "0.1.0"
+authors = ["Stephen Sherratt <stephen@sherra.tt>"]
+
+[dependencies]
+geometry = { path = "../geometry" }
+util = { path = "../util" }
+cgmath = { version = "0.14", features = ["eders"] }
+enum_primitive = "0.1"
+serde = "1.0"
+serde_derive = "1.0"
+rand = "0.3"

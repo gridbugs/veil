@@ -1,6 +1,4 @@
-imports = [
-    'cgmath::Vector2',
-]
+imports = []
 
 position_component = 'position'
 

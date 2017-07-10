@@ -22,7 +22,7 @@ use common_input::CommonInput;
 use tile_buffer::TileBuffer;
 use tile::TileResolver;
 use geometry::grid::static_grid::StaticGridIdx;
-use content::OverlayType;
+use game_data::content::OverlayType;
 
 const FPS: u32 = 60;
 

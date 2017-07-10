@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use rand::Rng;
-use entity_store::{EntityId, EntityStore, EntityStoreChange};
-use spatial_hash::SpatialHashTable;
+use game_data::entity_store::{EntityId, EntityStore, EntityStoreChange};
+use game_data::spatial_hash::SpatialHashTable;
+use game_data::content::VeilStepInfo;
 use util::schedule::Schedule;
 use knowledge::PlayerKnowledgeGrid;
 use behaviour::{BehaviourState, BehaviourEnv};
 use veil_state::VeilState;
-use content::VeilStepInfo;
 
 pub struct LevelEnv {
     pub entity_store: EntityStore,

@@ -8,12 +8,6 @@ macro_rules! spatial_hash_imports {
     }
 }
 
-macro_rules! position_type {
-    () => {
-        {{position_type}}
-    }
-}
-
 macro_rules! position {
     ($store:expr) => {
         $store.{{position_component}}

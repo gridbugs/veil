@@ -1,6 +1,6 @@
 use rand::{StdRng, SeedableRng};
 use veil_state::*;
-use content::VeilStepInfo;
+use game_data::content::VeilStepInfo;
 
 const WIDTH: usize = 40;
 const HEIGHT: usize = 40;

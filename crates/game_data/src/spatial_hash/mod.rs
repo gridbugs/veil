@@ -11,8 +11,6 @@ use geometry::limits::LimitsRect;
 
 spatial_hash_imports!{}
 
-type Position = position_type!();
-
 spatial_hash_cell_decl!{SpatialHashCell}
 
 impl Default for SpatialHashCell {

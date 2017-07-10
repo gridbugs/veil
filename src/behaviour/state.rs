@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use entity_store::EntityId;
+use game_data::entity_store::EntityId;
 use geometry::grid_search::{Path, Step, PathIterFrom};
 
 pub struct BehaviourState {

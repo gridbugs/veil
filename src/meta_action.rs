@@ -1,5 +1,5 @@
 use cgmath::Vector3;
-use content::ActionType;
+use game_data::content::ActionType;
 
 pub enum External {
     Quit,

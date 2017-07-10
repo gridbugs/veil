@@ -1,7 +1,7 @@
-use entity_store::{EntityId, EntityStore};
-use spatial_hash::SpatialHashCell;
+use game_data::entity_store::{EntityId, EntityStore};
+use game_data::spatial_hash::SpatialHashCell;
+use game_data::content::{ComplexTile, OverlayType, TileType};
 use geometry::grid::StaticGrid;
-use content::{ComplexTile, OverlayType, TileType};
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
 use geometry::coord::LookupCoord;

@@ -1,10 +1,10 @@
 use std::mem;
 use std::slice;
 use rand::Rng;
+use cgmath::Vector2;
 use geometry::grid::{StaticGrid, static_grid};
 use geometry::perlin::{PerlinGrid, PerlinWrapType};
-use cgmath::Vector2;
-use content::VeilStepInfo;
+use game_data::content::VeilStepInfo;
 
 const ZOOM: usize = 20;
 const ZOOM_F: f64 = ZOOM as f64;

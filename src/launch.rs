@@ -1,10 +1,10 @@
 use std::result;
 
-use entity_store::EntityId;
+use game_data::entity_store::EntityId;
+use game_data::content::VeilStepInfo;
 use game_env::GameEnv;
 use level_env::LevelEnv;
 use terrain;
-use content::VeilStepInfo;
 use knowledge::PlayerKnowledgeGrid;
 use behaviour::BehaviourState;
 use turn::{self, TurnEnv, TurnResolution};

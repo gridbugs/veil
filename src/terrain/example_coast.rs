@@ -1,8 +1,8 @@
 use rand::Rng;
 use cgmath::Vector2;
-use entity_store::EntityStoreChange;
-use entity_id_allocator::EntityIdAllocator;
-use content::prototypes;
+use game_data::entity_store::EntityStoreChange;
+use game_data::entity_id_allocator::EntityIdAllocator;
+use game_data::content::prototypes;
 use terrain::TerrainMetadata;
 use geometry::perlin::{PerlinGrid, PerlinWrapType};
 

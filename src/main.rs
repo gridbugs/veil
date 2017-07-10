@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_macros)]
+#![allow(unused_imports)]
 #![feature(float_bits_conv)]
 
 extern crate cgmath;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
-#[macro_use] extern crate enum_primitive;
+extern crate enum_primitive;
 #[macro_use] extern crate itertools;
 #[macro_use] extern crate maplit;
 
@@ -25,14 +26,11 @@ extern crate image;
 
 extern crate util;
 extern crate geometry;
-
-#[macro_use] mod entity_store;
-mod spatial_hash;
+#[macro_use]
+extern crate game_data;
 
 mod glutin_frontend;
 
-mod content;
-mod entity_id_allocator;
 mod knowledge;
 mod observation;
 mod policy;
@@ -64,4 +62,5 @@ mod tests;
 
 fn main() {
     glutin_frontend::launch();
+
 }

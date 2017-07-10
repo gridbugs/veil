@@ -1,4 +1,4 @@
-use content::ActionType;
+use game_data::content::ActionType;
 
 pub struct Reaction {
     pub action: ActionType,

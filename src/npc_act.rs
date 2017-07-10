@@ -1,8 +1,8 @@
 use knowledge::PlayerKnowledgeGrid;
 use behaviour::*;
-use entity_store::*;
-use spatial_hash::*;
-use content::ActionType;
+use game_data::entity_store::*;
+use game_data::spatial_hash::*;
+use game_data::content::ActionType;
 use observation::shadowcast::ShadowcastEnv;
 use entity_observe;
 

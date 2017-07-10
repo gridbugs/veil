@@ -1,5 +1,5 @@
-use spatial_hash::SpatialHashTable;
-use entity_store::EntityStore;
+use game_data::spatial_hash::SpatialHashTable;
+use game_data::entity_store::EntityStore;
 use knowledge::KnowledgeGrid;
 use observation::ObservationMetadata;
 

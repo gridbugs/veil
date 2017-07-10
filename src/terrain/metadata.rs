@@ -1,4 +1,4 @@
-use entity_store::EntityId;
+use game_data::entity_store::EntityId;
 
 pub struct TerrainMetadata {
     pub player_id: Option<EntityId>,
