@@ -4,12 +4,12 @@ use gfx_window_glutin;
 use glutin;
 use gfx_device_gl;
 
-use glutin_frontend::input;
-use glutin_frontend::world_tile;
-use glutin_frontend::overlay_tile::{self, OverlayCoord};
-use glutin_frontend::formats::{ColourFormat, DepthFormat};
-use glutin_frontend::tile_map::{TileMapPipeline, UpdateTileMapData};
-use glutin_frontend::sizes::{WIDTH_TILES, HEIGHT_TILES, TILE_SIZE};
+use input;
+use world_tile;
+use overlay_tile::{self, OverlayCoord};
+use formats::{ColourFormat, DepthFormat};
+use tile_map::{TileMapPipeline, UpdateTileMapData};
+use sizes::{WIDTH_TILES, HEIGHT_TILES, TILE_SIZE};
 
 use cgmath::Vector2;
 
@@ -28,7 +28,6 @@ const FPS: u32 = 60;
 
 const WIDTH_PX: u32 = WIDTH_TILES * TILE_SIZE;
 const HEIGHT_PX: u32 = HEIGHT_TILES * TILE_SIZE;
-const NUM_TILES: u32 = WIDTH_TILES * HEIGHT_TILES;
 
 const CLEAR_COLOUR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 

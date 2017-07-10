@@ -1,6 +1,7 @@
-use glutin_frontend::tile_map::{TileMapData, UpdateTileMapData, ShaderTemplateInfo};
 use game_policy::tile_buffer::TileBufferCell;
 use game_policy::tile::{NUM_TILE_CHANNELS, OVERLAY_CHANNEL};
+
+use tile_map::{TileMapData, UpdateTileMapData, ShaderTemplateInfo};
 
 const TILE_STATUS_IDX: usize = 3;
 const STATUS_BITS_PER_CHANNEL: usize = 2;

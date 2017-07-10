@@ -1,5 +1,6 @@
-use glutin_frontend::frontend;
 use game_policy::launch;
+
+use frontend;
 
 pub fn launch() {
     let (mut renderer, mut input) = frontend::create();

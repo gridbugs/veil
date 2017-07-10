@@ -9,24 +9,9 @@ util = { path = "crates/util" }
 geometry = { path = "crates/geometry" }
 game_data = { path = "crates/game_data" }
 game_policy = { path = "crates/game_policy" }
-cgmath = { version = "0.14", features = ["eders"] }
-enum_primitive = "0.1"
-serde = "1.0"
-serde_derive = "1.0"
-toml = "0.4"
+glutin_frontend = { path = "crates/glutin_frontend" }
 rand = "0.3"
-itertools = "0.6"
-handlebars = "0.26"
-maplit = "0.1.4"
-
-gfx = "0.16"
-gfx_window_glutin = "0.16.0"
-gfx_device_gl = "0.14.1"
-glutin = "0.8.1"
-winit = "0.6.4"
-gfx_text = "0.17"
-genmesh = "0.5"
-image = "0.14"
+cgmath = { version = "0.14", features = ["eders"] }
 
 [build-dependencies]
 serde = "1.0"
@@ -36,6 +21,6 @@ handlebars = "0.26"
 image = "0.14"
 
 [replace]
+"image:0.14.0" = { git = "https://github.com/stevebob/image.git", branch = "resize-fixes" }
 "winit:0.6.4" = { git = "https://github.com/stevebob/winit.git", branch = "x11-hidpi-fix" }
 "glutin:0.8.1" = { git = "https://github.com/stevebob/glutin.git", branch = "winit-0.6.4" }
-"image:0.14.0" = { git = "https://github.com/stevebob/image.git", branch = "resize-fixes" }
