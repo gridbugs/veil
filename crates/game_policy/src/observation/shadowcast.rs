@@ -1,7 +1,7 @@
 use std::cmp;
 use cgmath::Vector2;
 
-use geometry::direction::{Direction, CardinalDirection, OrdinalDirection};
+use geometry::direction::{CardinalDirection, OrdinalDirection};
 use geometry::vector_index::VectorIndex;
 use game_data::spatial_hash::SpatialHashTable;
 use game_data::entity_store::EntityStore;
@@ -27,12 +27,6 @@ impl RoundType {
     }
 }
 
-#[derive(PartialEq)]
-enum RotationType {
-    Clockwise,
-    AntiClockwise,
-}
-
 const NUM_OCTANTS: usize = 8;
 
 fn cell_centre(coord: Vector2<i32>) -> Vector2<f64> {
@@ -50,16 +44,10 @@ fn cell_corner(coord: Vector2<i32>, dir: OrdinalDirection) -> Vector2<f64> {
 
 // Classification of an octant for shadowcast
 struct Octant {
-    // Direction to proceed with each scan
-    depth_dir: Direction,
-
-    // Direction to proceed during a scan
-    lateral_dir: Direction,
-
-    // Whether depth_dir is on x or y index
+    // Whether depth direction is on x or y index
     depth_idx: VectorIndex,
 
-    // Whether lateral_dir is on x or y index
+    // Whether lateral direction is on x or y index
     lateral_idx: VectorIndex,
 
     // Added to depth part of coord as depth increases
@@ -81,15 +69,6 @@ struct Octant {
     // current cell to split the visible area.
     opacity_decrease_corner: OrdinalDirection,
 
-    // Side of a cell in this octant  facing the eye
-    facing_side: Direction,
-
-    // Side of cell facing across eye
-    across_side: Direction,
-
-    // Corner of cell closest to eye
-    facing_corner: OrdinalDirection,
-
     // Rounding function to use at the start of a scan to convert a
     // floating point derived from a gradient into part of a coord
     round_start: RoundType,
@@ -97,9 +76,6 @@ struct Octant {
     // Rounding function to use at the end of a scan to convert a
     // floating point derived from a gradient into part of a coord
     round_end: RoundType,
-
-    // Type of rotation during a scan in this octant
-    rotation: RotationType,
 }
 
 impl Octant {
@@ -110,9 +86,6 @@ impl Octant {
         let depth_step = VectorIndex::from_card(card_depth_dir).get(depth_dir.vector());
         let lateral_step = VectorIndex::from_card(card_lateral_dir).get(lateral_dir.vector());
 
-        let card_facing_side = card_depth_dir.opposite();
-        let card_across_side = card_lateral_dir.opposite();
-
         let (round_start, round_end) = if lateral_step == 1 {
             (RoundType::Floor, RoundType::ExclusiveFloor)
         } else {
@@ -120,17 +93,7 @@ impl Octant {
             (RoundType::ExclusiveFloor, RoundType::Floor)
         };
 
-        let rotation = if lateral_dir == depth_dir.left90() {
-            RotationType::Clockwise
-        } else {
-            assert!(depth_dir == lateral_dir.left90());
-            RotationType::AntiClockwise
-        };
-
         Octant {
-            depth_dir: depth_dir,
-            lateral_dir: lateral_dir,
-
             depth_idx: VectorIndex::from_card(card_depth_dir),
             lateral_idx: VectorIndex::from_card(card_lateral_dir),
 
@@ -146,16 +109,8 @@ impl Octant {
                 card_lateral_dir.opposite())
                 .expect("Failed to combine directions"),
 
-            facing_side: card_facing_side.direction(),
-            across_side: card_across_side.direction(),
-
-            facing_corner: OrdinalDirection::from_cardinals(card_facing_side, card_across_side)
-                .expect("Failed to combine directions"),
-
             round_start: round_start,
             round_end: round_end,
-
-            rotation: rotation,
         }
     }
 
