@@ -1,6 +1,6 @@
 use glutin::{Event, WindowEvent};
 use winit::{VirtualKeyCode, ModifiersState, ElementState};
-use input::InputEvent;
+use game_policy::input::InputEvent;
 
 fn to_char_event(ch: char, keymod: ModifiersState) -> Option<InputEvent> {
     if ch.is_alphabetic() {

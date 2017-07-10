@@ -1,5 +1,5 @@
 use rand::{StdRng, SeedableRng};
-use veil_state::*;
+use game_policy::veil_state::*;
 use game_data::content::VeilStepInfo;
 
 const WIDTH: usize = 40;

@@ -1,5 +1,5 @@
 use glutin_frontend::tile_map::{TileMapData, UpdateTileMapData, ShaderTemplateInfo};
-use tile::TileCoord;
+use game_policy::tile::TileCoord;
 
 const TILE_STATUS_IDX: usize = 3;
 const TILE_STATUS_ENABLED: u32 = 1 << 0;

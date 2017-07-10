@@ -13,14 +13,14 @@ use glutin_frontend::sizes::{WIDTH_TILES, HEIGHT_TILES, TILE_SIZE};
 
 use cgmath::Vector2;
 
-use knowledge::PlayerKnowledgeGrid;
-use renderer::{GameRenderer, GameRendererConfig};
-use render_overlay::RenderOverlay;
-use input::{GameInput, InputEvent, ExternalEvent};
-use frame::Frame;
-use common_input::CommonInput;
-use tile_buffer::TileBuffer;
-use tile::TileResolver;
+use game_policy::knowledge::PlayerKnowledgeGrid;
+use game_policy::renderer::{GameRenderer, GameRendererConfig};
+use game_policy::render_overlay::RenderOverlay;
+use game_policy::input::{GameInput, InputEvent, ExternalEvent};
+use game_policy::common_input::CommonInput;
+use game_policy::frame::Frame;
+use game_policy::tile_buffer::TileBuffer;
+use game_policy::tile::TileResolver;
 use geometry::grid::static_grid::StaticGridIdx;
 use game_data::content::OverlayType;
 

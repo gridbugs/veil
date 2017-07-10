@@ -10,9 +10,9 @@ use genmesh::{Triangulate, Vertices};
 use handlebars::Handlebars;
 
 use glutin_frontend::formats::ColourFormat;
-use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
+use game_policy::resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
+use game_policy::tile_desc::TileDesc;
 use util::simple_file;
-use tile_desc::TileDesc;
 
 type VertexBufferHandle = gfx::handle::Buffer<gfx_device_gl::Resources, Vertex>;
 type Slice = gfx::Slice<gfx_device_gl::Resources>;

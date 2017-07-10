@@ -6,10 +6,10 @@ extern crate toml;
 extern crate handlebars;
 extern crate image;
 
-#[path = "src/resources.rs"]
+#[path = "crates/game_policy/src/resources.rs"]
 mod resources;
 
-#[path = "src/tile_desc.rs"]
+#[path = "crates/game_policy/src/tile_desc.rs"]
 mod tile_desc;
 
 #[path = "crates/util/src/simple_file.rs"]

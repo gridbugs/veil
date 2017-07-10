@@ -28,35 +28,9 @@ extern crate util;
 extern crate geometry;
 #[macro_use]
 extern crate game_data;
+extern crate game_policy;
 
 mod glutin_frontend;
-
-mod knowledge;
-mod observation;
-mod policy;
-mod behaviour;
-mod render_overlay;
-mod frame;
-mod reaction;
-mod entity_observe;
-mod meta_action;
-mod renderer;
-mod input;
-mod turn;
-mod player_act;
-mod npc_act;
-mod player_render;
-mod commit;
-mod veil_state;
-mod terrain;
-mod tile;
-mod tile_desc;
-mod tile_buffer;
-mod level_env;
-mod game_env;
-mod launch;
-mod resources;
-mod common_input;
 
 mod tests;
 

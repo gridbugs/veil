@@ -8,6 +8,7 @@ build = "build.rs"
 util = { path = "crates/util" }
 geometry = { path = "crates/geometry" }
 game_data = { path = "crates/game_data" }
+game_policy = { path = "crates/game_policy" }
 cgmath = { version = "0.14", features = ["eders"] }
 enum_primitive = "0.1"
 serde = "1.0"
