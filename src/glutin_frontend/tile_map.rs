@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use gfx;
 use gfx::Factory;
 use gfx::traits::FactoryExt;
+use gfx::texture::{SamplerInfo, FilterMethod, WrapMode};
 use gfx_device_gl;
 use image::{self, RgbaImage};
 use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
@@ -42,6 +43,8 @@ gfx_defines!{
     constant TileMapInfo {
         ratio: [f32; 2] = "u_TexRatio",
         centre: [f32; 2] = "u_Centre",
+        tile_sheet_size_pix: [f32; 2] = "u_TileSheetSizePix",
+        tile_size_pix: f32 = "u_TileSizePix",
     }
 
     pipeline pipe {
@@ -76,6 +79,11 @@ impl TileMapInfo {
             centre: [
                 width as f32 / 2.0 + 0.5,
                 height as f32 / 2.0 + 0.5,
+            ],
+            tile_size_pix: tile_size as f32,
+            tile_sheet_size_pix: [
+                tex_width as f32,
+                tex_height as f32,
             ],
         }
     }
@@ -147,7 +155,9 @@ fn create_pipeline_data(width: u32, height: u32,
                         texture: Texture,
                         factory: &mut gfx_device_gl::Factory) -> PipelineData {
 
-    let sampler = factory.create_sampler_linear();
+//    let sampler = factory.create_sampler_linear();
+    let sampler = factory.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Tile));
+
 
     let tile_table = factory.create_constant_buffer((width * height) as usize);
     let tile_map_info = factory.create_constant_buffer(1);
@@ -254,5 +264,14 @@ impl TileMapPipeline {
         for (idx, u) in i.enumerate() {
             u.update(idx, &mut self.buffer);
         }
+    }
+
+    pub fn update_buffer(&self, encoder: &mut Encoder) {
+        encoder.update_buffer(&self.data.tile_table, &self.buffer, 0)
+            .expect("Failed to update buffer");
+    }
+
+    pub fn draw(&self, encoder: &mut Encoder) {
+        encoder.draw(&self.slice, &self.state, &self.data);
     }
 }

@@ -115,12 +115,11 @@ impl GameRenderer for GlutinGameRenderer {
 
         self.world_pipeline.update_tile_map_data(self.tile_buffer.iter());
 
-        self.encoder.update_buffer(&self.world_pipeline.data.tile_table, &self.world_pipeline.buffer, 0)
-            .expect("Failed to update buffer");
+        self.world_pipeline.update_buffer(&mut self.encoder);
     }
 
     fn draw(&mut self) {
-        self.encoder.draw(&self.world_pipeline.slice, &self.world_pipeline.state, &self.world_pipeline.data);
+        self.world_pipeline.draw(&mut self.encoder);
     }
 
     fn draw_overlay(&mut self, overlay: RenderOverlay) {
