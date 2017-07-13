@@ -1,9 +1,12 @@
 use toml;
 use enum_primitive::FromPrimitive;
 use cgmath::Vector2;
+use image::{self, RgbaImage};
 
 use tile_desc::TileDesc;
 use content::*;
+use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
+use simple_file;
 
 pub const NUM_TILE_CHANNELS: usize = 5;
 pub const OVERLAY_CHANNEL: usize = 4;
@@ -90,4 +93,14 @@ impl TileResolver {
     pub fn tile_size(&self) -> u32 {
         self.tile_size
     }
+}
+
+pub fn read_tiles() -> (RgbaImage, TileDesc) {
+    let tile_path = resources::res_path(TILE_SHEET_IMAGE);
+    let img = image::open(tile_path).expect("failed to open image").to_rgba();
+
+    let tile_desc: TileDesc = simple_file::read_toml(&resources::res_path(TILE_SHEET_SPEC))
+        .expect("Failed to read tile spec");
+
+    (img, tile_desc)
 }

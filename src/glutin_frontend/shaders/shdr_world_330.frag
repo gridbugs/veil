@@ -21,6 +21,8 @@ uniform sampler2D t_Texture;
 uniform b_TileMapInfo {
     vec2 u_TexRatio;
     vec2 u_Centre;
+    vec2 u_TileSheetSizePix;
+    float u_TileSizePix;
 };
 
 struct TileMapData {
@@ -31,13 +33,11 @@ uniform b_TileMap {
     TileMapData u_Data[WIDTH * HEIGHT];
 };
 
-vec4 blend(vec4 current, vec4 new) {
-    vec3 delta = vec3(new - current);
-    vec3 result = vec3(current) + delta * new[3];
-    return vec4(result, max(current[3], new[3]));
+vec4 over_blend(vec4 new, vec4 existing) {
+    return vec4(new.a) * new + vec4(1.0 - new.a) * existing;
 }
 
-const float DIM_COEF = 60.0;
+const float DIM_COEF = 20.0;
 const float INTENSITY_MIN = 0.0;
 const float INTENSITY_MAX = 1.0;
 const float INTENSITY_DIFF = INTENSITY_MAX - INTENSITY_MIN;
@@ -48,6 +48,28 @@ float delta_to_intensity(vec2 delta) {
     float length_squared = delta[0] * delta[0] + delta[1] * delta[1];
     float intensity_delta = INTENSITY_NUMERATOR / (length_squared + DIM_COEF);
     return INTENSITY_MIN + intensity_delta;
+}
+
+const float INTERPOLATE_THRESHOLD = 0.3;
+
+vec4 sample_texture(vec2 tile_coord, vec2 offset_coord) {
+
+    // tile_coord and offset_coord are in tile-space
+
+    // An offset of (0, 0) should have the pixel offset (0.5, 0.5).
+    // An offset of (1, 1) should hav ea pixel offset (u_TileSizePix - 0.5, u_TileSizePix - 0.5).
+    vec2 offset_coord_pix = offset_coord * (u_TileSizePix - 1) + vec2(0.5);
+
+    // Top left corner of top left pixel of tile.
+    vec2 tile_coord_pix = tile_coord * u_TileSizePix;
+
+    // Coordinate of centre of pixel in texture in pixel-space.
+    vec2 coord_pix = tile_coord_pix + offset_coord_pix;
+
+    // Convert it into texel coordinate.
+    vec2 tex_coord = coord_pix / u_TileSheetSizePix;
+
+    return texture(t_Texture, tex_coord);
 }
 
 vec4 resolve_visible(vec4 data, int status) {
@@ -71,10 +93,7 @@ vec4 resolve_visible(vec4 data, int status) {
         int x_coord = word & 0xff;
         int y_coord = (word >> 8) & 0xff;
 
-        float x = (float(x_coord) + x_offset) * u_TexRatio[0];
-        float y = (float(y_coord) + y_offset) * u_TexRatio[1];
-
-        vec4 colour = texture(t_Texture, vec2(x, y));
+        vec4 colour = sample_texture(vec2(float(x_coord), float(y_coord)), vec2(x_offset, y_offset));
 
         if (diminish) {
             float intensity = delta_to_intensity(v_CellPos - u_Centre);
@@ -82,7 +101,7 @@ vec4 resolve_visible(vec4 data, int status) {
             colour = vec4(diminished_colour, colour[3]);
         }
 
-        current = blend(current, colour);
+        current = over_blend(colour, current);
     }
 
     return current;
