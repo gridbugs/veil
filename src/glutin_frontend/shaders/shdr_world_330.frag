@@ -53,8 +53,22 @@ float delta_to_intensity(vec2 delta) {
 const float INTERPOLATE_THRESHOLD = 0.3;
 
 vec4 sample_texture(vec2 tile_coord, vec2 offset_coord) {
-    vec2 coord = tile_coord + offset_coord;
-    vec2 tex_coord = vec2(coord[0] * u_TexRatio[0], coord[1] * u_TexRatio[1]);
+
+    // tile_coord and offset_coord are in tile-space
+
+    // An offset of (0, 0) should have the pixel offset (0.5, 0.5).
+    // An offset of (1, 1) should hav ea pixel offset (u_TileSizePix - 0.5, u_TileSizePix - 0.5).
+    vec2 offset_coord_pix = offset_coord * (u_TileSizePix - 1) + vec2(0.5);
+
+    // Top left corner of top left pixel of tile.
+    vec2 tile_coord_pix = tile_coord * u_TileSizePix;
+
+    // Coordinate of centre of pixel in texture in pixel-space.
+    vec2 coord_pix = tile_coord_pix + offset_coord_pix;
+
+    // Convert it into texel coordinate.
+    vec2 tex_coord = coord_pix / u_TileSheetSizePix;
+
     return texture(t_Texture, tex_coord);
 }
 
