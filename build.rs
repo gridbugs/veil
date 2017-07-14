@@ -250,6 +250,16 @@ fn copy_tile_spec() {
     }
 }
 
+fn copy_tile_image() {
+
+    let in_path = &res_src_path(TILE_SHEET_IMAGE);
+    let out_path = &stage_path(TILE_SHEET_IMAGE);
+
+    if source_changed_rel(in_path, out_path) {
+        fs::copy(in_path, out_path).expect("Failed to copy tile sheet image");
+    }
+}
+
 fn ensure_dir<P: AsRef<Path>>(path: P) {
     if !path.as_ref().exists() {
         fs::create_dir(path).expect("Failed to create dir");
@@ -294,6 +304,7 @@ fn main() {
     render_spatial_hash_template();
 
     copy_tile_spec();
+    copy_tile_image();
 
     copy_resource_dir();
 }
