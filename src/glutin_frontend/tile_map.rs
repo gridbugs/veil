@@ -13,7 +13,6 @@ use handlebars::Handlebars;
 use glutin_frontend::formats::ColourFormat;
 use glutin_frontend::types::*;
 use tile_desc::TileDesc;
-use tile::read_tiles;
 
 pub type PipelineData = pipe::Data<Resources>;
 pub type VertexBufferHandle = gfx::handle::Buffer<Resources, Vertex>;
@@ -23,8 +22,6 @@ pub struct TileMapPipeline {
     pub state: gfx::PipelineState<Resources, pipe::Meta>,
     pub data: PipelineData,
     pub buffer: Vec<TileMapData>,
-    pub image: RgbaImage,
-    pub description: TileDesc,
 }
 
 gfx_defines!{
@@ -192,13 +189,13 @@ impl TileMapPipeline {
                vertex_shader: &[u8],
                fragment_shader: &[u8],
                external_shader_template_info: ShaderTemplateInfo,
+               tile_img: &RgbaImage,
+               tile_desc: &TileDesc,
                rtv: RenderTargetView,
                factory: &mut gfx_device_gl::Factory,
                encoder: &mut Encoder) -> Self {
 
-        let (tile_img, tile_desc) = read_tiles();
-
-        let texture = create_texture(&tile_img, factory);
+        let texture = create_texture(tile_img, factory);
 
         let mut handlebars = Handlebars::new();
         // prevent xml escaping
@@ -222,7 +219,7 @@ impl TileMapPipeline {
         let (vertex_buffer, slice) = create_vertex_buffer(width, height, factory);
 
         let pipeline_data = create_pipeline_data(width, height, rtv, vertex_buffer, texture, factory);
-        update_tile_map_info(&pipeline_data.tile_map_info, &tile_img, &tile_desc, width, height, encoder);
+        update_tile_map_info(&pipeline_data.tile_map_info, tile_img, tile_desc, width, height, encoder);
 
         let buffer = create_buffer(tile_data_size);
 
@@ -231,8 +228,6 @@ impl TileMapPipeline {
             state: state,
             data: pipeline_data,
             buffer: buffer,
-            image: tile_img,
-            description: tile_desc,
         }
     }
 

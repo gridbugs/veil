@@ -7,12 +7,14 @@ use glutin_frontend::types::*;
 use glutin_frontend::world_tile;
 use glutin_frontend::overlay_tile;
 
+use tile_desc::TileDesc;
 use tile;
 
 pub struct RendererPipelines {
     pub world: TileMapPipeline,
     pub overlay: TileMapPipeline,
     pub scale: ScalePipeline,
+    pub description: TileDesc,
 }
 
 struct ViewPair(ShaderResourceView, RenderTargetView);
@@ -33,7 +35,7 @@ impl RendererPipelines {
                factory: &mut gfx_device_gl::Factory,
                encoder: &mut Encoder) -> Self {
 
-        let (_, tile_desc) = tile::read_tiles();
+        let (tile_img, tile_desc) = tile::read_tiles();
 
         let buf_width_px = width_tiles * tile_desc.tile_size;
         let buf_height_px = height_tiles * tile_desc.tile_size;
@@ -45,7 +47,11 @@ impl RendererPipelines {
                                                       include_bytes!("shaders/shdr_330.vert"),
                                                       include_bytes!("shaders/shdr_world_330.frag"),
                                                       world_tile::shader_template_info(),
-                                                      world_target, factory, encoder);
+                                                      &tile_img,
+                                                      &tile_desc,
+                                                      world_target,
+                                                      factory,
+                                                      encoder);
 
         world_tile::init_tile_map_data(&mut world_pipeline.buffer);
 
@@ -53,7 +59,11 @@ impl RendererPipelines {
                                                     include_bytes!("shaders/shdr_330.vert"),
                                                     include_bytes!("shaders/shdr_overlay_330.frag"),
                                                     overlay_tile::shader_template_info(),
-                                                    overlay_target, factory, encoder);
+                                                    &tile_img,
+                                                    &tile_desc,
+                                                    overlay_target,
+                                                    factory,
+                                                    encoder);
 
 
         let scale_pipeline = ScalePipeline::new(include_bytes!("shaders/shdr_scale_330.vert"),
@@ -69,6 +79,7 @@ impl RendererPipelines {
             world: world_pipeline,
             overlay: overlay_pipeline,
             scale: scale_pipeline,
+            description: tile_desc,
         }
     }
 }

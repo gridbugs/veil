@@ -71,7 +71,7 @@ pub fn create() -> (GlutinGameRenderer, GlutinGameInput) {
         encoder: encoder,
         window: window,
         device: device,
-        tile_resolver: TileResolver::from_desc(&pipelines.world.description),
+        tile_resolver: TileResolver::from_desc(&pipelines.description),
         pipelines: pipelines,
         tile_buffer: TileBuffer::new(WIDTH_TILES as usize, HEIGHT_TILES as usize),
         player_coord: Vector2::new(0, 0),
