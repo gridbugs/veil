@@ -35,7 +35,7 @@ const SPATIAL_HASH_MACROS: &'static str = "src/spatial_hash/macros.gen.rs";
 const SPATIAL_HASH_TEMPLATE: &'static str = "src/spatial_hash/macros.hbs.rs";
 
 const STAGE_DIR: &'static str = "stage";
-const RES_SRC_DIR: &'static str = "res_src";
+const RES_SRC_DIR: &'static str = "src/res";
 
 fn manifest_dir() -> PathBuf {
     PathBuf::from(&env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is not set"))
