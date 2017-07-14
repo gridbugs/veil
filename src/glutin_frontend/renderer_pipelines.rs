@@ -35,8 +35,8 @@ impl RendererPipelines {
 
         let (_, tile_desc) = tile::read_tiles();
 
-        let buf_width_px = width_tiles * tile_desc.tile_size_scaled();
-        let buf_height_px = height_tiles * tile_desc.tile_size_scaled();
+        let buf_width_px = width_tiles * tile_desc.tile_size;
+        let buf_height_px = height_tiles * tile_desc.tile_size;
 
         let ViewPair(world_resource, world_target) = ViewPair::new(buf_width_px, buf_height_px, factory);
         let ViewPair(overlay_resource, overlay_target) = ViewPair::new(buf_width_px, buf_height_px, factory);

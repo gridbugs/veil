@@ -162,7 +162,7 @@ fn update_tile_map_info(tile_map_info: &gfx::handle::Buffer<Resources, TileMapIn
                         encoder: &mut Encoder) {
 
     let (img_width, img_height) = tile_img.dimensions();
-    let info = TileMapInfo::new(tile_desc.tile_size_scaled(), img_width, img_height, width, height);
+    let info = TileMapInfo::new(tile_desc.tile_size, img_width, img_height, width, height);
     encoder.update_buffer(tile_map_info,
                           &[info],
                           0).expect("Failed to upload tile map info");

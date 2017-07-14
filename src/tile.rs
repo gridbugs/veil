@@ -52,7 +52,7 @@ impl TileResolver {
     }
 
     pub fn from_desc(tile_desc: &TileDesc) -> Self {
-        let mut resolver = TileResolver::new(tile_desc.tile_size_scaled());
+        let mut resolver = TileResolver::new(tile_desc.tile_size);
 
         for i in 0..NUM_OVERLAYS {
             if let Some(overlay_type) = OverlayType::from_usize(i) {

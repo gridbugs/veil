@@ -21,8 +21,6 @@ use std::path::{Path, PathBuf};
 use std::collections::{HashMap, HashSet};
 
 use handlebars::Handlebars;
-use image::{FilterType, GenericImage, ColorType};
-use tile_desc::TileDesc;
 
 // files in the resources dir
 const COMPONENT_SPEC: &'static str = "components.toml";
@@ -242,29 +240,6 @@ fn render_spatial_hash_template() {
     }
 }
 
-fn scale_tiles() {
-
-    let in_path = &res_src_path(TILE_SHEET_IMAGE);
-    let out_path = &stage_path(resources::TILE_SHEET_IMAGE);
-
-    let tiles: TileDesc = simple_file::read_toml(res_src_path(TILE_SHEET_SPEC))
-        .expect("Failed to read tile spec");
-
-    if source_changed_rel(in_path, out_path) {
-
-        let original = image::open(in_path).expect(format!("Failed to open image: {:?}", in_path).as_ref());
-
-        let (width, height) = original.dimensions();
-        let scaled = original.resize(width * tiles.tile_scale,
-                                           height * tiles.tile_scale,
-                                           FilterType::Nearest).to_rgba();
-
-        let (width, height) = scaled.dimensions();
-        image::save_buffer(out_path, &scaled, width, height, ColorType::RGBA(8))
-            .expect(format!("Failed to save scaled image: {:?}", out_path).as_ref());
-    }
-}
-
 fn copy_tile_spec() {
 
     let in_path = &res_src_path(TILE_SHEET_SPEC);
@@ -318,7 +293,6 @@ fn main() {
     render_entity_system_template();
     render_spatial_hash_template();
 
-    scale_tiles();
     copy_tile_spec();
 
     copy_resource_dir();

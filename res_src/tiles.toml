@@ -1,5 +1,4 @@
 tile_size = 16
-tile_scale = 1
 
 [overlays]
 Blank = [0, 4]
