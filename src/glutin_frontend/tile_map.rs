@@ -73,8 +73,8 @@ impl TileMapInfo {
                 tile_size as f32 / tex_height as f32,
             ],
             centre: [
-                width as f32 / 2.0 + 0.5,
-                height as f32 / 2.0 + 0.5,
+                width as f32 / 2.0 + if width % 2 == 0 { 0.5 } else { 0.0 },
+                height as f32 / 2.0 + if height % 2 == 0 { 0.5 } else { 0.0 },
             ],
             tile_size_pix: tile_size as f32,
             tile_sheet_size_pix: [
