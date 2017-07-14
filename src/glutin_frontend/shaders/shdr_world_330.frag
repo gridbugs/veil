@@ -33,13 +33,11 @@ uniform b_TileMap {
     TileMapData u_Data[WIDTH * HEIGHT];
 };
 
-vec4 blend(vec4 current, vec4 new) {
-    vec3 delta = vec3(new - current);
-    vec3 result = vec3(current) + delta * new[3];
-    return vec4(result, max(current[3], new[3]));
+vec4 over_blend(vec4 new, vec4 existing) {
+    return vec4(new.a) * new + vec4(1.0 - new.a) * existing;
 }
 
-const float DIM_COEF = 60.0;
+const float DIM_COEF = 20.0;
 const float INTENSITY_MIN = 0.0;
 const float INTENSITY_MAX = 1.0;
 const float INTENSITY_DIFF = INTENSITY_MAX - INTENSITY_MIN;
@@ -55,34 +53,8 @@ float delta_to_intensity(vec2 delta) {
 const float INTERPOLATE_THRESHOLD = 0.3;
 
 vec4 sample_texture(vec2 tile_coord, vec2 offset_coord) {
-
-    // tile_coord is the coordinate in tile-space of the tile in the tile sheet
-    // offset_coord is the coordinate in tile-space of the pixel within the tile
-
-    // convert it into src-pixel-space
-    vec2 tile_src_pix_coord = tile_coord * u_TileSizePix;
-
-    // An offset_coord of (0, 0) corresponds to the centre of the top-left pixel
-    // of the tile.
-    // An offset_coord of (1, 1) corresponds to the centre of the bottom-right
-    // pixel of the tile.
-    // u_TileSizePix is the width and height (tiles are square) of each tile
-    // in pixels.
-    // centre of the right-most pixel of a tile is (u_TileSizePix - 1).
-
-    vec2 offset_src_pix_coord = offset_coord * (u_TileSizePix - 1);
-
-    // If offset_src_pix_coord is near a pixel boundary (ie. near an integer),
-    // we'll allow the sampler to interpolate for us (this code assumes linear
-    // sampling). Otherwise, force the sampler to use the nearest centre.
-
-    vec2 fract_delta = vec2(0.5, 0.5);// - vec2(fract(offset_src_pix_coord[0]), fract(offset_src_pix_coord[1]));
-
-    vec2 src_pix_coord = tile_src_pix_coord + offset_src_pix_coord + fract_delta;
-
-    // convert it into 0.0..1.0-space
-    vec2 tex_coord = vec2(src_pix_coord[0] / u_TileSheetSizePix[0], src_pix_coord[1] / u_TileSheetSizePix[1]);
-
+    vec2 coord = tile_coord + offset_coord;
+    vec2 tex_coord = vec2(coord[0] * u_TexRatio[0], coord[1] * u_TexRatio[1]);
     return texture(t_Texture, tex_coord);
 }
 
@@ -115,7 +87,7 @@ vec4 resolve_visible(vec4 data, int status) {
             colour = vec4(diminished_colour, colour[3]);
         }
 
-        current = blend(current, colour);
+        current = over_blend(colour, current);
     }
 
     return current;

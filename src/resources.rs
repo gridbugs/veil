@@ -18,3 +18,5 @@ pub fn res_dir() -> PathBuf {
 pub fn res_path<P: AsRef<Path>>(path: P) -> PathBuf {
     res_dir().join(path)
 }
+
+

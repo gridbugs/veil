@@ -6,4 +6,7 @@ mod formats;
 mod sizes;
 mod world_tile;
 mod overlay_tile;
+mod renderer_pipelines;
+mod scale;
+mod types;
 pub use self::launcher::*;

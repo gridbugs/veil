@@ -1,11 +1,11 @@
 #version 330 core
 
 in vec2 a_Pos;
-in vec2 a_CellPos;
+in vec2 a_TexPos;
 
-out vec2 v_CellPos;
+out vec2 v_TexPos;
 
 void main() {
-    v_CellPos = a_CellPos;
+    v_TexPos = a_TexPos;
     gl_Position = vec4(a_Pos, 0.0, 1.0);
 }

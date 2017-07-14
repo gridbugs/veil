@@ -5,25 +5,22 @@ use gfx::Factory;
 use gfx::traits::FactoryExt;
 use gfx::texture::{SamplerInfo, FilterMethod, WrapMode};
 use gfx_device_gl;
-use image::{self, RgbaImage};
+use image::RgbaImage;
 use genmesh::generators::{Plane, SharedVertex, IndexedPolygon};
 use genmesh::{Triangulate, Vertices};
 use handlebars::Handlebars;
 
 use glutin_frontend::formats::ColourFormat;
-use resources::{self, TILE_SHEET_SPEC, TILE_SHEET_IMAGE};
-use simple_file;
+use glutin_frontend::types::*;
 use tile_desc::TileDesc;
+use tile::read_tiles;
 
-type VertexBufferHandle = gfx::handle::Buffer<gfx_device_gl::Resources, Vertex>;
-type Slice = gfx::Slice<gfx_device_gl::Resources>;
-type PipelineData = pipe::Data<gfx_device_gl::Resources>;
-pub type RenderTargetView = gfx::handle::RenderTargetView<gfx_device_gl::Resources, ColourFormat>;
-pub type Encoder = gfx::Encoder<gfx_device_gl::Resources, gfx_device_gl::CommandBuffer>;
+pub type PipelineData = pipe::Data<Resources>;
+pub type VertexBufferHandle = gfx::handle::Buffer<Resources, Vertex>;
 
 pub struct TileMapPipeline {
     pub slice: Slice,
-    pub state: gfx::PipelineState<gfx_device_gl::Resources, pipe::Meta>,
+    pub state: gfx::PipelineState<Resources, pipe::Meta>,
     pub data: PipelineData,
     pub buffer: Vec<TileMapData>,
     pub image: RgbaImage,
@@ -52,8 +49,7 @@ gfx_defines!{
         tex: gfx::TextureSampler<[f32; 4]> = "t_Texture",
         tile_table: gfx::ConstantBuffer<TileMapData> = "b_TileMap",
         tile_map_info: gfx::ConstantBuffer<TileMapInfo> = "b_TileMapInfo",
-        out: gfx::BlendTarget<ColourFormat> =
-            ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
+        out: gfx::RenderTarget<ColourFormat> = "Target0",
     }
 }
 
@@ -89,17 +85,7 @@ impl TileMapInfo {
     }
 }
 
-fn read_tiles() -> (RgbaImage, TileDesc) {
-    let tile_path = resources::res_path(TILE_SHEET_IMAGE);
-    let img = image::open(tile_path).expect("failed to open image").to_rgba();
-
-    let tile_desc: TileDesc = simple_file::read_toml(&resources::res_path(TILE_SHEET_SPEC))
-        .expect("Failed to read tile spec");
-
-    (img, tile_desc)
-}
-
-type Texture = gfx::handle::ShaderResourceView<gfx_device_gl::Resources, [f32; 4]>;
+type Texture = gfx::handle::ShaderResourceView<Resources, [f32; 4]>;
 
 fn create_texture(img: &RgbaImage, factory: &mut gfx_device_gl::Factory) -> Texture {
 
@@ -135,7 +121,6 @@ fn create_vertex_buffer(width: u32, height: u32, factory: &mut gfx_device_gl::Fa
             Vertex {
                 pos: [raw_x, raw_y],
                 cell_pos: [x * width as f32, y * height as f32],
-
             }
         })
         .collect();
@@ -155,9 +140,7 @@ fn create_pipeline_data(width: u32, height: u32,
                         texture: Texture,
                         factory: &mut gfx_device_gl::Factory) -> PipelineData {
 
-//    let sampler = factory.create_sampler_linear();
     let sampler = factory.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Tile));
-
 
     let tile_table = factory.create_constant_buffer((width * height) as usize);
     let tile_map_info = factory.create_constant_buffer(1);
@@ -171,7 +154,7 @@ fn create_pipeline_data(width: u32, height: u32,
     }
 }
 
-fn update_tile_map_info(tile_map_info: &gfx::handle::Buffer<gfx_device_gl::Resources, TileMapInfo>,
+fn update_tile_map_info(tile_map_info: &gfx::handle::Buffer<Resources, TileMapInfo>,
                         tile_img: &RgbaImage,
                         tile_desc: &TileDesc,
                         width: u32,
